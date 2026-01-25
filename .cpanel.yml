@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/pariltec/public_html
+    - rsync -a --delete --exclude 'uploads/' --exclude 'ai1wm-backups/' --exclude 'cache/' wp-content/ "/wp-content/"
