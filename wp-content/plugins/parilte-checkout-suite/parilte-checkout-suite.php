@@ -1,0 +1,2620 @@
+<?php
+/**
+ * Plugin Name: Parilté Checkout Suite
+ * Description: Ücretsiz kargo ilerleme barı, dinamik teslimat (ETA) mesajı ve TR’ye uygun sade checkout alanları.
+ * Version: 1.1.1
+ * Author: Parilté
+ */
+
+if (!defined('ABSPATH')) exit;
+
+/* ==========================================================
+ * 0) KODDAN KONTROL (WP’ye girmeden aç/kapat)
+ * ========================================================== */
+if (!defined('PARILTE_CS_ON'))              define('PARILTE_CS_ON', true);
+if (!defined('PARILTE_CS_FREEBAR'))         define('PARILTE_CS_FREEBAR', true);
+if (!defined('PARILTE_CS_ETA'))             define('PARILTE_CS_ETA', true);
+if (!defined('PARILTE_CS_CHECKOUT_FIELDS')) define('PARILTE_CS_CHECKOUT_FIELDS', true);
+if (!defined('PARILTE_CS_PAYBADGES'))       define('PARILTE_CS_PAYBADGES', true);
+if (!defined('PARILTE_CS_MINI_SUMMARY'))    define('PARILTE_CS_MINI_SUMMARY', true);
+if (!defined('PARILTE_CS_VALIDATION'))      define('PARILTE_CS_VALIDATION', true);
+if (!defined('PARILTE_BOOTSTRAP_ON'))       define('PARILTE_BOOTSTRAP_ON', true);
+if (!defined('PARILTE_AUTO_HEADER'))        define('PARILTE_AUTO_HEADER', true);
+if (!defined('PARILTE_AUTO_FRONT'))         define('PARILTE_AUTO_FRONT', true);
+if (!defined('PARILTE_DEMO_CONTENT'))       define('PARILTE_DEMO_CONTENT', true);
+if (!defined('PARILTE_DEMO_IMAGES'))        define('PARILTE_DEMO_IMAGES', true);
+if (!defined('PARILTE_DEMO_TUNING'))        define('PARILTE_DEMO_TUNING', false);
+if (!defined('PARILTE_DEMO_BLOG'))          define('PARILTE_DEMO_BLOG', false);
+if (!defined('PARILTE_WIDGETS_ON'))         define('PARILTE_WIDGETS_ON', true);
+if (!defined('PARILTE_SHIPPING_ON'))        define('PARILTE_SHIPPING_ON', true);
+if (!defined('PARILTE_PAYMENTS_ON'))        define('PARILTE_PAYMENTS_ON', true);
+if (!defined('PARILTE_BOOTSTRAP_VERSION'))  define('PARILTE_BOOTSTRAP_VERSION', '8');
+
+// Opsiyonları koddan ezmek istersen:
+if (!defined('PARILTE_CS_FREE_THRESHOLD')) define('PARILTE_CS_FREE_THRESHOLD', 1500);
+if (!defined('PARILTE_CS_FLAT_RATE_COST')) define('PARILTE_CS_FLAT_RATE_COST', 100);
+if (!defined('PARILTE_CS_ETA_MIN'))        define('PARILTE_CS_ETA_MIN', 2);
+if (!defined('PARILTE_CS_ETA_MAX'))        define('PARILTE_CS_ETA_MAX', 5);
+if (!defined('PARILTE_CS_CUTOFF_HOUR'))    define('PARILTE_CS_CUTOFF_HOUR', 15);
+if (!defined('PARILTE_CS_WEEKEND'))        define('PARILTE_CS_WEEKEND', 0); // 1: hafta sonu kargo işler
+if (!defined('PARILTE_CS_FREE_TEXT'))      define('PARILTE_CS_FREE_TEXT', 'Ücretsiz kargoya sadece {left} kaldı');
+
+/* ==========================================================
+ * A) (İsteğe bağlı) Ayarlar sayfası
+ * ========================================================== */
+add_action('admin_menu', function () {
+    add_options_page('Parilté Checkout','Parilté Checkout','manage_options','parilte-checkout', function () {
+        ?>
+        <div class="wrap">
+          <h1>Parilté Checkout Ayarları</h1>
+          <form method="post" action="options.php">
+            <?php settings_fields('parilte_checkout'); do_settings_sections('parilte_checkout'); ?>
+            <table class="form-table" role="presentation">
+              <tr>
+                <th scope="row">Ücretsiz kargo eşiği (₺)</th>
+                <td><input type="number" step="1" min="0" name="parilte_free_threshold" value="<?php echo esc_attr(get_option('parilte_free_threshold', PARILTE_CS_FREE_THRESHOLD)); ?>" style="width:160px"></td>
+              </tr>
+              <tr>
+                <th scope="row">Teslimat (min–max iş günü)</th>
+                <td>
+                  <input type="number" step="1" min="0" name="parilte_eta_min" value="<?php echo esc_attr(get_option('parilte_eta_min', PARILTE_CS_ETA_MIN)); ?>" style="width:70px"> –
+                  <input type="number" step="1" min="0" name="parilte_eta_max" value="<?php echo esc_attr(get_option('parilte_eta_max', PARILTE_CS_ETA_MAX)); ?>" style="width:70px">
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Kargo kesim saati</th>
+                <td><input type="number" step="1" min="0" max="23" name="parilte_cutoff_hour" value="<?php echo esc_attr(get_option('parilte_cutoff_hour', PARILTE_CS_CUTOFF_HOUR)); ?>" style="width:80px">:00</td>
+              </tr>
+              <tr>
+                <th scope="row">Hafta sonu kargo işler mi?</th>
+                <td><label><input type="checkbox" name="parilte_weekend" value="1" <?php checked(get_option('parilte_weekend', PARILTE_CS_WEEKEND), 1); ?>> Evet</label></td>
+              </tr>
+              <tr>
+                <th scope="row">Ücretsiz kargo metni</th>
+                <td><input type="text" name="parilte_free_text" value="<?php echo esc_attr(get_option('parilte_free_text', PARILTE_CS_FREE_TEXT)); ?>" style="width:420px">
+                  <p class="description">{left} → “₺X” olarak doldurulur.</p>
+                </td>
+              </tr>
+            </table>
+            <?php submit_button(); ?>
+          </form>
+        </div>
+        <?php
+    });
+});
+add_action('admin_init', function () {
+    register_setting('parilte_checkout','parilte_free_threshold');
+    register_setting('parilte_checkout','parilte_eta_min');
+    register_setting('parilte_checkout','parilte_eta_max');
+    register_setting('parilte_checkout','parilte_cutoff_hour');
+    register_setting('parilte_checkout','parilte_weekend');
+    register_setting('parilte_checkout','parilte_free_text');
+});
+
+/* ==========================================================
+ * Yardımcılar
+ * ========================================================== */
+function parilte_cs_opt($key, $def=null){
+    // Koddan override varsa onu döndür.
+    $map = [
+        'parilte_free_threshold' => 'PARILTE_CS_FREE_THRESHOLD',
+        'parilte_eta_min'        => 'PARILTE_CS_ETA_MIN',
+        'parilte_eta_max'        => 'PARILTE_CS_ETA_MAX',
+        'parilte_cutoff_hour'    => 'PARILTE_CS_CUTOFF_HOUR',
+        'parilte_weekend'        => 'PARILTE_CS_WEEKEND',
+        'parilte_free_text'      => 'PARILTE_CS_FREE_TEXT',
+    ];
+    if (isset($map[$key]) && defined($map[$key])) return constant($map[$key]);
+    return get_option($key, $def);
+}
+
+function parilte_cs_iyzico_env() {
+    if (defined('IYZICO_ENV') && IYZICO_ENV) return IYZICO_ENV;
+    if (defined('WP_ENV') && WP_ENV === 'production') return 'live';
+    return 'sandbox';
+}
+
+function parilte_cs_iyzico_endpoint() {
+    return (parilte_cs_iyzico_env() === 'live')
+        ? 'https://api.iyzipay.com'
+        : 'https://sandbox-api.iyzipay.com';
+}
+
+function parilte_cs_business_add(\DateTime $dt, $days, $weekend_on=false){
+    if ($days <= 0) return $dt;
+    while ($days > 0) {
+        $dt->modify('+1 day');
+        if ($weekend_on) { $days--; continue; }
+        $w = (int) $dt->format('N'); // 1=Mon ... 7=Sun
+        if ($w <= 5) $days--;
+    }
+    return $dt;
+}
+
+function parilte_cs_eta_range(){
+    $tz = wp_timezone();
+    $now = new DateTime('now', $tz);
+    $min = (int) parilte_cs_opt('parilte_eta_min', PARILTE_CS_ETA_MIN);
+    $max = (int) parilte_cs_opt('parilte_eta_max', PARILTE_CS_ETA_MAX);
+    $cut = (int) parilte_cs_opt('parilte_cutoff_hour', PARILTE_CS_CUTOFF_HOUR);
+    $wkd = (int) parilte_cs_opt('parilte_weekend', PARILTE_CS_WEEKEND) === 1;
+
+    if ((int)$now->format('G') >= $cut) { $min++; $max++; }
+    $d1 = parilte_cs_business_add(clone $now, $min, $wkd);
+    $d2 = parilte_cs_business_add(clone $now, $max, $wkd);
+    $fmt1 = date_i18n('j F', $d1->getTimestamp());
+    $fmt2 = date_i18n('j F', $d2->getTimestamp());
+    return [$fmt1, $fmt2];
+}
+
+function parilte_cs_cart_subtotal(){
+    if (!WC()->cart) return 0;
+    return (float) WC()->cart->get_subtotal();
+}
+
+function parilte_cs_set_page_content_if_empty($page_id, $content){
+    $page = get_post($page_id);
+    if (!$page) return;
+    if (trim((string)$page->post_content) === '') {
+        wp_update_post(['ID'=>(int)$page_id, 'post_content'=>$content]);
+    }
+}
+
+function parilte_cs_add_widget_instance($id_base, $settings){
+    $opt = 'widget_' . $id_base;
+    $widgets = get_option($opt, []);
+    if (!is_array($widgets)) $widgets = [];
+
+    foreach ($widgets as $k => $v) {
+        if (!is_numeric($k)) continue;
+        if ($v == $settings) return $id_base . '-' . $k;
+    }
+
+    $next = 1;
+    foreach ($widgets as $k => $_) {
+        if (is_numeric($k) && (int)$k >= $next) $next = (int)$k + 1;
+    }
+    $widgets[$next] = $settings;
+    update_option($opt, $widgets);
+
+    return $id_base . '-' . $next;
+}
+
+function parilte_cs_add_widget_to_sidebar($sidebar_id, $id_base, $settings){
+    $sidebars = wp_get_sidebars_widgets();
+    if (!is_array($sidebars)) $sidebars = [];
+    if (!isset($sidebars[$sidebar_id]) || !is_array($sidebars[$sidebar_id])) $sidebars[$sidebar_id] = [];
+
+    $widget_id = parilte_cs_add_widget_instance($id_base, $settings);
+    if (!in_array($widget_id, $sidebars[$sidebar_id], true)) {
+        $sidebars[$sidebar_id][] = $widget_id;
+        wp_set_sidebars_widgets($sidebars);
+    }
+}
+
+function parilte_cs_sidebar_has_product_categories($sidebar_id){
+    $sidebars = wp_get_sidebars_widgets();
+    if (!is_array($sidebars)) return false;
+    if (empty($sidebars[$sidebar_id]) || !is_array($sidebars[$sidebar_id])) return false;
+
+    $block_widgets = get_option('widget_block', []);
+    foreach ($sidebars[$sidebar_id] as $widget_id) {
+        if (strpos($widget_id, 'woocommerce_product_categories') === 0) return true;
+        if (strpos($widget_id, 'wc-block-product-categories') === 0) return true;
+        if (strpos($widget_id, 'block-') === 0) {
+            $block_id = (int) str_replace('block-', '', $widget_id);
+            if (isset($block_widgets[$block_id]['content'])) {
+                $content = (string) $block_widgets[$block_id]['content'];
+                if (strpos($content, 'woocommerce/product-categories') !== false) return true;
+                if (strpos($content, 'woocommerce-product-categories') !== false) return true;
+            }
+        }
+    }
+    return false;
+}
+
+function parilte_cs_setup_widgets(){
+    if (!PARILTE_WIDGETS_ON) return;
+    if (!class_exists('WC_Widget_Product_Search')) return;
+
+    $sidebar_id = 'sidebar-woocommerce';
+    parilte_cs_add_widget_to_sidebar($sidebar_id, 'woocommerce_product_search', ['title'=>'Ürün Ara']);
+    parilte_cs_add_widget_to_sidebar($sidebar_id, 'woocommerce_layered_nav_filters', ['title'=>'Seçili Filtreler']);
+    if (!parilte_cs_sidebar_has_product_categories($sidebar_id)) {
+        parilte_cs_add_widget_to_sidebar($sidebar_id, 'woocommerce_product_categories', [
+            'title'=>'Kategoriler','orderby'=>'name','hierarchical'=>1,'count'=>0,'dropdown'=>0
+        ]);
+    }
+    parilte_cs_add_widget_to_sidebar($sidebar_id, 'woocommerce_price_filter', ['title'=>'Fiyata Göre Filtrele']);
+    parilte_cs_add_widget_to_sidebar($sidebar_id, 'woocommerce_layered_nav', [
+        'title'=>'Beden','attribute'=>'beden','display_type'=>'list','query_type'=>'and'
+    ]);
+    parilte_cs_add_widget_to_sidebar($sidebar_id, 'woocommerce_layered_nav', [
+        'title'=>'Renk','attribute'=>'renk','display_type'=>'list','query_type'=>'and'
+    ]);
+}
+
+add_filter('woocommerce_product_categories_widget_args', function ($args) {
+    $args['hierarchical'] = 1;
+    $args['depth'] = 1;
+    $args['show_children_only'] = 0;
+    $args['hide_empty'] = 0;
+    $args['count'] = 0;
+    return $args;
+}, 20);
+
+add_filter('sidebars_widgets', function ($sidebars) {
+    $sidebar_id = 'sidebar-woocommerce';
+    if (empty($sidebars[$sidebar_id]) || !is_array($sidebars[$sidebar_id])) return $sidebars;
+
+    $block_widgets = get_option('widget_block', []);
+    $filtered = [];
+    $seen_cat = false;
+
+    foreach ($sidebars[$sidebar_id] as $widget_id) {
+        $is_cat = false;
+
+        if (strpos($widget_id, 'woocommerce_product_categories') === 0) $is_cat = true;
+        if (strpos($widget_id, 'wc-block-product-categories') === 0) $is_cat = true;
+        if (strpos($widget_id, 'block-') === 0) {
+            $block_id = (int) str_replace('block-', '', $widget_id);
+            if (isset($block_widgets[$block_id]['content'])) {
+                $content = (string) $block_widgets[$block_id]['content'];
+                if (strpos($content, 'woocommerce/product-categories') !== false) $is_cat = true;
+                if (strpos($content, 'woocommerce-product-categories') !== false) $is_cat = true;
+            }
+        }
+
+        if ($is_cat) {
+            if ($seen_cat) continue;
+            $seen_cat = true;
+        }
+
+        $filtered[] = $widget_id;
+    }
+
+    $sidebars[$sidebar_id] = $filtered;
+    return $sidebars;
+}, 20);
+
+function parilte_cs_setup_shipping(){
+    if (!PARILTE_SHIPPING_ON) return;
+    if (!class_exists('WC_Shipping_Zone')) return;
+
+    $flat_cost = (float) PARILTE_CS_FLAT_RATE_COST;
+    $free_min  = (float) parilte_cs_opt('parilte_free_threshold', PARILTE_CS_FREE_THRESHOLD);
+
+    $zone_id = 0;
+    $zones = WC_Shipping_Zones::get_zones();
+    foreach ($zones as $z) {
+        if (empty($z['zone_locations'])) continue;
+        foreach ($z['zone_locations'] as $loc) {
+            if ($loc->type === 'country' && $loc->code === 'TR') {
+                $zone_id = (int)$z['zone_id'];
+                break 2;
+            }
+        }
+    }
+
+    if (!$zone_id) {
+        $zone = new WC_Shipping_Zone();
+        $zone->set_zone_name('Türkiye');
+        $zone->add_location('TR','country');
+        $zone_id = $zone->save();
+    }
+
+    $zone = new WC_Shipping_Zone($zone_id);
+    $methods = $zone->get_shipping_methods();
+    $has_flat = false;
+    $has_free = false;
+    foreach ($methods as $m) {
+        if ($m->id === 'flat_rate') {
+            $has_flat = true;
+            $instance_id = $m->get_instance_id();
+            $settings = (array) get_option('woocommerce_flat_rate_'.$instance_id.'_settings', []);
+            $settings['cost'] = (string) $flat_cost;
+            if (empty($settings['title'])) $settings['title'] = 'Standart Kargo';
+            $settings['enabled'] = 'yes';
+            if (empty($settings['tax_status'])) $settings['tax_status'] = 'taxable';
+            update_option('woocommerce_flat_rate_'.$instance_id.'_settings', $settings);
+        }
+        if ($m->id === 'free_shipping') {
+            $has_free = true;
+            $instance_id = $m->get_instance_id();
+            $settings = (array) get_option('woocommerce_free_shipping_'.$instance_id.'_settings', []);
+            $settings['min_amount'] = (string) $free_min;
+            $settings['requires'] = 'min_amount';
+            if (empty($settings['title'])) $settings['title'] = 'Ücretsiz Kargo';
+            $settings['enabled'] = 'yes';
+            update_option('woocommerce_free_shipping_'.$instance_id.'_settings', $settings);
+        }
+    }
+
+    if (!$has_flat) {
+        $instance_id = $zone->add_shipping_method('flat_rate');
+        update_option('woocommerce_flat_rate_'.$instance_id.'_settings', [
+            'title' => 'Standart Kargo',
+            'tax_status' => 'taxable',
+            'cost' => (string) $flat_cost,
+            'enabled' => 'yes',
+        ]);
+    }
+
+    if (!$has_free) {
+        $instance_id = $zone->add_shipping_method('free_shipping');
+        update_option('woocommerce_free_shipping_'.$instance_id.'_settings', [
+            'title' => 'Ücretsiz Kargo',
+            'requires' => 'min_amount',
+            'min_amount' => (string) $free_min,
+            'enabled' => 'yes',
+        ]);
+    }
+}
+
+function parilte_cs_setup_payments(){
+    if (!PARILTE_PAYMENTS_ON) return;
+    if (!function_exists('WC') || !WC()->payment_gateways) return;
+
+    $gateways = WC()->payment_gateways->payment_gateways();
+    $enabled_non = [];
+    foreach ($gateways as $id => $gw) {
+        if (in_array($id, ['cod','bacs'], true)) continue;
+        $settings = (array) get_option('woocommerce_'.$id.'_settings', []);
+        if (!empty($settings['enabled']) && $settings['enabled'] === 'yes') $enabled_non[] = $id;
+    }
+
+    if (!empty($enabled_non)) {
+        foreach (['cod','bacs'] as $id) {
+            $settings = (array) get_option('woocommerce_'.$id.'_settings', []);
+            if (!empty($settings)) {
+                $settings['enabled'] = 'no';
+                update_option('woocommerce_'.$id.'_settings', $settings);
+            }
+        }
+        update_option('woocommerce_default_gateway', $enabled_non[0]);
+    }
+}
+
+function parilte_cs_create_simple_product($name, $sku, $price, $cat_ids, $short = '', $desc = ''){
+    if (!class_exists('WC_Product_Simple')) return 0;
+    if ($sku && wc_get_product_id_by_sku($sku)) return (int) wc_get_product_id_by_sku($sku);
+
+    $product = new WC_Product_Simple();
+    $product->set_name($name);
+    $product->set_status('publish');
+    $product->set_catalog_visibility('visible');
+    $product->set_regular_price($price);
+    if ($sku) $product->set_sku($sku);
+    if ($short) $product->set_short_description($short);
+    if ($desc) $product->set_description($desc);
+    if (!empty($cat_ids)) $product->set_category_ids(array_map('intval', $cat_ids));
+    $product->set_manage_stock(true);
+    $product->set_stock_quantity(20);
+    $product_id = $product->save();
+
+    if ($product_id) update_post_meta($product_id, '_parilte_seed', '1');
+    return (int) $product_id;
+}
+
+function parilte_cs_create_variable_product($name, $sku, $price, $cat_ids, $sizes, $colors){
+    if (!class_exists('WC_Product_Variable')) return 0;
+    if ($sku && wc_get_product_id_by_sku($sku)) return (int) wc_get_product_id_by_sku($sku);
+
+    $product = new WC_Product_Variable();
+    $product->set_name($name);
+    $product->set_status('publish');
+    $product->set_catalog_visibility('visible');
+    if ($sku) $product->set_sku($sku);
+    if (!empty($cat_ids)) $product->set_category_ids(array_map('intval', $cat_ids));
+    $product->set_description('Günlük kullanım için rahat kalıp ve sezonluk renkler.');
+    $product->set_short_description('Beden ve renk varyasyonlu ürün.');
+
+    $attrs = [];
+    $size_ids = [];
+    if (taxonomy_exists('pa_beden')) {
+        foreach ($sizes as $s) {
+            $term = get_term_by('name', $s, 'pa_beden');
+            if (!$term) $term = get_term_by('slug', strtolower($s), 'pa_beden');
+            if ($term) $size_ids[] = (int) $term->term_id;
+        }
+        $attr = new WC_Product_Attribute();
+        $attr->set_id(wc_attribute_taxonomy_id_by_name('beden'));
+        $attr->set_name('pa_beden');
+        $attr->set_options($size_ids);
+        $attr->set_visible(true);
+        $attr->set_variation(true);
+        $attrs[] = $attr;
+    }
+    $color_ids = [];
+    if (taxonomy_exists('pa_renk')) {
+        foreach ($colors as $c) {
+            $slug = sanitize_title($c);
+            $term = get_term_by('name', $c, 'pa_renk');
+            if (!$term) $term = get_term_by('slug', $slug, 'pa_renk');
+            if ($term) $color_ids[] = (int) $term->term_id;
+        }
+        $attr = new WC_Product_Attribute();
+        $attr->set_id(wc_attribute_taxonomy_id_by_name('renk'));
+        $attr->set_name('pa_renk');
+        $attr->set_options($color_ids);
+        $attr->set_visible(true);
+        $attr->set_variation(true);
+        $attrs[] = $attr;
+    }
+
+    $product->set_attributes($attrs);
+    $product_id = $product->save();
+    if (!$product_id) return 0;
+
+    $variations = [
+        ['beden'=>'s','renk'=>'siyah'],
+        ['beden'=>'m','renk'=>'beyaz'],
+        ['beden'=>'l','renk'=>'gri'],
+        ['beden'=>'xl','renk'=>'haki'],
+    ];
+
+    foreach ($variations as $v) {
+        $variation = new WC_Product_Variation();
+        $variation->set_parent_id($product_id);
+        $variation->set_attributes([
+            'pa_beden' => $v['beden'],
+            'pa_renk'  => $v['renk'],
+        ]);
+        $variation->set_regular_price($price);
+        $variation->set_manage_stock(true);
+        $variation->set_stock_quantity(10);
+        $variation->set_status('publish');
+        $variation->save();
+    }
+
+    update_post_meta($product_id, '_parilte_seed', '1');
+    return (int) $product_id;
+}
+
+function parilte_cs_seed_demo_content($cat){
+    if (!PARILTE_DEMO_CONTENT) return;
+    if (!class_exists('WooCommerce')) return;
+    if (get_option('parilte_demo_done')) return;
+
+    $p1 = parilte_cs_create_simple_product(
+        'Parilté Basic Tişört', 'PAR-TEE-001', '299',
+        [$cat['ust']], 'Yumuşak dokulu, günlük kullanım için ideal.',
+        'Pamuklu kumaş, rahat kesim.'
+    );
+    $p2 = parilte_cs_create_simple_product(
+        'Parilté Jean Pantolon', 'PAR-JEAN-001', '799',
+        [$cat['alt']], 'Klasik kesim, zamansız jean.',
+        'Günlük kombinler için vazgeçilmez.'
+    );
+    $p3 = parilte_cs_create_simple_product(
+        'Parilté Triko Kazak', 'PAR-KZK-001', '649',
+        [$cat['ust']], 'Mevsim geçişleri için sıcak tutar.',
+        'Yumuşak triko dokusu.'
+    );
+    $p4 = parilte_cs_create_simple_product(
+        'Parilté Kaban', 'PAR-KBN-001', '1290',
+        [$cat['dis']], 'Soğuk havalar için şık kaban.',
+        'Astarlı, rahat kullanım.'
+    );
+    $p5 = parilte_cs_create_simple_product(
+        'Parilté Çanta', 'PAR-CNT-001', '459',
+        [$cat['aksesuar']], 'Günlük kullanım için pratik.',
+        'Minimal tasarım.'
+    );
+
+    $p6 = parilte_cs_create_variable_product(
+        'Parilté Oversize Sweatshirt', 'PAR-SWT-001', '899',
+        [$cat['ust']], ['S','M','L','XL'], ['Siyah','Beyaz','Gri','Haki']
+    );
+
+    if (PARILTE_DEMO_BLOG) {
+        $cat_id = 0;
+        $cat_term = get_term_by('slug', 'stil', 'category');
+        if ($cat_term) $cat_id = (int) $cat_term->term_id;
+        if (!$cat_id) {
+            $res = wp_insert_term('Stil', 'category', ['slug'=>'stil']);
+            if (!is_wp_error($res)) $cat_id = (int) $res['term_id'];
+        }
+
+        $posts = [
+            ['Kapsül Gardırop: 7 Parça ile 14 Kombin', 'kapsul-gardrop', 'Az parça ile çok kombin fikri için ilham.'],
+            ['Yeni Sezon Renkleri: Gri & Bej', 'sezon-renkleri', 'Minimal ve zamansız renklerle güçlü görünüm.'],
+            ['Şehirde Rahat Stil', 'sehirde-rahat-stil', 'Günlük koşturmaya uygun, şık ve rahat seçimler.'],
+        ];
+        foreach ($posts as $p) {
+            if (get_page_by_path($p[1], OBJECT, 'post')) continue;
+            wp_insert_post([
+                'post_type' => 'post',
+                'post_status' => 'publish',
+                'post_title' => $p[0],
+                'post_name' => $p[1],
+                'post_content' => $p[2],
+                'post_category' => $cat_id ? [$cat_id] : [],
+            ]);
+        }
+    }
+
+    update_option('parilte_demo_done', 1);
+}
+
+function parilte_cs_seed_demo_tuning() {
+    if (!PARILTE_DEMO_TUNING) return;
+    if (!PARILTE_DEMO_CONTENT) return;
+    if (!class_exists('WooCommerce')) return;
+    if (!current_user_can('manage_options')) {
+        $env = function_exists('wp_get_environment_type') ? wp_get_environment_type() : '';
+        $url = home_url('/');
+        $is_local = ($env === 'local') || (stripos($url, 'localhost') !== false) || (stripos($url, '127.0.0.1') !== false);
+        if (!$is_local) return;
+    }
+    if (!get_option('parilte_demo_done')) return;
+    if (get_option('parilte_demo_tuned')) return;
+
+    $sales_map = [
+        'PAR-TEE-001'  => ['sale' => '249', 'sales' => 14],
+        'PAR-JEAN-001' => ['sale' => '',    'sales' => 9],
+        'PAR-KZK-001'  => ['sale' => '549', 'sales' => 11],
+        'PAR-KBN-001'  => ['sale' => '',    'sales' => 6],
+        'PAR-CNT-001'  => ['sale' => '399', 'sales' => 8],
+    ];
+
+    foreach ($sales_map as $sku => $data) {
+        $pid = wc_get_product_id_by_sku($sku);
+        if (!$pid) continue;
+        $p = wc_get_product($pid);
+        if (!$p) continue;
+        if ($data['sale'] !== '') $p->set_sale_price($data['sale']);
+        $p->save();
+        update_post_meta($pid, 'total_sales', (int) $data['sales']);
+    }
+
+    $var_id = wc_get_product_id_by_sku('PAR-SWT-001');
+    if ($var_id) {
+        $vp = wc_get_product($var_id);
+        if ($vp && $vp->is_type('variable')) {
+            foreach ($vp->get_children() as $vid) {
+                $v = wc_get_product($vid);
+                if (!$v) continue;
+                $v->set_sale_price('799');
+                $v->save();
+            }
+            update_post_meta($var_id, 'total_sales', 10);
+        }
+    }
+
+    update_option('parilte_demo_tuned', 1);
+    delete_transient('parilte_placeholder_ids');
+}
+add_action('admin_init', 'parilte_cs_seed_demo_tuning', 32);
+add_action('init', 'parilte_cs_seed_demo_tuning', 32);
+
+function parilte_cs_cleanup_demo_sales() {
+    if (!PARILTE_DEMO_CONTENT) return;
+    if (!class_exists('WooCommerce')) return;
+    if (!current_user_can('manage_options')) {
+        $env = function_exists('wp_get_environment_type') ? wp_get_environment_type() : '';
+        $url = home_url('/');
+        $is_local = ($env === 'local') || (stripos($url, 'localhost') !== false) || (stripos($url, '127.0.0.1') !== false);
+        if (!$is_local) return;
+    }
+    if (get_option('parilte_demo_sale_cleaned')) return;
+
+    $q = new WP_Query([
+        'post_type'      => 'product',
+        'posts_per_page' => -1,
+        'post_status'    => 'any',
+        'fields'         => 'ids',
+        'meta_query'     => [[ 'key' => '_parilte_seed', 'value' => '1' ]],
+    ]);
+    foreach ($q->posts as $pid) {
+        $p = wc_get_product($pid);
+        if (!$p) continue;
+        $p->set_sale_price('');
+        $p->save();
+    }
+
+    update_option('parilte_demo_sale_cleaned', 1);
+}
+add_action('admin_init', 'parilte_cs_cleanup_demo_sales', 33);
+add_action('init', 'parilte_cs_cleanup_demo_sales', 33);
+
+function parilte_cs_cleanup_demo_posts() {
+    if (PARILTE_DEMO_BLOG) return;
+    if (!current_user_can('manage_options')) {
+        $env = function_exists('wp_get_environment_type') ? wp_get_environment_type() : '';
+        $url = home_url('/');
+        $is_local = ($env === 'local') || (stripos($url, 'localhost') !== false) || (stripos($url, '127.0.0.1') !== false);
+        if (!$is_local) return;
+    }
+    if (get_option('parilte_demo_posts_cleaned')) return;
+
+    $slugs = ['kapsul-gardrop', 'sezon-renkleri', 'sehirde-rahat-stil'];
+    foreach ($slugs as $slug) {
+        $post = get_page_by_path($slug, OBJECT, 'post');
+        if (!$post) continue;
+        if (stripos((string) $post->post_content, 'ilham') !== false || stripos((string) $post->post_content, 'zamansız') !== false) {
+            wp_trash_post($post->ID);
+        }
+    }
+
+    update_option('parilte_demo_posts_cleaned', 1);
+}
+add_action('admin_init', 'parilte_cs_cleanup_demo_posts', 34);
+add_action('init', 'parilte_cs_cleanup_demo_posts', 34);
+
+function parilte_cs_seed_demo_images() {
+    if (!PARILTE_DEMO_CONTENT || !PARILTE_DEMO_IMAGES) return;
+    if (!class_exists('WooCommerce')) return;
+    if (!current_user_can('manage_options')) {
+        $env = function_exists('wp_get_environment_type') ? wp_get_environment_type() : '';
+        $url = home_url('/');
+        $is_local = ($env === 'local') || (stripos($url, 'localhost') !== false) || (stripos($url, '127.0.0.1') !== false);
+        if (!$is_local) return;
+    }
+    if (!get_option('parilte_demo_done')) return;
+
+    $image_map = [
+        'PAR-TEE-001'  => 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=1200&q=80',
+        'PAR-JEAN-001' => 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=1200&q=80',
+        'PAR-KZK-001'  => 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1200&q=80',
+        'PAR-KBN-001'  => 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1200&q=80',
+        'PAR-CNT-001'  => 'https://images.unsplash.com/photo-1523292562811-8fa7962a78c8?auto=format&fit=crop&w=1200&q=80',
+        'PAR-SWT-001'  => 'https://images.unsplash.com/photo-1516762689617-e1cffcef479d?auto=format&fit=crop&w=1200&q=80',
+    ];
+
+    $targets = [];
+    foreach ($image_map as $sku => $url) {
+        $pid = wc_get_product_id_by_sku($sku);
+        if (!$pid) continue;
+        if (get_post_thumbnail_id($pid)) continue;
+        $targets[$pid] = $url;
+    }
+
+    if (!$targets) {
+        update_option('parilte_demo_images_done', 1);
+        return;
+    }
+
+    if (!function_exists('media_sideload_image')) {
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/media.php';
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+    }
+
+    foreach ($targets as $pid => $url) {
+        $att_id = media_sideload_image($url, (int) $pid, null, 'id');
+        if (!is_wp_error($att_id) && $att_id) {
+            set_post_thumbnail($pid, $att_id);
+        }
+    }
+
+    $still_missing = false;
+    foreach (array_keys($targets) as $pid) {
+        if (!get_post_thumbnail_id($pid)) {
+            $still_missing = true;
+            break;
+        }
+    }
+    if (!$still_missing) update_option('parilte_demo_images_done', 1);
+}
+add_action('admin_init', 'parilte_cs_seed_demo_images', 30);
+add_action('init', 'parilte_cs_seed_demo_images', 30);
+
+function parilte_cs_cleanup_placeholders_once() {
+    if (!current_user_can('manage_options')) {
+        $env = function_exists('wp_get_environment_type') ? wp_get_environment_type() : '';
+        $url = home_url('/');
+        $is_local = ($env === 'local') || (stripos($url, 'localhost') !== false) || (stripos($url, '127.0.0.1') !== false);
+        if (!$is_local) return;
+    }
+    if (get_option('parilte_placeholder_purged')) return;
+
+    $deleted = 0;
+    $flag = '_parilte_placeholder';
+
+    $q = new WP_Query([
+        'post_type'      => 'product',
+        'posts_per_page' => -1,
+        'post_status'    => 'any',
+        'fields'         => 'ids',
+        'meta_query'     => [[ 'key' => $flag, 'value' => '1' ]],
+    ]);
+    foreach ($q->posts as $pid) {
+        wp_trash_post($pid);
+        $deleted++;
+    }
+
+    $q2 = new WP_Query([
+        'post_type'      => 'product',
+        'posts_per_page' => -1,
+        'post_status'    => 'any',
+        'fields'         => 'ids',
+        's'              => 'Placeholder',
+    ]);
+    foreach ($q2->posts as $pid) {
+        $title = get_the_title($pid);
+        if ($title && stripos($title, 'placeholder') !== false) {
+            wp_trash_post($pid);
+            $deleted++;
+        }
+    }
+
+    update_option('parilte_placeholder_purged', $deleted ? $deleted : 1);
+    delete_transient('parilte_placeholder_ids');
+}
+add_action('admin_init', 'parilte_cs_cleanup_placeholders_once', 35);
+add_action('init', 'parilte_cs_cleanup_placeholders_once', 35);
+
+/* ==========================================================
+ * BOOTSTRAP (sayfalar, kategoriler, nitelikler, menu)
+ * ========================================================== */
+function parilte_cs_bootstrap(){
+    if (!PARILTE_BOOTSTRAP_ON) return;
+    if (!current_user_can('manage_options')) {
+        $env = function_exists('wp_get_environment_type') ? wp_get_environment_type() : '';
+        $url = home_url('/');
+        $is_local = ($env === 'local') || (stripos($url, 'localhost') !== false) || (stripos($url, '127.0.0.1') !== false);
+        if (!$is_local) return;
+    }
+    $done = (string) get_option('parilte_bootstrap_done', '');
+    if ($done === (string) PARILTE_BOOTSTRAP_VERSION) return;
+
+    $get_or_create_page = function($title, $slug) {
+        if ($p = get_page_by_path($slug)) return $p->ID;
+        if ($p = get_page_by_title($title)) return $p->ID;
+        return wp_insert_post(['post_type'=>'page','post_status'=>'publish','post_title'=>$title,'post_name'=>$slug]);
+    };
+    $ensure_term = function($name, $slug, $taxonomy, $parent = 0) {
+        $term = get_term_by('slug', $slug, $taxonomy);
+        if ($term) return (int)$term->term_id;
+        $res = wp_insert_term($name, $taxonomy, ['slug'=>$slug,'parent'=>(int)$parent]);
+        return is_wp_error($res) ? 0 : (int)$res['term_id'];
+    };
+
+    // 1) Pages
+    $p = [];
+    $p['home']     = $get_or_create_page('Anasayfa','anasayfa');
+    $p['shop']     = $get_or_create_page('Mağaza','magaza');
+    $p['cart']     = $get_or_create_page('Sepet','sepet');
+    $p['checkout'] = $get_or_create_page('Ödeme','odeme');
+    $p['account']  = $get_or_create_page('Hesabım','hesabim');
+    $p['about']    = $get_or_create_page('Hakkımızda','hakkimizda');
+    $p['returns']  = $get_or_create_page('İade & Değişim','iade-degisim');
+    $p['shipping'] = $get_or_create_page('Teslimat & Kargo','teslimat-kargo');
+    $p['privacy']  = $get_or_create_page('KVKK & Gizlilik','kvkk-gizlilik');
+    $p['blog']     = $get_or_create_page('Blog','blog');
+    $p['size']     = $get_or_create_page('Beden Rehberi','beden-rehberi');
+
+    $site_name = get_bloginfo('name');
+    $contact_email = get_option('admin_email');
+    parilte_cs_set_page_content_if_empty($p['about'], '<h2>Hakkımızda</h2><p>'.$site_name.' olarak zamansız, rahat ve günlük kombinlenebilir parçalarla güçlü bir stil sunuyoruz. Sezon seçkilerimizi özenle hazırlıyor, müşteri deneyimini her adımda sade ve güvenilir kılmayı amaçlıyoruz.</p><p>Koleksiyonlarımız; kalite, konfor ve şıklık dengesini koruyacak şekilde planlanır.</p>');
+    parilte_cs_set_page_content_if_empty($p['returns'], '<h2>İade & Değişim</h2><ul><li>Ürün tesliminden itibaren 14 gün içinde iade/değişim talebi oluşturabilirsiniz.</li><li>Ürünler; kullanılmamış, etiketleri üzerinde ve orijinal ambalajında olmalıdır.</li><li>Hijyenik ürünlerde iade koşulları değişkenlik gösterebilir.</li><li>İade onayı sonrasında ücret iadesi, ödeme yöntemine göre 3-10 iş günü içinde tamamlanır.</li></ul><p>Detaylı bilgi için bizimle iletişime geçebilirsiniz: <a href="mailto:'.$contact_email.'">'.$contact_email.'</a></p>');
+    parilte_cs_set_page_content_if_empty($p['shipping'], '<h2>Teslimat & Kargo</h2><ul><li>Siparişler 1-3 iş günü içinde kargoya teslim edilir.</li><li>Türkiye içi sabit kargo ücreti 100 TL’dir.</li><li>1500 TL ve üzeri siparişlerde kargo ücretsizdir.</li><li>Kampanya dönemlerinde teslimat süreleri değişiklik gösterebilir.</li></ul>');
+    parilte_cs_set_page_content_if_empty($p['privacy'], '<h2>KVKK & Gizlilik</h2><p>Kişisel verileriniz, 6698 sayılı KVKK kapsamında işlenir ve korunur. Sitemiz üzerinden paylaştığınız bilgiler; siparişlerinizi tamamlamak, hizmet kalitesini artırmak ve yasal yükümlülüklerimizi yerine getirmek amacıyla kullanılabilir.</p><h3>Toplanan Veriler</h3><ul><li>Ad, soyad, iletişim bilgileri</li><li>Teslimat ve fatura adresleri</li><li>Sipariş ve ödeme bilgileri (kart bilgileri saklanmaz)</li></ul><h3>Çerezler</h3><p>Sitemizde deneyimi iyileştirmek için çerezler kullanılabilir. Tarayıcı ayarlarınızdan çerez tercihlerinizi yönetebilirsiniz.</p><p>KVKK başvuruları için: <a href="mailto:'.$contact_email.'">'.$contact_email.'</a></p>');
+
+    // 2) Reading
+    update_option('show_on_front','page');
+    update_option('page_on_front',(int)$p['home']);
+    update_option('page_for_posts',(int)$p['blog']);
+
+    // 3) Permalink
+    update_option('permalink_structure','/%postname%/');
+
+    // 4) Woo pages
+    update_option('woocommerce_shop_page_id',(int)$p['shop']);
+    update_option('woocommerce_cart_page_id',(int)$p['cart']);
+    update_option('woocommerce_checkout_page_id',(int)$p['checkout']);
+    update_option('woocommerce_myaccount_page_id',(int)$p['account']);
+    update_option('woocommerce_enable_myaccount_registration','yes');
+    update_option('woocommerce_enable_signup_and_login_from_checkout','yes');
+    update_option('woocommerce_enable_checkout_login_reminder','yes');
+    update_option('woocommerce_registration_generate_password','yes');
+    update_option('woocommerce_registration_generate_username','yes');
+    update_option('users_can_register', 1);
+    update_option('woocommerce_email_from_name', get_bloginfo('name'));
+    update_option('woocommerce_email_from_address', get_option('admin_email'));
+    update_option('woocommerce_terms_page_id',(int)$p['returns']);
+    if (!empty($p['privacy'])) update_option('wp_page_for_privacy_policy', (int)$p['privacy']);
+
+    // 4.1) Woo sayfa icerikleri
+    parilte_cs_set_page_content_if_empty($p['cart'], '[woocommerce_cart]');
+    parilte_cs_set_page_content_if_empty($p['checkout'], '[woocommerce_checkout]');
+    parilte_cs_set_page_content_if_empty($p['account'], '[woocommerce_my_account]');
+
+    // 4.2) Woo temel ayarlar
+    update_option('woocommerce_currency', 'TRY');
+    update_option('woocommerce_default_country', 'TR');
+    update_option('woocommerce_weight_unit', 'kg');
+    update_option('woocommerce_dimension_unit', 'cm');
+    update_option('woocommerce_allowed_countries', 'specific');
+    update_option('woocommerce_specific_allowed_countries', ['TR']);
+    update_option('woocommerce_ship_to_countries', 'specific');
+    update_option('woocommerce_specific_ship_to_countries', ['TR']);
+    update_option('woocommerce_enable_guest_checkout', 'yes');
+    update_option('woocommerce_enable_myaccount_registration', 'yes');
+    update_option('woocommerce_enable_signup_and_login_from_checkout', 'yes');
+    update_option('woocommerce_enable_coupons', 'yes');
+    update_option('woocommerce_catalog_columns', 3);
+    update_option('woocommerce_catalog_rows', 4);
+    update_option('parilte_free_threshold', PARILTE_CS_FREE_THRESHOLD);
+    update_option('woocommerce_coming_soon', 'no');
+    update_option('woocommerce_coming_soon_mode', 'no');
+    update_option('woocommerce_store_pages_only', 'no');
+    update_option('woocommerce_maintenance_mode', 'no');
+
+    // 5) Product category base
+    $wcpl = (array)get_option('woocommerce_permalinks',[]);
+    $wcpl['category_base']    = 'kategori';
+    $wcpl['product_cat_base'] = 'kategori';
+    update_option('woocommerce_permalinks',$wcpl);
+
+    // 6) Categories
+    $cat = [];
+    $cat['ust']      = $ensure_term('Üst Giyim','ust-giyim','product_cat');
+    $cat['alt']      = $ensure_term('Alt Giyim','alt-giyim','product_cat');
+    $cat['dis']      = $ensure_term('Dış Giyim','dis-giyim','product_cat');
+    $cat['aksesuar'] = $ensure_term('Aksesuar','aksesuar','product_cat');
+
+    foreach ([['Pantolon','pantolon'],['Şort','sort'],['Etek','etek'],['Jean','jean'],['Tayt','tayt'],['Eşofman','esofman'],['Tulum','tulum']] as $t)
+        $ensure_term($t[0],$t[1],'product_cat',$cat['alt']);
+
+    foreach ([['Gömlek','gomlek'],['Bluz','bluz'],['Tişört','tisort'],['Atlet','atlet'],['Crop Top','crop-top'],['Sweatshirt','sweatshirt'],['Triko','triko'],['Kazak','kazak'],['Bodysuit','bodysuit']] as $t)
+        $ensure_term($t[0],$t[1],'product_cat',$cat['ust']);
+
+    // 7) Attributes
+    if (function_exists('wc_create_attribute')) {
+        $aid = wc_attribute_taxonomy_id_by_name('beden');
+        if (!$aid) $aid = wc_create_attribute(['name'=>'Beden','slug'=>'beden','type'=>'select','order_by'=>'menu_order','has_archives'=>true]);
+        $rid = wc_attribute_taxonomy_id_by_name('renk');
+        if (!$rid) $rid = wc_create_attribute(['name'=>'Renk','slug'=>'renk','type'=>'select','order_by'=>'menu_order','has_archives'=>true]);
+        if (function_exists('register_taxonomy')) {
+            register_taxonomy('pa_beden','product',['hierarchical'=>false,'show_ui'=>false]);
+            register_taxonomy('pa_renk','product',['hierarchical'=>false,'show_ui'=>false]);
+        }
+        foreach (['XS','S','M','L','XL'] as $s) if (!term_exists($s,'pa_beden')) wp_insert_term($s,'pa_beden',['slug'=>strtolower($s)]);
+        foreach (['Mavi','Siyah','Beyaz','Gri','Bej','Haki'] as $c) if (!term_exists($c,'pa_renk')) wp_insert_term($c,'pa_renk',['slug'=>sanitize_title($c)]);
+    }
+
+    // 8) Menu “Ana Menü” + konum
+    $menu_name = 'Ana Menü';
+    $menu_obj  = wp_get_nav_menu_object($menu_name);
+    $menu_id   = $menu_obj ? $menu_obj->term_id : wp_create_nav_menu($menu_name);
+    $existing  = (array) wp_get_nav_menu_items($menu_id);
+    $titles = [];
+    $urls   = [];
+    $by_url = [];
+    foreach ($existing as $item) {
+        $titles[strtolower($item->title)] = true;
+        $u = rtrim($item->url,'/');
+        $urls[$u] = true;
+        $by_url[$u] = (int) $item->ID;
+    }
+    $add_item  = function($args) use ($menu_id, &$titles, &$urls){
+        if (!empty($args['menu-item-url'])) {
+            $u = rtrim($args['menu-item-url'], '/');
+            if (isset($urls[$u])) return 0;
+        }
+        if (!empty($args['menu-item-title'])) {
+            $t = strtolower($args['menu-item-title']);
+            if (isset($titles[$t])) return 0;
+        }
+        $id = wp_update_nav_menu_item($menu_id,0,array_merge(['menu-item-status'=>'publish'],$args));
+        if (!is_wp_error($id)) {
+            if (!empty($args['menu-item-url'])) $urls[rtrim($args['menu-item-url'], '/')] = true;
+            if (!empty($args['menu-item-title'])) $titles[strtolower($args['menu-item-title'])] = true;
+        }
+        return $id;
+    };
+    $add_item(['menu-item-title'=>'Anasayfa','menu-item-url'=>home_url('/'),'menu-item-type'=>'custom']);
+    $add_item(['menu-item-title'=>'Mağaza','menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-object-id'=>$p['shop']]);
+
+    $parent_ids = [];
+    foreach ([['Üst Giyim','ust-giyim','ust'],['Alt Giyim','alt-giyim','alt'],['Aksesuar','aksesuar','aksesuar'],['Dış Giyim','dis-giyim','dis']] as $k) {
+        $url = home_url('/kategori/'.$k[1].'/');
+        $id = $add_item(['menu-item-title'=>$k[0],'menu-item-url'=>$url,'menu-item-type'=>'custom']);
+        if (!$id && isset($by_url[rtrim($url,'/')])) $id = $by_url[rtrim($url,'/')];
+        $parent_ids[$k[2]] = $id ? (int) $id : 0;
+    }
+
+    $children = [
+        'alt' => [['Pantolon','pantolon'],['Şort','sort'],['Etek','etek'],['Jean','jean'],['Tayt','tayt'],['Eşofman','esofman'],['Tulum','tulum']],
+        'ust' => [['Gömlek','gomlek'],['Bluz','bluz'],['Tişört','tisort'],['Atlet','atlet'],['Crop Top','crop-top'],['Sweatshirt','sweatshirt'],['Triko','triko'],['Kazak','kazak'],['Bodysuit','bodysuit']],
+    ];
+    foreach ($children as $parent_key => $items_list) {
+        $pid = isset($parent_ids[$parent_key]) ? (int) $parent_ids[$parent_key] : 0;
+        if (!$pid) continue;
+        foreach ($items_list as $c) {
+            $add_item([
+                'menu-item-title' => $c[0],
+                'menu-item-url' => home_url('/kategori/'.$c[1].'/'),
+                'menu-item-type' => 'custom',
+                'menu-item-parent-id' => $pid,
+            ]);
+        }
+    }
+
+    $add_item(['menu-item-title'=>'Sepet','menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-object-id'=>$p['cart']]);
+    $add_item(['menu-item-title'=>'Hesabım','menu-item-object'=>'page','menu-item-type'=>'post_type','menu-item-object-id'=>$p['account']]);
+
+    $loc = get_theme_mod('nav_menu_locations',[]);
+    $reg = get_registered_nav_menus();
+    $primary = array_keys(array_filter($reg,function($d,$s){return preg_match('/primary|header|main/i',$s.$d);},ARRAY_FILTER_USE_BOTH));
+    $mobile  = array_keys(array_filter($reg,function($d,$s){return preg_match('/mobile/i',$s.$d);},ARRAY_FILTER_USE_BOTH));
+    if (!empty($primary) && empty($loc[$primary[0]])) $loc[$primary[0]] = $menu_id;
+    if (!empty($mobile)  && empty($loc[$mobile[0]]))  $loc[$mobile[0]]  = $menu_id;
+    set_theme_mod('nav_menu_locations',$loc);
+
+    // 8.1) Woo sidebar (Blocksy)
+    set_theme_mod('woo_categories_has_sidebar', 'yes');
+    set_theme_mod('woo_categories_sidebar_position', 'left');
+
+    // 9) Anasayfa icerigi
+    if (PARILTE_AUTO_FRONT && !empty($p['home'])) {
+        $home = get_post($p['home']);
+        if ($home && trim((string)$home->post_content) === '') {
+            wp_update_post(['ID'=>$p['home'], 'post_content'=>'[parilte_front]']);
+        }
+    }
+
+    // 10) Woo yan panel widgetlari + kargo/odeme + demo icerik
+    parilte_cs_setup_widgets();
+    parilte_cs_setup_shipping();
+    parilte_cs_setup_payments();
+    parilte_cs_seed_demo_content($cat);
+
+    if (function_exists('flush_rewrite_rules')) flush_rewrite_rules(false);
+
+    update_option('parilte_bootstrap_done', (string) PARILTE_BOOTSTRAP_VERSION);
+    add_action('admin_notices',function(){
+        echo '<div class="notice notice-success"><p><strong>Parilté Bootstrap</strong> tamamlandı.</p></div>';
+    });
+}
+add_action('init', 'parilte_cs_bootstrap', 20);
+add_action('admin_init', 'parilte_cs_bootstrap');
+register_activation_hook(__FILE__, 'parilte_cs_bootstrap');
+
+// Coming soon modunu zorla kapat
+add_filter('pre_option_woocommerce_coming_soon', function () { return 'no'; });
+add_filter('pre_option_woocommerce_coming_soon_mode', function () { return 'no'; });
+add_filter('pre_option_woocommerce_store_pages_only', function () { return 'no'; });
+add_filter('woocommerce_coming_soon_exclude', '__return_true');
+
+/* ==========================================================
+ * HEADER / FRONT SHORTCODE
+ * ========================================================== */
+function parilte_cs_header_markup(){
+    if (!function_exists('wc_get_page_permalink')) return '';
+    $account_url = esc_url( wc_get_page_permalink('myaccount') );
+    $cart_url = function_exists('wc_get_cart_url') ? wc_get_cart_url() : home_url('/sepet/');
+    $cart_count = (function_exists('WC') && WC()->cart) ? (int) WC()->cart->get_cart_contents_count() : 0;
+    $account_label = is_user_logged_in() ? 'Hesabım' : 'Giriş';
+    ob_start(); ?>
+    <div class="parilte-header-icons">
+      <a class="parilte-account" href="<?php echo $account_url; ?>" aria-label="Hesabım">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+          <span><?php echo esc_html($account_label); ?></span>
+      </a>
+        <a class="parilte-cart" href="<?php echo esc_url($cart_url); ?>" aria-label="Sepet">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 6h13l-2 9H9L7 6z"/><circle cx="10" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/></svg>
+            <span>Sepet</span>
+            <span class="parilte-cart-count"><?php echo (int) $cart_count; ?></span>
+        </a>
+        <div class="parilte-search">
+            <form role="search" method="get" class="parilte-search-form" action="<?php echo esc_url(home_url('/')); ?>">
+                <label class="screen-reader-text" for="parilte-search-field">Ara</label>
+                <input type="search" id="parilte-search-field" class="parilte-search-input" placeholder="Ara" value="<?php echo esc_attr(get_search_query()); ?>" name="s" />
+                <input type="hidden" name="post_type" value="product" />
+                <button type="submit" class="parilte-search-button" aria-label="Ara">
+                    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 015.9 12.1l3.7 3.7-1.4 1.4-3.7-3.7A7.5 7.5 0 1110.5 3zm0 2a5.5 5.5 0 100 11 5.5 5.5 0 000-11z"/></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+    <?php return ob_get_clean();
+}
+add_shortcode('parilte_header', 'parilte_cs_header_markup');
+
+function parilte_cs_header_placed($set = null){
+    static $placed = false;
+    if ($set !== null) $placed = (bool) $set;
+    return $placed;
+}
+
+function parilte_cs_target_menu_id(){
+    $menu = wp_get_nav_menu_object('Ana Menü');
+    return $menu ? (int) $menu->term_id : 0;
+}
+
+function parilte_cs_is_target_menu($args){
+    $location = isset($args->theme_location) ? (string) $args->theme_location : '';
+    if ($location && !preg_match('/mobile/i', $location) && preg_match('/primary|header|main/i', $location)) return true;
+
+    if (!empty($args->blocksy_mega_menu) || !empty($args->blocksy_advanced_item)) return true;
+
+    $target_id = parilte_cs_target_menu_id();
+    if (!$target_id) return false;
+
+    if (!empty($args->menu)) {
+        if (is_object($args->menu) && isset($args->menu->term_id)) {
+            return (int) $args->menu->term_id === $target_id;
+        }
+        if (is_numeric($args->menu)) {
+            return (int) $args->menu === $target_id;
+        }
+        if (is_string($args->menu)) {
+            $obj = wp_get_nav_menu_object($args->menu);
+            if ($obj && (int) $obj->term_id === $target_id) return true;
+        }
+    }
+
+    if (!empty($args->menu_id) && is_numeric($args->menu_id)) {
+        return (int) $args->menu_id === $target_id;
+    }
+
+    return false;
+}
+
+add_filter('wp_nav_menu_items', function ($items, $args) {
+    if (!PARILTE_AUTO_HEADER) return $items;
+    if (!parilte_cs_is_target_menu($args)) return $items;
+    $tools = '<li class="menu-item parilte-menu-tools">' . parilte_cs_header_markup() . '</li>';
+    parilte_cs_header_placed(true);
+    return $items . $tools;
+}, 20, 2);
+
+add_filter('wp_nav_menu_objects', function ($items, $args) {
+    if (!parilte_cs_is_target_menu($args)) return $items;
+    $cart_id = (int) get_option('woocommerce_cart_page_id');
+    $account_id = (int) get_option('woocommerce_myaccount_page_id');
+    $cart_url = function_exists('wc_get_cart_url') ? rtrim(wc_get_cart_url(), '/') : '';
+    $account_url = function_exists('wc_get_page_permalink') ? rtrim(wc_get_page_permalink('myaccount'), '/') : '';
+
+    $remove_titles = ['login','giris','giriş','hesap','hesabim','hesabım','sepet','cart','search','arama','kategori','kategoriler'];
+    $filtered = [];
+    foreach ($items as $item) {
+        $title = function_exists('mb_strtolower') ? mb_strtolower($item->title, 'UTF-8') : strtolower($item->title);
+        $url = rtrim((string) $item->url, '/');
+        $obj_id = (int) $item->object_id;
+        if ($obj_id && ($obj_id === $cart_id || $obj_id === $account_id)) continue;
+        if ($url && ($url === $cart_url || $url === $account_url)) continue;
+        if ($title && in_array($title, $remove_titles, true)) continue;
+        if (!empty($item->menu_item_parent) && strpos($url, '/kategori/') !== false) continue;
+        $filtered[] = $item;
+    }
+    return $filtered;
+}, 10, 2);
+
+add_filter('woocommerce_add_to_cart_fragments', function ($fragments) {
+    if (!function_exists('WC') || !WC()->cart) return $fragments;
+    $count = (int) WC()->cart->get_cart_contents_count();
+    $fragments['span.parilte-cart-count'] = '<span class="parilte-cart-count">'. $count .'</span>';
+    return $fragments;
+});
+
+add_action('wp_enqueue_scripts', function () {
+    if (!is_shop() && !is_product_taxonomy() && !is_product_category() && !is_product_tag()) return;
+    $shop_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('shop') : home_url('/magaza/');
+    wp_enqueue_script('jquery');
+    wp_add_inline_script('jquery', "jQuery(function($){
+      var shopUrl = '".esc_url($shop_url)."';
+      var \$widgetScope = $('.sidebar-woocommerce, .ct-sidebar, .woocommerce-sidebar, .widget-area').first();
+      if (!\$widgetScope.length) { \$widgetScope = $(document.body); }
+      if (!\$widgetScope.find('.parilte-sidebar-quick').length) {
+        var \$quick = $('<div class=\"parilte-sidebar-quick\">' +
+          '<a class=\"parilte-chip-link\" href=\"'+shopUrl+'\">Mağaza</a>' +
+          '<a class=\"parilte-chip-link\" href=\"#parilte-sidebar-cats\">Kategoriler</a>' +
+        '</div>');
+        \$widgetScope.prepend(\$quick);
+      }
+      \$widgetScope.find('.widget').each(function(){
+        var \$widget = $(this);
+        if (\$widget.find('> .parilte-widget-body').length) return;
+        var \$title = \$widget.children('.widget-title, h2, h3').first();
+        if (!\$title.length) return;
+        var \$content = \$widget.children().not(\$title);
+        if (!\$content.length) return;
+        \$content.wrapAll('<div class=\"parilte-widget-body\"></div>');
+        \$widget.addClass('parilte-widget-open');
+        \$title.addClass('parilte-widget-toggle').attr({'role':'button','tabindex':'0','aria-expanded':'true'});
+        function toggleWidget(){
+          var isOpen = \$widget.hasClass('parilte-widget-open');
+          \$widget.toggleClass('parilte-widget-open', !isOpen);
+          \$widget.toggleClass('parilte-widget-collapsed', isOpen);
+          \$title.attr('aria-expanded', isOpen ? 'false' : 'true');
+        }
+        \$title.on('click', function(e){ e.preventDefault(); toggleWidget(); });
+        \$title.on('keydown', function(e){
+          if (e.key !== 'Enter' && e.key !== ' ') return;
+          e.preventDefault();
+          toggleWidget();
+        });
+      });
+
+      var \$cats = \$widgetScope.find('.product-categories, .wc-block-product-categories-list');
+      if (\$cats.length > 1) {
+        \$cats.slice(1).each(function(){
+          var \$list = $(this);
+          var \$wrap = \$list.closest('.widget');
+          if (\$wrap.length) { \$wrap.hide(); } else { \$list.hide(); }
+        });
+        \$cats = \$cats.first();
+      }
+      if (\$cats.length && !\$cats.attr('id')) {
+        \$cats.attr('id','parilte-sidebar-cats');
+      }
+      \$cats.find('li').each(function(){
+        var \$li = $(this);
+        if (\$li.data('parilte-bound')) return;
+        var \$children = \$li.children('ul');
+        if (!\$children.length) return;
+        \$li.data('parilte-bound', true);
+        var \$toggle = $('<button type=\"button\" class=\"parilte-cat-toggle\" aria-expanded=\"true\" aria-label=\"Alt kategorileri aç/kapat\"></button>');
+        \$li.children('a').first().after(\$toggle);
+        \$li.addClass('parilte-cat-open');
+        \$children.show().attr('aria-hidden','false');
+        \$toggle.on('click', function(e){
+          e.preventDefault();
+          var isOpen = \$li.hasClass('parilte-cat-open');
+          \$li.toggleClass('parilte-cat-open', !isOpen);
+          \$children.toggle(!isOpen).attr('aria-hidden', isOpen ? 'true' : 'false');
+          \$toggle.attr('aria-expanded', isOpen ? 'false' : 'true');
+        });
+      });
+
+      if (\$cats.length) {
+        var \$topItems = \$cats.children('li');
+        var maxCats = 12;
+        if (\$topItems.length > maxCats) {
+          \$topItems.slice(maxCats).addClass('parilte-cat-hidden');
+          var \$more = $('<button type=\"button\" class=\"parilte-cat-more\">Tümünü Gör</button>');
+          \$more.on('click', function(){
+            var expanded = \$cats.hasClass('parilte-cat-expanded');
+            \$cats.toggleClass('parilte-cat-expanded', !expanded);
+            \$more.text(expanded ? 'Tümünü Gör' : 'Kısalt');
+          });
+          \$cats.after(\$more);
+        }
+      }
+
+      var \$treeSrc = $('#parilte-cat-tree-source').first();
+      if (\$treeSrc.length) {
+        var \$tree = \$treeSrc.find('.parilte-cat-tree').first();
+        if (\$tree.length) {
+          var \$catWidget = \$widgetScope.find('.widget_product_categories, .wc-block-product-categories').first();
+          if (\$catWidget.length) {
+            \$catWidget.before(\$tree);
+            \$catWidget.remove();
+          } else {
+            \$widgetScope.prepend(\$tree);
+          }
+        }
+      }
+
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      $('.parilte-carousel-track').each(function(){
+        var \$track = $(this);
+        if (\$track.data('parilte-bound')) return;
+        \$track.data('parilte-bound', true);
+        var \$list = \$track.find('.products').first();
+        if (!\$list.length) return;
+        var \$items = \$list.find('li.product');
+        if (!\$items.length) return;
+
+        if (!\$track.data('parilte-cloned')) {
+          var cloneLoops = 0;
+          var maxLoops = 6;
+          while (\$list[0].scrollWidth <= \$list[0].clientWidth + 6 && cloneLoops < maxLoops) {
+            \$items.clone(true).addClass('parilte-clone').appendTo(\$list);
+            cloneLoops++;
+          }
+          \$track.data('parilte-cloned', true);
+          \$items = \$list.find('li.product');
+        }
+
+        var \$controls = \$track.find('.parilte-carousel-controls');
+        if (!\$controls.length) {
+          \$controls = $('<div class=\"parilte-carousel-controls\">' +
+            '<button type=\"button\" class=\"parilte-carousel-prev\" aria-label=\"Önceki\">‹</button>' +
+            '<button type=\"button\" class=\"parilte-carousel-next\" aria-label=\"Sonraki\">›</button>' +
+          '</div>');
+          \$track.append(\$controls);
+        }
+
+        function updateControls(){
+          var max = \$list[0].scrollWidth - \$list[0].clientWidth;
+          var hasOverflow = max > 4;
+          \$track.toggleClass('parilte-carousel-static', !hasOverflow);
+          \$controls.toggle(hasOverflow);
+          if (!hasOverflow) \$list.scrollLeft(0);
+        }
+        updateControls();
+
+        var resizeTimer;
+        $(window).on('resize', function(){
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(updateControls, 120);
+        });
+
+        \$controls.on('click', 'button', function(){
+          var step = \$items.first().outerWidth(true) || 0;
+          if (!step) return;
+          var max = \$list[0].scrollWidth - \$list[0].clientWidth;
+          if (max <= 0) return;
+          var dir = $(this).hasClass('parilte-carousel-next') ? 1 : -1;
+          var next = \$list.scrollLeft() + (step * dir);
+          if (next < 0) next = 0;
+          if (next > max) next = max;
+          \$list.stop().animate({scrollLeft: next}, 420);
+        });
+
+        if (!reduce) {
+          var timer;
+          function tick(){
+            var max = \$list[0].scrollWidth - \$list[0].clientWidth;
+            if (max <= 0) return;
+            var step = \$items.first().outerWidth(true) || 0;
+            if (!step) return;
+            var next = \$list.scrollLeft() + step;
+            if (next >= max - 4) next = 0;
+            \$list.stop().animate({scrollLeft: next}, 520);
+          }
+          timer = setInterval(tick, 5200);
+          \$track.on('mouseenter focusin', function(){ clearInterval(timer); });
+          \$track.on('mouseleave focusout', function(){ timer = setInterval(tick, 5200); });
+        }
+      });
+
+      $('.parilte-cat-tree').on('click', '.parilte-cat-toggle', function(e){
+        e.preventDefault();
+        var \$btn = $(this);
+        var \$wrap = \$btn.closest('.parilte-cat-tree-item');
+        var \$children = \$wrap.find('> .parilte-cat-tree-children');
+        if (!\$children.length) return;
+        var isOpen = \$btn.attr('aria-expanded') === 'true';
+        \$btn.attr('aria-expanded', isOpen ? 'false' : 'true');
+        \$children.toggle(!isOpen);
+      });
+    });");
+}, 23);
+
+add_action('wp_enqueue_scripts', function () {
+    wp_enqueue_script('jquery');
+    wp_add_inline_script('jquery', "jQuery(function($){
+      $('.ct-header').find('a').filter(function(){
+        var t = $.trim($(this).text()).toLowerCase();
+        return t === 'kategoriler' || t === 'kategori';
+      }).closest('li').remove();
+    });");
+}, 24);
+
+function parilte_cs_is_placeholder_product($product_id) {
+    $title = get_the_title($product_id);
+    if ($title && stripos($title, 'placeholder') !== false) return true;
+    $flag = get_post_meta($product_id, '_parilte_placeholder', true);
+    return ($flag === '1');
+}
+
+function parilte_cs_get_product_ids($args, $exclude_ids = []) {
+    if (!class_exists('WC_Product')) return [];
+    if (function_exists('parilte_cs_get_placeholder_ids')) {
+        $exclude_ids = array_merge($exclude_ids, parilte_cs_get_placeholder_ids());
+    }
+    $meta_query = isset($args['meta_query']) && is_array($args['meta_query']) ? $args['meta_query'] : [];
+    $meta_query[] = [
+        'key'     => '_thumbnail_id',
+        'compare' => 'EXISTS',
+    ];
+    $defaults = [
+        'status'  => 'publish',
+        'limit'   => 12,
+        'return'  => 'ids',
+        'orderby' => 'date',
+        'order'   => 'DESC',
+    ];
+    if (!empty($exclude_ids)) {
+        $args['exclude'] = array_values(array_unique(array_filter(array_map('intval', (array) $exclude_ids))));
+    }
+    $args['meta_query'] = $meta_query;
+    $query = array_merge($defaults, $args);
+    $ids = wc_get_products($query);
+    $ids = array_values(array_filter(array_map('intval', (array) $ids)));
+    $ids = array_values(array_filter($ids, function($id){
+        return !parilte_cs_is_placeholder_product($id);
+    }));
+    return $ids;
+}
+
+function parilte_cs_render_products($ids) {
+    if (empty($ids)) return;
+    echo '<ul class="products columns-4">';
+    global $post;
+    foreach ($ids as $pid) {
+        $post = get_post($pid);
+        if (!$post) continue;
+        setup_postdata($post);
+        if (function_exists('wc_setup_product_data')) {
+            wc_setup_product_data($post);
+        }
+        wc_get_template_part('content', 'product');
+    }
+    wp_reset_postdata();
+    if (function_exists('wc_reset_product_data')) {
+        wc_reset_product_data();
+    }
+    echo '</ul>';
+}
+
+function parilte_cs_front_markup(){
+    ob_start(); ?>
+    <main id="primary" class="site-main parilte-front">
+      <?php
+        $shop_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('shop') : home_url('/magaza/');
+        $cats = [
+          ['Üst Giyim','/kategori/ust-giyim/'],
+          ['Alt Giyim','/kategori/alt-giyim/'],
+          ['Aksesuar','/kategori/aksesuar/'],
+          ['Dış Giyim','/kategori/dis-giyim/'],
+        ];
+        $used_ids = [];
+        $all_ids = parilte_cs_get_product_ids([
+          'limit'   => 12,
+          'orderby' => 'date',
+          'order'   => 'DESC',
+        ]);
+        $new_ids = $all_ids;
+        $used_ids = array_merge($used_ids, $new_ids);
+
+        $best_ids = parilte_cs_get_product_ids([
+          'limit'     => 12,
+          'orderby'   => 'meta_value_num',
+          'meta_key'  => 'total_sales',
+          'order'     => 'DESC',
+          'meta_query'=> [[ 'key' => 'total_sales', 'value' => 0, 'compare' => '>', 'type' => 'NUMERIC' ]],
+        ], $used_ids);
+        if (empty($best_ids)) {
+            $best_ids = parilte_cs_get_product_ids([
+              'limit'   => 8,
+              'orderby' => 'rand',
+            ], $used_ids);
+        }
+        if (empty($best_ids)) {
+            $best_ids = $all_ids;
+        }
+        $used_ids = array_merge($used_ids, $best_ids);
+
+        $sale_ids_raw = function_exists('wc_get_product_ids_on_sale') ? wc_get_product_ids_on_sale() : [];
+        $sale_ids = [];
+        if (!empty($sale_ids_raw)) {
+            $sale_pool = array_values(array_diff($sale_ids_raw, $used_ids));
+            if (!empty($sale_pool)) {
+                $sale_ids = parilte_cs_get_product_ids([
+                  'include' => $sale_pool,
+                  'orderby' => 'date',
+                  'order'   => 'DESC',
+                  'limit'   => 12,
+                ]);
+            } else {
+                $sale_ids = parilte_cs_get_product_ids([
+                  'include' => $sale_ids_raw,
+                  'orderby' => 'date',
+                  'order'   => 'DESC',
+                  'limit'   => 12,
+                ]);
+            }
+        }
+        if (empty($sale_ids)) {
+            $sale_ids = parilte_cs_get_product_ids([
+              'limit'   => 8,
+              'orderby' => 'rand',
+            ], $used_ids);
+            if (empty($sale_ids)) {
+                $sale_ids = $all_ids;
+            }
+        }
+        $assets = [
+          'hero'  => plugins_url('assets/hero.jpg', __FILE__),
+          'ed1'   => plugins_url('assets/editorial-1.jpg', __FILE__),
+          'ed2'   => plugins_url('assets/editorial-2.jpg', __FILE__),
+          'ed3'   => plugins_url('assets/editorial-3.jpg', __FILE__),
+          'look'  => plugins_url('assets/lookbook.jpg', __FILE__),
+        ];
+      ?>
+      <section class="parilte-hero">
+        <div class="parilte-container">
+          <div class="parilte-hero-grid">
+            <div class="parilte-hero-copy">
+              <span class="parilte-eyebrow">Parilté Studio</span>
+              <h1>Dingin şıklık, modern siluetler.</h1>
+              <p>Doğal dokular, dengeli kesimler ve uzun ömürlü parçalarla sade ama güçlü bir gardırop.</p>
+              <div class="parilte-hero-actions">
+                <a class="ct-button" href="<?php echo esc_url($shop_url); ?>">Mağazaya Git</a>
+                <a class="parilte-text-link" href="<?php echo esc_url(add_query_arg('orderby', 'date', $shop_url)); ?>">Yeni Gelenler</a>
+              </div>
+              <div class="parilte-hero-notes">
+                <div class="parilte-note">
+                  <strong>Kumaş</strong>
+                  <span>Doğal dokular, yumuşak his.</span>
+                </div>
+                <div class="parilte-note">
+                  <strong>Kalıp</strong>
+                  <span>Rahat ve dengeli duruş.</span>
+                </div>
+              </div>
+            </div>
+            <div class="parilte-hero-visual">
+              <div class="parilte-hero-photo" style="background-image:url('<?php echo esc_url($assets['hero']); ?>');"></div>
+              <div class="parilte-hero-stack">
+                <div class="parilte-hero-card" style="background-image:url('<?php echo esc_url($assets['ed2']); ?>');"><span>Yeni Sezon</span></div>
+                <div class="parilte-hero-card small" style="background-image:url('<?php echo esc_url($assets['ed1']); ?>');"><span>Günlük</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="parilte-editorial">
+        <div class="parilte-container">
+          <div class="parilte-section-head">
+            <h2>Sezon Seçkisi</h2>
+            <a href="<?php echo esc_url($shop_url); ?>">Tümünü Gör</a>
+          </div>
+          <div class="parilte-editorial-grid">
+            <article class="parilte-editorial-card large" style="background-image:url('<?php echo esc_url($assets['ed3']); ?>');">
+              <div class="parilte-editorial-body">
+                <span class="parilte-eyebrow">Palet</span>
+                <h3>Krem + Siyah</h3>
+                <p>Günlükten akşama akışkan geçiş.</p>
+              </div>
+            </article>
+            <article class="parilte-editorial-card tall" style="background-image:url('<?php echo esc_url($assets['ed1']); ?>');">
+              <div class="parilte-editorial-body">
+                <span class="parilte-eyebrow">Form</span>
+                <h3>Tek parçada şıklık</h3>
+                <p>Elbise & üstler.</p>
+              </div>
+            </article>
+            <article class="parilte-editorial-card wide" style="background-image:url('<?php echo esc_url($assets['ed2']); ?>');">
+              <div class="parilte-editorial-body">
+                <span class="parilte-eyebrow">Detay</span>
+                <h3>Zarif dokunuşlar</h3>
+                <p>İnce aksesuarlar.</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="parilte-carousel parilte-carousel-new">
+        <div class="parilte-container">
+          <div class="parilte-showcase-card parilte-showcase-new">
+            <div class="parilte-showcase-copy">
+              <span class="parilte-eyebrow">Yeni Sezon</span>
+              <h2>Yeni Gelenler</h2>
+              <p>Minimal çizgiler, dengeli dokular ve sezona taze bir başlangıç.</p>
+              <div class="parilte-showcase-actions">
+                <a class="parilte-chip-link" href="<?php echo esc_url($shop_url); ?>">Tümünü Gör</a>
+                <a class="parilte-text-link" href="<?php echo esc_url($shop_url); ?>">Mağazaya Git →</a>
+              </div>
+              <div class="parilte-showcase-tags">
+                <span>İnce dokular</span>
+                <span>Günlük şıklık</span>
+                <span>Yeni palet</span>
+              </div>
+            </div>
+            <div class="parilte-showcase-rail">
+              <div class="parilte-carousel-track">
+                <?php parilte_cs_render_products($new_ids); ?>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="parilte-cats">
+        <div class="parilte-container">
+          <div class="parilte-section-head">
+            <h2>Koleksiyonlar</h2>
+            <a href="<?php echo esc_url($shop_url); ?>">Tümünü Gör</a>
+          </div>
+          <div class="parilte-cats-grid">
+            <?php foreach ($cats as $c){ ?>
+              <a class="parilte-cat-card" href="<?php echo esc_url(home_url($c[1])); ?>">
+                <strong><?php echo esc_html($c[0]); ?></strong>
+                <span>Koleksiyonu keşfet →</span>
+              </a>
+            <?php } ?>
+          </div>
+        </div>
+      </section>
+
+      <section class="parilte-lookbook">
+        <div class="parilte-container parilte-lookbook-grid">
+          <div class="parilte-lookbook-copy">
+            <span class="parilte-eyebrow">Lookbook</span>
+            <h2>Günün akışına uyumlu.</h2>
+            <p>Minimal, dengeli ve taşınabilir kombinler.</p>
+            <a class="parilte-text-link" href="<?php echo esc_url($shop_url); ?>">Koleksiyonlara göz at →</a>
+          </div>
+          <div class="parilte-lookbook-tiles" aria-hidden="true">
+            <div class="parilte-lookbook-photo" style="background-image:url('<?php echo esc_url($assets['look']); ?>');"></div>
+            <div class="parilte-lookbook-note">
+              <strong>Parilté Kombin</strong>
+              <span>Gün boyu rahat ve şık.</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <?php if (!empty($best_ids)) { ?>
+      <section class="parilte-carousel parilte-carousel-best">
+        <div class="parilte-container">
+          <div class="parilte-showcase-card parilte-showcase-best">
+            <div class="parilte-showcase-hero" style="background-image:url('<?php echo esc_url($assets['ed3']); ?>');">
+              <div class="parilte-showcase-hero-body">
+                <span class="parilte-eyebrow">Favoriler</span>
+                <h2>En Çok Satanlar</h2>
+                <p>En çok tercih edilen parçalar, gün boyu taşıması kolay.</p>
+                <a class="parilte-chip-link" href="<?php echo esc_url($shop_url); ?>">Tümünü Gör</a>
+              </div>
+            </div>
+            <div class="parilte-showcase-rail">
+              <div class="parilte-carousel-track">
+                <?php parilte_cs_render_products($best_ids); ?>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <?php } ?>
+
+      <section class="parilte-strip">
+        <div class="parilte-container parilte-strip-grid">
+          <div><strong>Hızlı Kargo</strong><span>1-3 iş günü teslimat</span></div>
+          <div><strong>Kolay İade</strong><span>14 gün içinde değişim</span></div>
+          <div><strong>Ücretsiz Kargo</strong><span>1500 ₺ üzeri</span></div>
+        </div>
+      </section>
+
+      <?php if (!empty($sale_ids)) { ?>
+      <section class="parilte-carousel parilte-carousel-sale">
+        <div class="parilte-container">
+          <div class="parilte-showcase-card parilte-showcase-sale">
+            <div class="parilte-showcase-copy">
+              <span class="parilte-eyebrow">Seçili</span>
+              <h2>İndirimdekiler</h2>
+              <p>Seçili parçalarda sade avantajlar.</p>
+              <a class="parilte-chip-link" href="<?php echo esc_url($shop_url); ?>">Tümünü Gör</a>
+            </div>
+            <div class="parilte-showcase-rail">
+              <div class="parilte-carousel-track">
+                <?php parilte_cs_render_products($sale_ids); ?>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <?php } ?>
+    </main>
+    <?php return ob_get_clean();
+}
+add_shortcode('parilte_front', 'parilte_cs_front_markup');
+
+/* ==========================================================
+ * Ortak CSS taşıyıcı
+ * ========================================================== */
+add_action('wp_enqueue_scripts', function () {
+    wp_register_style('parilte-checkout-suite', false);
+    wp_enqueue_style('parilte-checkout-suite');
+}, 20);
+
+function parilte_cs_disable_placeholder_plugin() {
+    if (!current_user_can('manage_options')) {
+        $env = function_exists('wp_get_environment_type') ? wp_get_environment_type() : '';
+        $url = home_url('/');
+        $is_local = ($env === 'local') || (stripos($url, 'localhost') !== false) || (stripos($url, '127.0.0.1') !== false);
+        if (!$is_local) return;
+    }
+    if (get_option('parilte_placeholder_plugin_off')) return;
+    if (!function_exists('is_plugin_active')) {
+        require_once ABSPATH . 'wp-admin/includes/plugin.php';
+    }
+    if (function_exists('is_plugin_active') && is_plugin_active('parilte-placeholder/parilte-placeholder.php')) {
+        deactivate_plugins('parilte-placeholder/parilte-placeholder.php', true);
+    }
+    update_option('parilte_placeholder_plugin_off', 1);
+}
+add_action('admin_init', 'parilte_cs_disable_placeholder_plugin', 15);
+add_action('init', 'parilte_cs_disable_placeholder_plugin', 15);
+
+function parilte_cs_get_placeholder_ids() {
+    $cached = get_transient('parilte_placeholder_ids');
+    if ($cached !== false) return (array) $cached;
+
+    $ids = [];
+    $q1 = new WP_Query([
+        'post_type'      => 'product',
+        'posts_per_page' => 300,
+        'post_status'    => 'any',
+        'fields'         => 'ids',
+        'meta_query'     => [[ 'key' => '_parilte_placeholder', 'value' => '1' ]],
+    ]);
+    if (!empty($q1->posts)) $ids = array_merge($ids, $q1->posts);
+
+    $q2 = new WP_Query([
+        'post_type'      => 'product',
+        'posts_per_page' => 300,
+        'post_status'    => 'any',
+        'fields'         => 'ids',
+        's'              => 'Placeholder',
+    ]);
+    if (!empty($q2->posts)) $ids = array_merge($ids, $q2->posts);
+
+    $ids = array_values(array_unique(array_map('intval', $ids)));
+    set_transient('parilte_placeholder_ids', $ids, DAY_IN_SECONDS);
+    return $ids;
+}
+
+function parilte_cs_get_all_products_term_id() {
+    global $parilte_cs_skip_term_filter;
+    static $cached = null;
+    if ($cached !== null) return $cached;
+    $parilte_cs_skip_term_filter = true;
+    $term = get_term_by('slug', 'tum-urunler', 'product_cat');
+    if (!$term || is_wp_error($term)) {
+        $term = get_term_by('name', 'Tüm Ürünler', 'product_cat');
+    }
+    $parilte_cs_skip_term_filter = false;
+    $cached = ($term && !is_wp_error($term)) ? (int) $term->term_id : 0;
+    return $cached;
+}
+
+function parilte_cs_exclude_all_products_term($args) {
+    if (is_admin()) return $args;
+    $tid = parilte_cs_get_all_products_term_id();
+    if (!$tid) return $args;
+    $exclude = isset($args['exclude']) ? (array) $args['exclude'] : [];
+    $exclude[] = $tid;
+    $args['exclude'] = array_values(array_unique(array_filter(array_map('intval', $exclude))));
+    return $args;
+}
+
+add_filter('get_terms_args', function ($args, $taxonomies) {
+    global $parilte_cs_skip_term_filter;
+    if (!empty($parilte_cs_skip_term_filter)) return $args;
+    if (is_admin()) return $args;
+    $taxonomies = (array) $taxonomies;
+    if (!in_array('product_cat', $taxonomies, true)) return $args;
+    $args = parilte_cs_exclude_all_products_term($args);
+    $args['hide_empty'] = false;
+    return $args;
+}, 10, 2);
+
+add_filter('woocommerce_product_categories_widget_args', function ($args) {
+    $args = parilte_cs_exclude_all_products_term($args);
+    $args['hierarchical'] = true;
+    $args['show_children_only'] = false;
+    $args['show_count'] = false;
+    $args['hide_empty'] = false;
+    return $args;
+});
+
+add_filter('woocommerce_product_categories_args', function ($args) {
+    return parilte_cs_exclude_all_products_term($args);
+});
+
+function parilte_cs_category_tree_markup() {
+    if (!function_exists('get_terms')) return '';
+    $terms = get_terms([
+        'taxonomy'   => 'product_cat',
+        'hide_empty' => false,
+        'orderby'    => 'name',
+    ]);
+    if (is_wp_error($terms) || empty($terms)) return '';
+
+    $by_parent = [];
+    foreach ($terms as $term) {
+        $by_parent[(int) $term->parent][] = $term;
+    }
+
+    $render = function($parent_id) use (&$render, $by_parent) {
+        if (empty($by_parent[$parent_id])) return '';
+        $out = '<ul class="parilte-cat-tree-list">';
+        foreach ($by_parent[$parent_id] as $term) {
+            $children_html = $render((int) $term->term_id);
+            $has_children = !empty($children_html);
+            $out .= '<li class="parilte-cat-tree-item'.($has_children ? ' has-children' : '').'">';
+            $out .= '<a href="'.esc_url(get_term_link($term)).'">'.esc_html($term->name).'</a>';
+            if ($has_children) {
+                $out .= '<button type="button" class="parilte-cat-toggle" aria-expanded="false" aria-label="Alt kategorileri aç/kapat"></button>';
+                $out .= '<div class="parilte-cat-tree-children" style="display:none">'.$children_html.'</div>';
+            }
+            $out .= '</li>';
+        }
+        $out .= '</ul>';
+        return $out;
+    };
+
+    return $render(0);
+}
+
+function parilte_cs_category_tree_block() {
+    $tree = parilte_cs_category_tree_markup();
+    if (!$tree) return '';
+    return '<div class="parilte-cat-tree"><div class="parilte-cat-tree-head"><span>Kategoriler</span></div>'.$tree.'</div>';
+}
+
+add_action('wp_footer', function () {
+    if (!is_shop() && !is_product_taxonomy() && !is_product_category() && !is_product_tag()) return;
+    $block = parilte_cs_category_tree_block();
+    if (!$block) return;
+    echo '<div id="parilte-cat-tree-source" style="display:none">'.$block.'</div>';
+}, 20);
+
+function parilte_cs_fix_category_hierarchy_once() {
+    if (!current_user_can('manage_options')) return;
+    if (get_option('parilte_cat_hierarchy_fixed')) return;
+    $map = [
+        'Aksesuar' => ['Anahtarlık','Atkı','Bere','Eldiven','Fular','Kemer','Şal','Şapka','Şemsiye'],
+        'Alt Giyim' => ['Eşofman','Etek','Jean','Pantolon','Şort','Tayt','Tulum'],
+        'Ayakkabı' => ['Babet','Bot','Çizme','Sandalet','Terlik','Topuklu Ayakkabı'],
+        'Çanta' => ['Günlük','Şık','Spor'],
+        'Dış Giyim' => ['Ceket&Yelek','Kaban','Mont','Trençkot'],
+        'Elbise' => ['Düğün','Günlük Elbise','Mezuniyet','Şık Elbise'],
+        'Takı' => ['Bel Zinciri','Bileklik','Bilezik','Kolye','Küpe'],
+        'Üst Giyim' => ['Atlet','Badi','Bluz','Bodysuit','Crop','Gömlek','Kazak','Sweatshirt','Tişört','Triko','Tshirt'],
+        'Genel' => ['İlkbahar - Yaz Sezonu','Sonbahar - Kış Sezonu'],
+        'Yeni Sezon' => ['Yeni Ürünler'],
+    ];
+
+    foreach ($map as $parent_name => $children) {
+        $parent = get_term_by('name', $parent_name, 'product_cat');
+        if (!$parent || is_wp_error($parent)) continue;
+        foreach ($children as $child_name) {
+            $child = get_term_by('name', $child_name, 'product_cat');
+            if (!$child || is_wp_error($child)) continue;
+            if ((int) $child->parent !== (int) $parent->term_id) {
+                wp_update_term($child->term_id, 'product_cat', ['parent' => (int) $parent->term_id]);
+            }
+        }
+    }
+    update_option('parilte_cat_hierarchy_fixed', 1);
+}
+add_action('admin_init', 'parilte_cs_fix_category_hierarchy_once', 30);
+
+add_action('template_redirect', function () {
+    if (!is_tax('product_cat')) return;
+    $term = get_queried_object();
+    if (!$term || is_wp_error($term) || empty($term->slug)) return;
+    if ($term->slug !== 'tum-urunler') return;
+    $shop_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('shop') : home_url('/magaza/');
+    if ($shop_url) {
+        wp_safe_redirect($shop_url, 301);
+        exit;
+    }
+});
+
+add_filter('woocommerce_product_query_meta_query', function ($meta_query) {
+    if (is_admin()) return $meta_query;
+    $meta_query[] = [
+        'key'     => '_parilte_placeholder',
+        'compare' => 'NOT EXISTS',
+    ];
+    $meta_query[] = [
+        'key'     => '_thumbnail_id',
+        'compare' => 'EXISTS',
+    ];
+    return $meta_query;
+}, 10);
+
+add_filter('woocommerce_product_is_visible', function ($visible, $product) {
+    if (!$product instanceof WC_Product) return $visible;
+    $name = $product->get_name();
+    if (stripos($name, 'placeholder') !== false) return false;
+    if (get_post_meta($product->get_id(), '_parilte_placeholder', true) === '1') return false;
+    if ((is_front_page() || is_shop() || is_product_taxonomy() || is_product_category() || is_product_tag()) && !has_post_thumbnail($product->get_id())) return false;
+    return $visible;
+}, 10, 2);
+
+add_filter('woocommerce_loop_add_to_cart_link', function ($html, $product) {
+    if (is_admin()) return $html;
+    return '';
+}, 10, 2);
+
+add_filter('woocommerce_sale_flash', function () {
+    return '';
+});
+
+add_filter('gettext', function ($translated, $text, $domain) {
+    if ($domain !== 'woocommerce') return $translated;
+    if ($text === 'Sale!' || $text === 'Sale') return 'İndirim';
+    return $translated;
+}, 10, 3);
+
+function parilte_cs_footer_links() {
+    if (is_admin()) return;
+    $links = [];
+    $pages = [
+        'Hakkımızda' => 'hakkimizda',
+        'KVKK & Gizlilik' => 'kvkk-gizlilik',
+        'İade & Değişim' => 'iade-degisim',
+        'Teslimat & Kargo' => 'teslimat-kargo',
+    ];
+    foreach ($pages as $label => $slug) {
+        $p = get_page_by_path($slug);
+        if ($p) $links[] = ['label' => $label, 'url' => get_permalink($p)];
+    }
+    if (!$links) return;
+    ?>
+    <div class="parilte-legal-footer">
+      <div class="parilte-container">
+        <nav class="parilte-legal-links" aria-label="Yasal">
+          <?php foreach ($links as $l) { ?>
+            <a href="<?php echo esc_url($l['url']); ?>"><?php echo esc_html($l['label']); ?></a>
+          <?php } ?>
+        </nav>
+        <span class="parilte-legal-copy">© <?php echo date('Y'); ?> Parilté</span>
+      </div>
+    </div>
+    <?php
+}
+add_action('wp_footer', 'parilte_cs_footer_links', 30);
+
+add_action('woocommerce_product_query', function ($q) {
+    if (is_admin()) return;
+    $ids = parilte_cs_get_placeholder_ids();
+    if (!$ids) return;
+    $exclude = (array) $q->get('exclude');
+    $q->set('exclude', array_values(array_unique(array_merge($exclude, $ids))));
+}, 10);
+
+add_filter('woocommerce_shortcode_products_query', function ($args) {
+    $ids = parilte_cs_get_placeholder_ids();
+    if (!$ids) return $args;
+    $existing = isset($args['post__not_in']) ? (array) $args['post__not_in'] : [];
+    $args['post__not_in'] = array_values(array_unique(array_merge($existing, $ids)));
+    $mq = isset($args['meta_query']) ? (array) $args['meta_query'] : [];
+    $mq[] = [
+        'key'     => '_thumbnail_id',
+        'compare' => 'EXISTS',
+    ];
+    $args['meta_query'] = $mq;
+    return $args;
+}, 10);
+
+add_filter('loop_shop_columns', function ($cols) {
+    return 4;
+}, 20);
+
+function parilte_cs_rebuild_wc_lookup_tables_once() {
+    if (!current_user_can('manage_options')) {
+        $env = function_exists('wp_get_environment_type') ? wp_get_environment_type() : '';
+        $url = home_url('/');
+        $is_local = ($env === 'local') || (stripos($url, 'localhost') !== false) || (stripos($url, '127.0.0.1') !== false);
+        if (!$is_local) return;
+    }
+    if (get_option('parilte_wc_lookup_rebuilt')) return;
+    if (function_exists('wc_update_product_lookup_tables') && !wc_update_product_lookup_tables_is_running()) {
+        wc_update_product_lookup_tables();
+    }
+    update_option('parilte_wc_lookup_rebuilt', 1);
+}
+add_action('admin_init', 'parilte_cs_rebuild_wc_lookup_tables_once', 40);
+add_action('init', 'parilte_cs_rebuild_wc_lookup_tables_once', 40);
+
+add_action('wp_enqueue_scripts', function () {
+    $wood_new  = esc_url(plugins_url('assets/wood-new.jpg', __FILE__));
+    $wood_best = esc_url(plugins_url('assets/wood-best.jpg', __FILE__));
+    $wood_sale = esc_url(plugins_url('assets/wood-sale.jpg', __FILE__));
+    $css = '
+    .parilte-header-wrap{max-width:1140px;margin:0 auto;padding:0 16px}
+    .parilte-header-icons{display:flex;gap:14px;align-items:center;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase}
+    .parilte-header-icons a{display:inline-flex;gap:6px;align-items:center;text-decoration:none;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit}
+    .parilte-header-icons svg{fill:currentColor;opacity:.6;width:14px;height:14px}
+    .parilte-cart-count{min-width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;
+      font-size:.62rem;border-radius:999px;background:currentColor;color:#fff;padding:0 5px;line-height:1}
+    .parilte-search-form{display:flex;align-items:center;gap:6px}
+    .parilte-search-input{width:140px;max-width:32vw;padding:.2rem 0;border:0;border-bottom:1px solid rgba(0,0,0,.25);border-radius:0;background:transparent;font:inherit;text-transform:inherit;letter-spacing:inherit;font-size:inherit}
+    .parilte-search-input::placeholder{opacity:.5}
+    .parilte-search-button{border:0;background:transparent;padding:0;display:inline-flex;align-items:center;cursor:pointer;color:inherit}
+    .parilte-search-button svg{width:14px;height:14px;opacity:.6}
+    .ct-header .menu .parilte-menu-tools{display:flex;align-items:center;margin-left:16px}
+    .ct-header .menu .parilte-menu-tools .parilte-header-icons{gap:14px}
+    .ct-header .menu .parilte-menu-tools a{color:inherit;font:inherit;text-transform:uppercase;letter-spacing:.14em;font-size:.72rem}
+    .ct-header .menu .parilte-menu-tools span{font-size:.72rem;text-transform:uppercase;letter-spacing:.14em}
+    .ct-header{position:relative}
+    .ct-header::before{display:none}
+    .ct-header .ct-container{position:relative;z-index:1}
+      .ct-header-search,.ct-header-cart,.ct-account-item,.ct-header-account{display:none !important}
+      body.home .entry-title, body.home .page-title, body.home .ct-hero-title{display:none}
+      ul.products li.product .button.parilte-card-btn{width:100%;text-align:center;margin-top:.35rem}
+      .term-description{margin-top:28px}
+      .parilte-size-box{margin-top:14px;border:1px solid #e6e6e6;border-radius:10px;padding:.6rem .9rem}
+      .parilte-size-box summary{cursor:pointer;font-weight:600}
+      .parilte-size-grid{display:grid;grid-template-columns:repeat(5,minmax(60px,1fr));gap:8px;margin:.6rem 0}
+      .parilte-size-grid > div{border:1px dashed #ddd;border-radius:8px;padding:.4rem .5rem;text-align:center}
+    .parilte-front{--parilte-ink:var(--ct-color-text, #1c2430);--parilte-muted:#6b7280;--parilte-surface:var(--ct-color-background, #f7f5f2);--parilte-cream:#f3efe8;--parilte-border:rgba(0,0,0,.08);--parilte-shadow:0 14px 30px rgba(0,0,0,.08)}
+    .parilte-container{max-width:1140px;margin:0 auto;padding:0 16px}
+    .parilte-hero{padding:7vh 0 6vh;background:linear-gradient(180deg,var(--parilte-surface),var(--parilte-cream));border-bottom:1px solid var(--parilte-border);position:relative;overflow:hidden}
+      .parilte-hero::before{content:"";position:absolute;top:-30%;right:-10%;width:420px;height:420px;border-radius:50%;background:rgba(0,0,0,.03)}
+      .parilte-hero::after{content:"";position:absolute;bottom:-40%;left:-10%;width:520px;height:520px;border-radius:50%;background:rgba(0,0,0,.025)}
+      .parilte-hero-grid{display:grid;gap:36px;grid-template-columns:1.1fr .9fr;align-items:center;position:relative;z-index:1}
+      @keyframes parilte-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+      @keyframes parilte-fade{from{opacity:0}to{opacity:1}}
+      .parilte-hero-copy{animation:parilte-rise .7s ease both}
+      .parilte-hero-visual{animation:parilte-rise .8s ease .08s both}
+      .parilte-hero-notes{animation:parilte-fade .9s ease .15s both}
+      .parilte-eyebrow{display:inline-block;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;opacity:.6;margin-bottom:10px}
+    .parilte-hero-copy h1{margin:0 0 10px;font-size:clamp(1.8rem,2.8vw,2.8rem);line-height:1.12;color:var(--parilte-ink)}
+    .parilte-hero-copy p{max-width:560px;opacity:.85;margin:0 0 18px;color:var(--parilte-muted)}
+    .parilte-hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+    :root{--ct-color-primary:#1c1c1c;--ct-color-primary-hover:#2b2b2b;--ct-link-color:#1c1c1c;--ct-link-hover-color:#2b2b2b}
+    .parilte-front h1{font-weight:500;letter-spacing:.02em}
+    .parilte-front h2{font-weight:500;letter-spacing:.14em;text-transform:uppercase;font-size:clamp(1.05rem,1.5vw,1.4rem)}
+    .parilte-front h3{font-weight:500}
+    .parilte-section-head h2{margin:0}
+    .parilte-section-head a{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--parilte-ink)}
+    .woocommerce .woocommerce-products-header__title,
+    .woocommerce .page-title,
+    .woocommerce .ct-hero-title{
+      font-family:var(--ct-heading-font-family, inherit);
+      font-weight:500;
+      letter-spacing:.28em;
+      text-transform:uppercase;
+      font-size:clamp(1.4rem,2.2vw,2.1rem);
+    }
+    .parilte-front .ct-button{background:var(--parilte-ink);color:#fff;border-radius:999px;padding:.75rem 1.6rem}
+    .parilte-front .ct-button:hover{background:#2b2b2b}
+    .woocommerce a.button, .woocommerce button.button, .woocommerce input.button{background:#1c1c1c;border-color:#1c1c1c;color:#fff}
+    .woocommerce a.button:hover, .woocommerce button.button:hover, .woocommerce input.button:hover{background:#2b2b2b;border-color:#2b2b2b}
+    .woocommerce span.onsale{display:none !important}
+    .parilte-legal-footer{margin-top:28px;padding:18px 0;border-top:1px solid rgba(0,0,0,.08);background:var(--parilte-cream)}
+    .parilte-legal-footer .parilte-container{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .parilte-legal-links{display:flex;flex-wrap:wrap;gap:14px;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase}
+    .parilte-legal-links a{text-decoration:none;color:var(--parilte-ink);opacity:.8}
+    .parilte-legal-links a:hover{opacity:1}
+    .parilte-legal-copy{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;opacity:.6}
+    .parilte-text-link{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--parilte-ink);opacity:.8}
+    .parilte-text-link:hover{opacity:1}
+    .parilte-hero-notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+    .parilte-note{border:1px solid var(--parilte-border);border-radius:14px;padding:10px 12px;background:#fff}
+    .parilte-note strong{display:block;font-size:.85rem;color:var(--parilte-ink);margin-bottom:2px}
+    .parilte-note span{font-size:.82rem;color:var(--parilte-muted)}
+    .parilte-hero-visual{display:grid;gap:14px}
+    .parilte-hero-photo{min-height:420px;border-radius:26px;background-size:cover;background-position:center;box-shadow:var(--parilte-shadow);border:1px solid var(--parilte-border)}
+    .parilte-hero-stack{display:grid;gap:12px;grid-template-columns:1fr 1fr;margin-top:-60px}
+    .parilte-hero-card{position:relative;min-height:140px;border-radius:18px;overflow:hidden;background-size:cover;background-position:center;display:flex;align-items:flex-end;padding:12px;border:1px solid rgba(255,255,255,.3);box-shadow:0 12px 28px rgba(0,0,0,.18)}
+    .parilte-hero-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.6) 100%)}
+    .parilte-hero-card span{position:relative;color:#fff;font-size:.78rem;letter-spacing:.18em;text-transform:uppercase}
+    .parilte-hero-card.small{min-height:120px;transform:translateY(8px)}
+    .parilte-strip{padding:14px 0 22px}
+      .parilte-strip-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+      .parilte-strip-grid div{border:1px solid var(--parilte-border);border-radius:14px;padding:12px;background:#fff}
+      .parilte-strip-grid span{display:block;opacity:.7;font-size:.92rem;margin-top:4px;color:var(--parilte-muted)}
+      .parilte-strip-grid div{animation:parilte-rise .6s ease both}
+      .parilte-strip-grid div:nth-child(2){animation-delay:.06s}
+      .parilte-strip-grid div:nth-child(3){animation-delay:.12s}
+      .parilte-editorial{padding:22px 0 10px;position:relative;overflow:hidden}
+      .parilte-editorial-grid{display:grid;gap:18px;grid-template-columns:repeat(6,1fr);grid-auto-rows:160px}
+      .parilte-editorial-card{position:relative;border-radius:22px;overflow:hidden;background-size:cover;background-position:center;min-height:160px;border:1px solid rgba(255,255,255,.2);box-shadow:0 18px 40px rgba(0,0,0,.12)}
+      .parilte-editorial-card::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 35%,rgba(0,0,0,.65) 100%)}
+      .parilte-editorial-card.large{grid-column:1/4;grid-row:1/3}
+      .parilte-editorial-card.tall{grid-column:4/7;grid-row:1/4}
+      .parilte-editorial-card.wide{grid-column:1/4;grid-row:3/4}
+      .parilte-editorial-body{position:relative;z-index:2;color:#fff;padding:18px}
+      .parilte-editorial-body h3{margin:6px 0 6px;font-size:1.15rem;font-weight:500;letter-spacing:.04em}
+      .parilte-editorial-body p{margin:0;opacity:.85}
+      .parilte-editorial .parilte-eyebrow{color:rgba(255,255,255,.75)}
+      .parilte-feature{padding:18px 0 6px}
+      .parilte-feature-grid{display:grid;gap:20px;grid-template-columns:1.1fr .9fr;align-items:center}
+      .parilte-feature-copy{animation:parilte-rise .7s ease both}
+      .parilte-feature-cards{animation:parilte-rise .7s ease .08s both}
+    .parilte-feature-copy h2{margin:0 0 8px;color:var(--parilte-ink)}
+    .parilte-feature-copy p{margin:0 0 12px;color:var(--parilte-muted)}
+    .parilte-feature-cards{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+    .parilte-mini-card{border:1px solid var(--parilte-border);border-radius:14px;padding:12px;background:#fff}
+    .parilte-mini-card strong{display:block;margin-bottom:4px;color:var(--parilte-ink)}
+    .parilte-mini-card span{color:var(--parilte-muted);font-size:.9rem}
+    .parilte-cats{padding:18px 0}
+    .parilte-cats-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+    .parilte-cat-card{display:block;border-radius:18px;border:1px solid var(--parilte-border);padding:18px;text-decoration:none;background:#fff;transition:transform .2s ease, box-shadow .2s ease}
+    .parilte-cat-card:hover{transform:translateY(-2px);box-shadow:0 16px 36px rgba(23,32,44,.1)}
+    .parilte-lookbook{padding:20px 0 12px;position:relative;overflow:hidden}
+    .parilte-cats{position:relative;overflow:hidden}
+    .parilte-lookbook-grid{display:grid;gap:22px;grid-template-columns:1.05fr .95fr;align-items:center}
+    .parilte-lookbook-copy h2{margin:0 0 8px;color:var(--parilte-ink)}
+    .parilte-lookbook-copy p{margin:0 0 12px;color:var(--parilte-muted)}
+      .parilte-lookbook-tiles{display:grid;gap:12px;grid-template-columns:1fr;grid-auto-rows:220px}
+      .parilte-lookbook-photo{border-radius:20px;border:1px solid var(--parilte-border);background-size:cover;background-position:center;box-shadow:var(--parilte-shadow)}
+      .parilte-lookbook-note{border-radius:18px;border:1px solid var(--parilte-border);padding:14px;background:#fff}
+      .parilte-lookbook-note strong{display:block;margin-bottom:4px}
+      .parilte-lookbook-note span{display:block;color:var(--parilte-muted)}
+      .parilte-lookbook-tiles{animation:parilte-rise .8s ease both}
+    .woocommerce .sidebar-woocommerce .count,
+    .woocommerce .ct-sidebar .count,
+    .woocommerce .woocommerce-sidebar .count,
+    .woocommerce .widget-area .count{display:none}
+    .woocommerce .sidebar-woocommerce .parilte-widget-toggle,
+    .woocommerce .ct-sidebar .parilte-widget-toggle,
+    .woocommerce .woocommerce-sidebar .parilte-widget-toggle,
+    .woocommerce .widget-area .parilte-widget-toggle{cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+    .woocommerce .sidebar-woocommerce .parilte-widget-toggle::after,
+    .woocommerce .ct-sidebar .parilte-widget-toggle::after,
+    .woocommerce .woocommerce-sidebar .parilte-widget-toggle::after,
+    .woocommerce .widget-area .parilte-widget-toggle::after{content:"+";font-size:.9rem;opacity:.6}
+    .woocommerce .sidebar-woocommerce .parilte-widget-open .parilte-widget-toggle::after,
+    .woocommerce .ct-sidebar .parilte-widget-open .parilte-widget-toggle::after,
+    .woocommerce .woocommerce-sidebar .parilte-widget-open .parilte-widget-toggle::after,
+    .woocommerce .widget-area .parilte-widget-open .parilte-widget-toggle::after{content:"–"}
+    .woocommerce .sidebar-woocommerce .parilte-widget-body,
+    .woocommerce .ct-sidebar .parilte-widget-body,
+    .woocommerce .woocommerce-sidebar .parilte-widget-body,
+    .woocommerce .widget-area .parilte-widget-body{margin-top:6px}
+    .woocommerce .sidebar-woocommerce .parilte-widget-collapsed .parilte-widget-body,
+    .woocommerce .ct-sidebar .parilte-widget-collapsed .parilte-widget-body,
+    .woocommerce .woocommerce-sidebar .parilte-widget-collapsed .parilte-widget-body,
+    .woocommerce .widget-area .parilte-widget-collapsed .parilte-widget-body{display:none}
+    .woocommerce .product-categories,
+    .woocommerce .wc-block-product-categories-list{list-style:none;margin:0;padding:0}
+    .woocommerce .product-categories li,
+    .woocommerce .wc-block-product-categories-list li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+    .woocommerce .product-categories li:last-child,
+    .woocommerce .wc-block-product-categories-list li:last-child{border-bottom:0}
+    .woocommerce .product-categories li a,
+    .woocommerce .wc-block-product-categories-list li a{flex:1;text-decoration:none;color:inherit}
+    .woocommerce .product-categories li > a,
+    .woocommerce .wc-block-product-categories-list li > a{
+      font-family:var(--ct-heading-font-family, inherit);
+      font-weight:500;
+      letter-spacing:.06em;
+      font-size:.86rem;
+    }
+    .woocommerce .product-categories li ul li > a,
+    .woocommerce .wc-block-product-categories-list li ul li > a{
+      font-family:inherit;
+      font-weight:400;
+      letter-spacing:.02em;
+      font-size:.82rem;
+    }
+    .woocommerce .product-categories li ul,
+    .woocommerce .wc-block-product-categories-list li ul{flex-basis:100%;margin:6px 0 0 10px;padding-left:12px;border-left:1px solid rgba(0,0,0,.08)}
+    .woocommerce .product-categories li ul li,
+    .woocommerce .wc-block-product-categories-list li ul li{border:0;padding:4px 0}
+    .woocommerce .widget_product_categories .widget-title,
+    .woocommerce .wc-block-product-categories .widget-title,
+    .woocommerce .wc-block-product-categories-list__label{display:none}
+    .woocommerce .parilte-cat-toggle{width:18px;height:18px;border:1px solid rgba(0,0,0,.2);border-radius:999px;background:transparent;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+    .woocommerce .parilte-cat-toggle::before{content:"+";font-size:.7rem;opacity:.7}
+    .woocommerce .parilte-cat-open > .parilte-cat-toggle::before{content:"–"}
+    .woocommerce .wc-block-product-categories-list__item-count,
+    .woocommerce .wc-block-product-categories-list-item-count,
+    .woocommerce .product-categories .count,
+    .woocommerce .product-categories .cat-item-count{display:none}
+    .woocommerce .product-categories .parilte-cat-hidden,
+    .woocommerce .wc-block-product-categories-list .parilte-cat-hidden{display:none}
+    .woocommerce .product-categories.parilte-cat-expanded .parilte-cat-hidden,
+    .woocommerce .wc-block-product-categories-list.parilte-cat-expanded .parilte-cat-hidden{display:flex}
+    .parilte-sidebar-quick{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .parilte-cat-tree{margin-bottom:18px;padding:14px 12px;border:1px solid rgba(0,0,0,.08);border-radius:16px;background:rgba(255,255,255,.6)}
+    .parilte-cat-tree-head{font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;opacity:.9;margin-bottom:8px}
+    .parilte-cat-tree-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+    .parilte-cat-tree-item{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+    .parilte-cat-tree-item > a{flex:1;text-decoration:none;color:inherit;font-family:var(--ct-heading-font-family, inherit);font-weight:600;letter-spacing:.08em;font-size:.9rem}
+    .parilte-cat-tree-item.has-children > a{font-weight:650}
+    .parilte-cat-tree-children{flex-basis:100%;margin:2px 0 6px 8px;padding-left:10px;border-left:1px solid rgba(0,0,0,.08)}
+    .parilte-cat-tree-children .parilte-cat-tree-item > a{font-family:inherit;font-weight:500;letter-spacing:.04em;font-size:.84rem;opacity:.9}
+    .parilte-cat-more{margin-top:10px;border:1px solid rgba(0,0,0,.12);border-radius:999px;padding:6px 12px;background:#fff;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+    .woocommerce .widget_price_filter .price_slider_wrapper{margin-top:10px}
+    .woocommerce .widget_price_filter .price_slider{height:6px;border-radius:999px;background:rgba(0,0,0,.12);position:relative}
+    .woocommerce .widget_price_filter .ui-slider-range{background:var(--parilte-ink);border-radius:999px}
+    .woocommerce .widget_price_filter .ui-slider-handle{
+      width:16px;height:16px;top:-5px;border-radius:999px;background:#fff;border:1px solid rgba(0,0,0,.2);
+      box-shadow:0 4px 10px rgba(0,0,0,.12);cursor:ew-resize
+    }
+    .woocommerce .widget_price_filter .price_slider_amount{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:8px}
+    .woocommerce .widget_price_filter .price_slider_amount .button{
+      background:#1c1c1c;border-color:#1c1c1c;color:#fff;border-radius:999px;padding:6px 14px;font-size:.75rem;letter-spacing:.12em;text-transform:uppercase
+    }
+    .woocommerce .widget_price_filter .price_label{font-size:.82rem;letter-spacing:.06em;order:1}
+    .woocommerce .widget_price_filter .price_slider_amount .button{order:2}
+    .parilte-cat-card strong{display:block;margin-bottom:4px;color:var(--parilte-ink);font-family:var(--ct-heading-font-family, inherit);letter-spacing:.1em;text-transform:uppercase;font-size:.82rem}
+    .parilte-cat-card span{opacity:.7;color:var(--parilte-muted)}
+    .parilte-carousel{padding:18px 0 8px}
+    .parilte-showcase-card{position:relative;border-radius:30px;padding:26px;border:1px solid rgba(0,0,0,.08);overflow:hidden;
+      background:linear-gradient(135deg,#faf6f1 0%,#f2eae1 55%,#efe2d5 100%);
+      box-shadow:0 20px 36px rgba(0,0,0,.08)}
+    .parilte-showcase-card::before{content:"";position:absolute;right:-140px;top:-140px;width:280px;height:280px;border-radius:50%;
+      background:rgba(0,0,0,.03);pointer-events:none}
+    .parilte-showcase-card::after{content:"";position:absolute;left:-120px;bottom:-120px;width:240px;height:240px;border-radius:50%;
+      background:rgba(255,255,255,.5);pointer-events:none}
+    .parilte-showcase-new{display:grid;grid-template-columns:minmax(240px,320px) 1fr;gap:24px;align-items:center}
+    .parilte-showcase-best{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:24px;align-items:stretch;
+      background:linear-gradient(135deg,#f7f1ea 0%,#efe6dc 50%,#ede0d2 100%)}
+    .parilte-showcase-sale{display:grid;grid-template-columns:1fr;gap:16px;background:linear-gradient(135deg,#f6f0e9 0%,#efe4d8 55%,#ecd9c9 100%)}
+    .parilte-showcase-copy h2{margin:6px 0 8px}
+    .parilte-showcase-copy p{margin:0 0 16px;color:var(--parilte-muted);max-width:280px}
+    .parilte-showcase-actions{display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+    .parilte-showcase-tags{display:flex;gap:8px;flex-wrap:wrap}
+    .parilte-showcase-tags span{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;opacity:.6}
+    .parilte-showcase-hero{border-radius:22px;min-height:260px;background-size:cover;background-position:center;position:relative;overflow:hidden}
+    .parilte-showcase-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.2),rgba(0,0,0,0) 45%,rgba(0,0,0,.35))}
+    .parilte-showcase-hero-body{position:relative;z-index:1;color:#fff;padding:18px;display:flex;flex-direction:column;gap:8px}
+    .parilte-showcase-hero-body h2{margin:0;color:#fff}
+    .parilte-showcase-hero-body p{margin:0;color:rgba(255,255,255,.85)}
+    .parilte-showcase-rail{position:relative}
+    .parilte-chip-link{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;
+      border:1px solid rgba(0,0,0,.12);background:#fff;text-decoration:none;letter-spacing:.16em;text-transform:uppercase;
+      font-size:.72rem;color:var(--parilte-ink)}
+    .parilte-carousel-track{position:relative;overflow:hidden}
+    .parilte-carousel-controls{position:absolute;top:10px;right:10px;display:flex;gap:8px;z-index:2}
+    .parilte-carousel-controls button{width:34px;height:34px;border-radius:999px;border:1px solid rgba(0,0,0,.12);
+      background:rgba(255,255,255,.9);cursor:pointer;display:flex;align-items:center;justify-content:center;
+      font-size:18px;line-height:1;color:var(--parilte-ink);box-shadow:0 6px 16px rgba(0,0,0,.08);transition:transform .15s ease, box-shadow .15s ease}
+    .parilte-carousel-controls button:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(0,0,0,.1)}
+    .parilte-carousel-static .parilte-carousel-controls{display:none}
+    .parilte-carousel-track::before,
+    .parilte-carousel-track::after{display:none}
+    .parilte-carousel-track .products{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;margin:0;padding:8px 0 18px;list-style:none}
+    .parilte-carousel-track .products::-webkit-scrollbar{height:6px}
+    .parilte-carousel-track .products::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12);border-radius:999px}
+    .parilte-carousel-track .products li.product{flex:0 0 calc((100% - 60px)/4);scroll-snap-align:start;margin:0 !important;background:#fff;border-radius:18px;padding:10px 10px 12px;box-shadow:0 10px 24px rgba(0,0,0,.06)}
+    .parilte-carousel-track .products li.product:nth-child(3n){margin-top:14px !important}
+    .parilte-carousel-track .products li.product:nth-child(4n){margin-top:6px !important}
+    .parilte-carousel-track .products li.product .woocommerce-LoopProduct-link{display:block}
+    .parilte-carousel-track .products li.product img{border-radius:14px;aspect-ratio:3/4;object-fit:cover;background:#f1ede7}
+    .parilte-carousel-track .products li.product .woocommerce-loop-product__title{margin-top:10px;font-size:.95rem;letter-spacing:.04em;font-weight:500}
+    .parilte-carousel-track .products li.product .price{display:block;margin-top:4px;font-weight:600;font-size:.95rem}
+    .woocommerce ul.products li.product .button,
+    .woocommerce ul.products li.product .add_to_cart_button,
+    .woocommerce ul.products li.product .ct-cart-button{display:none !important}
+    .parilte-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+    .parilte-section-head a{text-decoration:none;opacity:.8}
+    .parilte-blog{padding:18px 0 56px}
+    .parilte-blog-grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+    .parilte-post{border:1px solid var(--parilte-border);border-radius:16px;overflow:hidden;background:#fff}
+    .parilte-post a{text-decoration:none;color:inherit;display:block}
+    .parilte-post-body{padding:12px 14px}
+      .parilte-post-body h3{margin:.2rem 0 0;font-size:1.05rem}
+      .parilte-post-body time{opacity:.7;font-size:.9rem}
+      .parilte-single-opts{margin:14px 0 18px;display:grid;gap:10px}
+      .parilte-opt-row{display:grid;gap:8px}
+      .parilte-opt-label{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;opacity:.65}
+      .parilte-opt-list{display:flex;flex-wrap:wrap;gap:8px}
+      .parilte-opt{border:1px solid rgba(0,0,0,.12);border-radius:999px;padding:4px 10px;font-size:.85rem;line-height:1.2}
+      .parilte-opt.on{background:#111;color:#fff;border-color:#111}
+      .parilte-opt.off{opacity:.35;text-decoration:line-through}
+      .parilte-opt.color{display:inline-flex;align-items:center;gap:6px}
+      .parilte-opt.color .dot{width:12px;height:12px;border-radius:999px;display:inline-block;background:var(--chip-color,#ddd);border:1px solid rgba(0,0,0,.08)}
+      @media (max-width: 1100px){
+        .parilte-carousel-track .products li.product{flex-basis:calc((100% - 40px)/3)}
+      }
+      @media (max-width: 900px){
+        .parilte-hero-grid,
+        .parilte-feature-grid,
+        .parilte-lookbook-grid{grid-template-columns:1fr}
+        .parilte-hero-stack{grid-template-columns:1fr}
+        .parilte-editorial-grid{grid-template-columns:1fr;grid-auto-rows:auto}
+        .parilte-editorial-card.large,
+        .parilte-editorial-card.tall,
+        .parilte-editorial-card.wide{grid-column:auto;grid-row:auto;min-height:220px}
+        .parilte-showcase-new,
+        .parilte-showcase-best{grid-template-columns:1fr}
+        .parilte-carousel-track .products li.product{flex-basis:calc((100% - 20px)/2)}
+      }
+      @media (max-width: 560px){
+        .parilte-carousel-track .products li.product{flex-basis:100%}
+      }
+      @media (prefers-reduced-motion: reduce){
+        .parilte-hero-copy,
+        .parilte-hero-visual,
+        .parilte-hero-notes,
+        .parilte-strip-grid div,
+        .parilte-feature-copy,
+        .parilte-feature-cards,
+        .parilte-lookbook-tiles{animation:none}
+      }
+      ';
+    wp_add_inline_style('parilte-checkout-suite', $css);
+}, 22);
+
+add_action('wp_enqueue_scripts', function () {
+    if (!is_shop() && !is_product_taxonomy() && !is_product_category() && !is_product_tag()) return;
+    wp_enqueue_script('jquery-ui-slider');
+    wp_enqueue_script('wc-price-slider');
+}, 25);
+
+// Kategori açıklamasını ızgara altına al
+add_action('after_setup_theme', function () {
+    remove_action('woocommerce_archive_description','woocommerce_taxonomy_archive_description',10);
+    add_action('woocommerce_after_shop_loop','woocommerce_taxonomy_archive_description',5);
+});
+
+// Tek ürün: Beden tablosu kutusu
+add_action('woocommerce_single_product_summary', function () {
+  ?>
+  <details class="parilte-size-box">
+      <summary>Beden Tablosu</summary>
+      <div class="parilte-size-grid">
+        <div><strong>XS</strong><span>34</span></div>
+        <div><strong>S</strong><span>36</span></div>
+        <div><strong>M</strong><span>38</span></div>
+        <div><strong>L</strong><span>40</span></div>
+        <div><strong>XL</strong><span>42</span></div>
+      </div>
+      <small>Kalıp: Normal. İki beden arasında kaldıysan bir büyüğünü öneririz.</small>
+    </details>
+  <?php
+}, 26);
+
+function parilte_cs_attr_labels($attr, $taxonomy){
+    $labels = [];
+    foreach ((array) $attr->get_options() as $opt) {
+        $label = $opt;
+        if (taxonomy_exists($taxonomy)) {
+            if (is_numeric($opt)) {
+                $t = get_term((int) $opt, $taxonomy);
+            } else {
+                $t = get_term_by('slug', $opt, $taxonomy);
+                if (!$t || is_wp_error($t)) $t = get_term_by('name', $opt, $taxonomy);
+            }
+            if ($t && !is_wp_error($t)) $label = $t->name;
+        }
+        $labels[] = $label;
+    }
+    return array_values(array_filter($labels));
+}
+
+function parilte_cs_term_label($taxonomy, $value){
+    if (!$value) return '';
+    if (is_numeric($value)) $t = get_term((int) $value, $taxonomy);
+    else $t = get_term_by('slug', $value, $taxonomy);
+    if ($t && !is_wp_error($t)) return $t->name;
+    return (string) $value;
+}
+
+function parilte_cs_color_hex($label){
+    $slug = sanitize_title($label);
+    $map = [
+        'siyah'=>'#000000','beyaz'=>'#ffffff','gri'=>'#9ca3af','lacivert'=>'#0b2e59',
+        'kahverengi'=>'#6b4f3a','bej'=>'#e7d7b5','krem'=>'#f5f0e6','ekru'=>'#f2efe6',
+        'kirmizi'=>'#d0021b','kırmızı'=>'#d0021b','mavi'=>'#2a6fdb','yesil'=>'#2e8b57','yeşil'=>'#2e8b57',
+        'bordo'=>'#5b1215','pembe'=>'#f3a6c8','mor'=>'#7e57c2','turuncu'=>'#f39c12',
+        'sari'=>'#f1c40f','sarı'=>'#f1c40f','haki'=>'#6b8e23','aci-kahve'=>'#4a2f24','acı-kahve'=>'#4a2f24'
+    ];
+    return $map[$slug] ?? '#e5e5e5';
+}
+
+// Tek ürün: Beden/Renk secenekleri (gorsel)
+add_action('woocommerce_single_product_summary', function () {
+    global $product;
+    if (!$product instanceof WC_Product) return;
+
+    $sizes_all = ['XS','S','M','L','XL'];
+    $selected_sizes = [];
+    $in_stock_sizes = [];
+    $selected_colors = [];
+    $in_stock_colors = [];
+
+    if ($product->is_type('variable')) {
+        foreach ($product->get_children() as $vid) {
+            $v = wc_get_product($vid);
+            if (!$v) continue;
+            $in = $v->is_in_stock();
+            $attrs = $v->get_attributes();
+            if (!empty($attrs['pa_beden'])) {
+                $label = parilte_cs_term_label('pa_beden', $attrs['pa_beden']);
+                $selected_sizes[$label] = true;
+                if ($in) $in_stock_sizes[$label] = true;
+            }
+            if (!empty($attrs['pa_renk'])) {
+                $label = parilte_cs_term_label('pa_renk', $attrs['pa_renk']);
+                $selected_colors[$label] = true;
+                if ($in) $in_stock_colors[$label] = true;
+            }
+        }
+    } else {
+        foreach ($product->get_attributes() as $attr) {
+            if ($attr->get_name()==='pa_beden') {
+                foreach (parilte_cs_attr_labels($attr, 'pa_beden') as $label) {
+                    $selected_sizes[$label] = true;
+                    if ($product->is_in_stock()) $in_stock_sizes[$label] = true;
+                }
+            }
+            if ($attr->get_name()==='pa_renk') {
+                foreach (parilte_cs_attr_labels($attr, 'pa_renk') as $label) {
+                    $selected_colors[$label] = true;
+                    if ($product->is_in_stock()) $in_stock_colors[$label] = true;
+                }
+            }
+        }
+    }
+
+    echo '<div class="parilte-single-opts">';
+    echo '<div class="parilte-opt-row"><span class="parilte-opt-label">Beden</span><div class="parilte-opt-list">';
+    foreach ($sizes_all as $s) {
+        $is_selected = isset($selected_sizes[$s]);
+        $is_on = $is_selected && !empty($in_stock_sizes[$s]);
+        $cls = 'parilte-opt size ' . ($is_on ? 'on' : 'off');
+        echo '<span class="'.esc_attr($cls).'">'.esc_html($s).'</span>';
+    }
+    echo '</div></div>';
+
+    if (!empty($selected_colors)) {
+        echo '<div class="parilte-opt-row"><span class="parilte-opt-label">Renk</span><div class="parilte-opt-list">';
+        foreach (array_keys($selected_colors) as $c) {
+            $is_on = !empty($in_stock_colors[$c]);
+            $cls = 'parilte-opt color ' . ($is_on ? 'on' : 'off');
+            $hex = parilte_cs_color_hex($c);
+            echo '<span class="'.esc_attr($cls).'" style="--chip-color: '.esc_attr($hex).';"><span class="dot"></span>'.esc_html($c).'</span>';
+        }
+        echo '</div></div>';
+    }
+    echo '</div>';
+}, 24);
+
+// Ürün kart buton sınıfı
+add_filter('woocommerce_loop_add_to_cart_args', function($args,$product){
+  $args['class'] .= ' button parilte-card-btn';
+  return $args;
+},10,2);
+
+/* ==========================================================
+ * 1) ÜCRETSİZ KARGO BAR
+ * ========================================================== */
+if (PARILTE_CS_ON && PARILTE_CS_FREEBAR) {
+    add_action('wp_enqueue_scripts', function () {
+        $css = '
+        .parilte-freebar{border:1px solid #eee;border-radius:12px;padding:10px;margin:10px 0;background:#fff}
+        .parilte-freebar .row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+        .parilte-freebar .msg{font-size:14px}
+        .parilte-freebar .track{position:relative;height:8px;background:#f1f5f9;border-radius:999px;overflow:hidden;flex:1;min-width:160px}
+        .parilte-freebar .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:#16a34a}
+        .parilte-freebar .ok{color:#16a34a;font-weight:600}
+        ';
+        wp_add_inline_style('parilte-checkout-suite', $css);
+    }, 21);
+
+    function parilte_cs_freebar_markup(){
+        $threshold = (float) parilte_cs_opt('parilte_free_threshold', PARILTE_CS_FREE_THRESHOLD);
+        if ($threshold <= 0) return '';
+        $subtotal = parilte_cs_cart_subtotal();
+        $left = max(0, $threshold - $subtotal);
+        $pct  = min(100, max(0, ($subtotal / $threshold) * 100));
+        $msg  = $left <= 0
+            ? '<span class="ok">Ücretsiz kargo aktif!</span>'
+            : str_replace('{left}', wc_price($left), (string) parilte_cs_opt('parilte_free_text', PARILTE_CS_FREE_TEXT));
+        ob_start(); ?>
+          <div class="parilte-freebar" role="status" aria-live="polite">
+            <div class="row">
+              <div class="msg"><?php echo wp_kses_post($msg); ?></div>
+              <div class="track"><span class="fill" style="width: <?php echo esc_attr(number_format($pct,2)); ?>%"></span></div>
+            </div>
+          </div>
+        <?php return ob_get_clean();
+    }
+
+    add_action('woocommerce_single_product_summary', function () { echo parilte_cs_freebar_markup(); }, 11);
+    add_action('woocommerce_before_cart_totals',      function () { echo parilte_cs_freebar_markup(); }, 5);
+    add_action('woocommerce_before_checkout_form',    function () { echo parilte_cs_freebar_markup(); }, 5);
+}
+
+/* ==========================================================
+ * 2) ETA MESAJI
+ * ========================================================== */
+if (PARILTE_CS_ON && PARILTE_CS_ETA) {
+    function parilte_cs_eta_markup(){
+        [$a,$b] = parilte_cs_eta_range();
+        return '<div class="parilte-freebar" style="padding:8px 10px"><span>⏱️ Tahmini teslimat: <strong>'.$a.' — '.$b.'</strong></span></div>';
+    }
+    add_action('woocommerce_single_product_summary',      function () { echo parilte_cs_eta_markup(); }, 12);
+    add_action('woocommerce_cart_totals_before_shipping', function () { echo parilte_cs_eta_markup(); }, 5);
+    add_action('woocommerce_review_order_before_payment', function () { echo parilte_cs_eta_markup(); }, 5);
+}
+
+/* ==========================================================
+ * 3) CHECKOUT ALANLARI (TR sade)
+ * ========================================================== */
+if (PARILTE_CS_ON && PARILTE_CS_CHECKOUT_FIELDS) {
+    add_filter('woocommerce_enable_order_notes_field','__return_false');
+
+    add_filter('woocommerce_checkout_fields', function ($fields) {
+        $lbl = [
+            'first_name'=>'Ad','last_name'=>'Soyad','company'=>'Firma','address_1'=>'Adres',
+            'address_2'=>'Adres Devam','postcode'=>'Posta Kodu','city'=>'İl','state'=>'İlçe',
+            'phone'=>'Telefon','email'=>'E-posta'
+        ];
+        foreach ($lbl as $k=>$v){
+            if(isset($fields['billing']['billing_'.$k])) $fields['billing']['billing_'.$k]['label']=$v;
+            if(isset($fields['shipping']['shipping_'.$k])) $fields['shipping']['shipping_'.$k]['label']=$v;
+        }
+        $ph = [
+            'first_name'=>'Adınız','last_name'=>'Soyadınız','address_1'=>'Mahalle, Cadde, No, Daire',
+            'postcode'=>'34000','city'=>'İl (Örn: İstanbul)','state'=>'İlçe (Örn: Kadıköy)',
+            'phone'=>'5XXXXXXXXX','email'=>'ornek@site.com'
+        ];
+        foreach ($ph as $k=>$v){
+            if(isset($fields['billing']['billing_'.$k])) $fields['billing']['billing_'.$k]['placeholder']=$v;
+        }
+        if(isset($fields['billing']['billing_company']))  $fields['billing']['billing_company']['required']=false;
+        if(isset($fields['billing']['billing_address_2']))$fields['billing']['billing_address_2']['required']=false;
+
+        $prio = [
+            'billing_first_name'=>10,'billing_last_name'=>20,'billing_phone'=>30,'billing_email'=>40,
+            'billing_address_1'=>50,'billing_postcode'=>60,'billing_city'=>70,'billing_state'=>80
+        ];
+        foreach ($prio as $key=>$p){ if(isset($fields['billing'][$key])) $fields['billing'][$key]['priority']=$p; }
+
+        if(isset($fields['billing']['billing_phone'])) $fields['billing']['billing_phone']['required']=true;
+
+        return $fields;
+    }, 10, 1);
+
+    add_filter('woocommerce_get_terms_and_conditions_checkbox_text', function ($text) {
+        return 'Siparişimi veriyorum ve <a href="'.esc_url(get_privacy_policy_url()).'" target="_blank" rel="nofollow">KVKK</a> ile <a href="'.esc_url(wc_get_page_permalink('terms')).'" target="_blank" rel="nofollow">Şartlar</a>’ı kabul ediyorum.';
+    });
+}
+
+/* ==========================================================
+ * 4) ÖDEME ROZETLERİ
+ * ========================================================== */
+if (PARILTE_CS_ON && PARILTE_CS_PAYBADGES) {
+    function parilte_cs_svg($key){
+        $icons = [
+          'visa' => '<svg viewBox="0 0 48 16" width="48" height="16" aria-hidden="true"><rect width="48" height="16" rx="3" fill="#1a1f36"/><path fill="#fff" d="M6.7 11.7L8.2 4.3h2L8.7 11.7H6.7zM14.8 4.2c.4 0 .7.1 1 .3.2.2.4.5.4.9 0 .5-.3 1-.8 1.3.7.2 1.2.7 1.2 1.5 0 .5-.2 1-.6 1.3-.4.3-.9.5-1.6.5H10.9L11.4 4.3h3.4zm-1.6 2.2h.9c.6 0 .9-.3.9-.6s-.2-.5-.7-.5H13l-.2 1.1zm-.5 2.6h1c.6 0 1-.3 1-.8s-.4-.7-1-.7h-1l-.2 1.5zM17.4 11.7L18.9 4.3h1.8l-1.5 7.4h-1.8zM26.9 4.3l-2.2 7.4h-1.9l-1.1-5.5-1.1 5.5h-1.8l1.8-7.4h2l1.1 5.1 1-5.1h2.2zM29.2 11.7L30.7 4.3h1.8l-1.5 7.4h-1.8zM40.6 6.1c-.3-.1-.8-.3-1.3-.3-.7 0-1.2.3-1.2.7 0 .3.4.5.9.7l.6.2c1 .4 1.6 1 1.6 1.8 0 1.3-1.2 2.2-3 2.2-.8 0-1.6-.1-2.2-.4l.4-1.4c.5.2 1.2.4 1.8.4.8 0 1.3-.3 1.3-.7 0-.3-.2-.6-.9-.8l-.6-.2c-1-.4-1.6-.9-1.6-1.8 0-1.2 1.1-2.2 2.9-2.2.8 0 1.5.1 2 .4l-.4 1.4z"/></svg>',
+          'mc'   => '<svg viewBox="0 0 48 16" width="48" height="16"><rect width="48" height="16" rx="3" fill="#1a1f36"/><circle cx="20" cy="8" r="4.2" fill="#eb001b"/><circle cx="28" cy="8" r="4.2" fill="#f79e1b"/><path d="M24 4.2a4.2 4.2 0 0 0 0 7.6 4.2 4.2 0 0 0 0-7.6z" fill="#ff5f00"/></svg>',
+          'amex' => '<svg viewBox="0 0 48 16" width="48" height="16"><rect width="48" height="16" rx="3" fill="#2e77bc"/><text x="8" y="11" fill="#fff" font-size="7" font-family="Arial,Helvetica,sans-serif" font-weight="700">AMEX</text></svg>',
+          'troy' => '<svg viewBox="0 0 48 16" width="48" height="16"><rect width="48" height="16" rx="3" fill="#0ea5b7"/><text x="9" y="11" fill="#fff" font-size="8" font-family="Arial,Helvetica,sans-serif" font-weight="700">TROY</text></svg>',
+          'iyzico'=>'<svg viewBox="0 0 48 16" width="48" height="16"><rect width="48" height="16" rx="3" fill="#27a7df"/><text x="8" y="11" fill="#fff" font-size="8" font-family="Arial" font-weight="700">iyzico</text></svg>',
+          'paytr'=>'<svg viewBox="0 0 48 16" width="48" height="16"><rect width="48" height="16" rx="3" fill="#1e7dd3"/><text x="10" y="11" fill="#fff" font-size="8" font-family="Arial" font-weight="700">PayTR</text></svg>',
+          'stripe'=>'<svg viewBox="0 0 48 16" width="48" height="16"><rect width="48" height="16" rx="3" fill="#635bff"/><text x="8" y="11" fill="#fff" font-size="8" font-family="Arial" font-weight="700">Stripe</text></svg>',
+        ];
+        return $icons[$key] ?? '';
+    }
+
+    add_action('woocommerce_review_order_before_payment', function () {
+        if (!WC()->payment_gateways) return;
+        $gws = WC()->payment_gateways->get_available_payment_gateways();
+        if (!$gws) return;
+
+        $brands = ['visa','mc','troy','amex'];
+        $prov   = [];
+        foreach ($gws as $id=>$gw) {
+            $sid = strtolower($id);
+            if (strpos($sid,'iyz')!==false)   $prov['iyzico']=true;
+            if (strpos($sid,'paytr')!==false) $prov['paytr']=true;
+            if (strpos($sid,'stripe')!==false)$prov['stripe']=true;
+        }
+
+        echo '<div class="parilte-paybadges" aria-label="Ödeme seçenekleri">';
+        foreach ($prov as $k=>$_) echo parilte_cs_svg($k);
+        foreach ($brands as $b)   echo parilte_cs_svg($b);
+        echo '</div>';
+    }, 1);
+
+    add_action('wp_enqueue_scripts', function () {
+        $css = '
+        .parilte-paybadges{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px}
+        .parilte-paybadges svg{filter:drop-shadow(0 1px 0 rgba(0,0,0,.04))}
+        ';
+        wp_add_inline_style('parilte-checkout-suite', $css);
+    }, 25);
+}
+
+/* ==========================================================
+ * 5) CHECKOUT MİNİ-ÖZET (sticky)
+ * ========================================================== */
+if (PARILTE_CS_ON && PARILTE_CS_MINI_SUMMARY) {
+    function parilte_cs_mini_summary_markup(){
+        if (!WC()->cart) return '';
+        $cnt = WC()->cart->get_cart_contents_count();
+        $sub = WC()->cart->get_subtotal();
+        return '<div class="parilte-mini-summary" role="region" aria-label="Sipariş özeti">'.
+                 '<span>Ürün: <strong>'.$cnt.'</strong></span>'.
+                 '<span>Ara toplam: <strong>'.wc_price($sub).'</strong></span>'.
+               '</div>';
+               
+    }
+    add_action('woocommerce_checkout_before_customer_details', function () {
+        echo parilte_cs_mini_summary_markup();
+    }, 4);
+
+    add_action('wp_enqueue_scripts', function () {
+        $css = '
+        .parilte-mini-summary{position:sticky;top:12px;z-index:5;display:flex;gap:12px;align-items:center;background:#fff;
+            border:1px solid #eee;border-radius:12px;padding:8px 10px;margin-bottom:10px}
+        .woocommerce-checkout .col2-set{row-gap:12px}
+        ';
+        wp_add_inline_style('parilte-checkout-suite', $css);
+    }, 26);
+}
+
+/* ==========================================================
+ * 6) TEST/CANLI UYARILARI (yalnız yöneticiye)
+ * ========================================================== */
+add_action('woocommerce_before_checkout_form', function () {
+    if (!current_user_can('manage_woocommerce')) return;
+    $msg = '';
+
+    // Stripe
+    $st = (array) get_option('woocommerce_stripe_settings');
+    if (!empty($st['enabled']) && $st['enabled']==='yes') {
+        if (!empty($st['testmode']) && $st['testmode']==='yes') $msg = 'Stripe test modu';
+        if (!$msg && !empty($st['publishable_key']) && strpos($st['publishable_key'],'pk_test_')===0) $msg = 'Stripe test anahtarı';
+    }
+    // iyzico
+    if (!$msg) {
+        $iy = (array) get_option('woocommerce_iyzico_settings');
+        if (!empty($iy['enabled']) && $iy['enabled']==='yes') {
+            if (!empty($iy['testmode']) && $iy['testmode']==='yes') $msg = 'iyzico test modu';
+            if (!$msg && !empty($iy['sandbox']) && $iy['sandbox']==='yes') $msg = 'iyzico sandbox';
+        }
+    }
+    // PayTR
+    if (!$msg) {
+        $pt = (array) get_option('woocommerce_paytr_settings');
+        if (!empty($pt['enabled']) && $pt['enabled']==='yes') {
+            if (!empty($pt['testmode']) && $pt['testmode']==='yes') $msg = 'PayTR test modu';
+            if (!$msg && !empty($pt['mode']) && strtolower($pt['mode'])==='test') $msg = 'PayTR test modu';
+        }
+    }
+
+    if (!$msg) return;
+    echo '<div class="notice notice-warning parilte-testnote" style="margin:10px 0;padding:10px;border-left:4px solid #f59e0b;background:#fff8e1">
+            <strong>Uyarı:</strong> Ödeme <em>'.$msg.'</em> ile çalışıyor. Canlıya almadan önce anahtarları değiştirin.
+          </div>';
+}, 3);
+
+/* ==========================================================
+ * 7) TR ADRES DOĞRULAMA (posta kodu/telefon)
+ * ========================================================== */
+if (PARILTE_CS_ON && PARILTE_CS_VALIDATION) {
+    add_action('wp_enqueue_scripts', function () {
+        if (!is_checkout() || is_order_received_page()) return;
+        // jQuery’yi garantiye al
+        wp_enqueue_script('jquery');
+
+        wp_add_inline_script('jquery', "
+          jQuery(function($){
+            var \$pc = $('#billing_postcode'), \$ph = $('#billing_phone');
+            if(\$pc.length){
+              var \$hint = $('<div class=\"parilte-hint\"></div>').insertAfter(\$pc);
+              function pcOK(v){ return /^[0-9]{5}$/.test(v); }
+              function updatePC(){ var v=\$pc.val().trim(); if(!v){\$hint.text('');return;}
+                if(pcOK(v)){ \$hint.text('✓ Geçerli posta kodu').css('color','#16a34a'); }
+                else{ \$hint.text('5 haneli posta kodu girin (örn: 34000)').css('color','#dc2626'); }
+              }
+              \$pc.on('input blur', updatePC); updatePC();
+            }
+            if(\$ph.length){
+              var \$hint2 = $('<div class=\"parilte-hint\"></div>').insertAfter(\$ph);
+              function digits(s){ return (s+'').replace(/\\D+/g,''); }
+              function formatTR(d){
+                if(d.length<3) return d;
+                return d.replace(/^(\\d{3})(\\d{0,3})(\\d{0,2})(\\d{0,2}).*/, function(_,a,b,c,e){
+                  return a + (b?' '+b:'') + (c?' '+c:'') + (e?' '+e:'' );
+                });
+              }
+              \$ph.on('input', function(){
+                var d = digits(\$ph.val());
+                if(d.length>11) d=d.slice(0,11);
+                \$ph.val(formatTR(d));
+                if(d.length<10 || d[0]!=='5'){ \$hint2.text('Cep telefonu 5XX XXX XX XX').css('color','#dc2626'); }
+                else { \$hint2.text('✓ Uygun format').css('color','#16a34a'); }
+              });
+            }
+          });
+        ");
+        wp_add_inline_style('parilte-checkout-suite', '.parilte-hint{font-size:12px;margin-top:4px;opacity:.85}');
+    }, 27);
+}
+
+/* ==========================================================
+ * 8) Checkout görsel sıkıştırma CSS
+ * ========================================================== */
+add_action('wp_enqueue_scripts', function () {
+    $css = '
+    .woocommerce-checkout .col2-set .col-1, .woocommerce-checkout .col2-set .col-2{padding:8px;border:1px solid #eee;border-radius:12px;background:#fff}
+    .woocommerce-checkout h3{font-size:16px;margin:8px 0}
+    .woocommerce form .form-row{margin-bottom:10px}
+    ';
+    wp_add_inline_style('parilte-checkout-suite', $css);
+}, 28);

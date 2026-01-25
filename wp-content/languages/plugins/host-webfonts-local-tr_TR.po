@@ -1,0 +1,90 @@
+# Translation of Plugins - OMGF | GDPR/DSGVO Compliant, Faster Google Fonts. Easy. - Stable (latest release) in Turkish
+# This file is distributed under the same license as the Plugins - OMGF | GDPR/DSGVO Compliant, Faster Google Fonts. Easy. - Stable (latest release) package.
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2022-05-17 19:14:59+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: GlotPress/4.0.1\n"
+"Language: tr\n"
+"Project-Id-Version: Plugins - OMGF | GDPR/DSGVO Compliant, Faster Google Fonts. Easy. - Stable (latest release)\n"
+
+#: src/Admin/Settings/Advanced.php:132
+msgid "Modify Source URL (Pro)"
+msgstr "Kaynak URL'yi Değiştir (Pro)"
+
+#: src/Admin/Settings/Optimize.php:544
+msgid "Test Mode"
+msgstr "Test Kipi"
+
+#: src/Admin/Settings/Optimize.php:546
+msgid "With this setting enabled, OMGF's optimizations will only be visible to logged in administrators or when <code>?omgf=1</code> is added to an URL in the frontend."
+msgstr "Bu ayar etkinleştirildiğinde, OMGF'nin optimizasyonları yalnızca oturum açmış yöneticiler tarafından veya ön uçtaki bir URL'ye <code>?omgf=1</code> eklendiğinde görülebilir."
+
+#: src/Admin/Settings/Advanced.php:68
+msgid "(for this site)"
+msgstr "(bu site için)"
+
+#: src/Admin/Settings/Help.php:80
+msgid "Get Support"
+msgstr "Destek al"
+
+#: src/Admin/Settings.php:385
+msgid "Help"
+msgstr "Yardım"
+
+#: src/Admin/Settings/Optimize.php:302
+msgid "Style"
+msgstr "Stil"
+
+#: src/Admin/Settings/Optimize.php:303
+msgid "Weight"
+msgstr "Ağırlık"
+
+#: src/Admin/Settings/Advanced.php:290
+msgid "Warning! This will remove all settings and cached fonts upon plugin deletion."
+msgstr "Uyarı! Bu, eklenti silindiğinde tüm ayarları ve önbelleğe alınmış yazı tiplerini kaldıracaktır."
+
+#: src/Admin/Ajax.php:214
+msgid "Cache directory successfully emptied."
+msgstr "Önbellek dizini başarıyla boşaltıldı."
+
+#: src/Admin/Settings/Help.php:58
+msgid "Need Help?"
+msgstr "Yardıma mı ihtiyacınız var?"
+
+#: src/Admin/Settings/Optimize.php:165
+msgid "Font-Display Option"
+msgstr "Yazı tipi görüntüleme seçeneği"
+
+#: src/Admin/Settings.php:257
+msgid "OMGF | Optimize My Google Fonts"
+msgstr "OMGF | Google Yazı Tiplerimi Optimize Et"
+
+#: src/Admin/Settings.php:252
+msgid "You're not cool enough to access this page."
+msgstr "Bu sayfaya erişmek için yeterince iyi değilsin."
+
+#: src/Admin/Settings.php:467
+msgid "Settings"
+msgstr "Ayarlar"
+
+#. Author URI of the plugin
+#: host-webfonts-local.php
+msgid "https://daan.dev"
+msgstr "https://daan.dev"
+
+#. Plugin Name of the plugin
+#: host-webfonts-local.php src/Frontend/Actions.php:56
+msgid "OMGF"
+msgstr "OMGF"
+
+#: src/Admin/Settings/Help.php:43
+msgid "Thank you for using %s!"
+msgstr "%s kullandığınız için teşekkür ederiz!"
+
+#: src/Admin/Dashboard.php:573
+msgid "Remove"
+msgstr "Kadır"

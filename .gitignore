@@ -1,0 +1,11 @@
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
+wp-content/ai1wm-backups/
+wp-content/backups/
+wp-content/wflogs/
+wp-content/debug.log
+wp-content/*.log
+*.log
+.DS_Store
+Thumbs.db

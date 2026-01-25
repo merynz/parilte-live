@@ -1,0 +1,32 @@
+/*
+ Theme Name: Parilte Child
+ Template: blocksy
+ Version: 1.0.0
+ Description: Parilté için Blocksy Child.
+*/
+
+/* [PATCH-02] ANCHOR: PARILTE-STYLE */
+
+/* Marka: P a r ı l t é – aralık */
+.site-branding .site-title, .site-branding .site-title a{
+  letter-spacing:.38rem; text-transform:none; font-variant-ligatures:none; white-space:nowrap;
+}
+
+/* Header sağ blok hizalama */
+.parilte-header-icons{ display:flex; gap:16px; align-items:center; }
+.parilte-header-icons .parilte-account{ display:inline-flex; gap:6px; align-items:center; text-decoration:none; }
+.parilte-header-icons .parilte-account svg{ fill:currentColor; opacity:.85; }
+.parilte-header-icons .parilte-search form{ display:flex; align-items:center; gap:8px; }
+.parilte-header-icons .parilte-search input[type="search"]{ width:220px; max-width:38vw; padding:.45rem .6rem; }
+
+/* Ürün kartı */
+ul.products li.product .button.parilte-card-btn{ width:100%; text-align:center; margin-top:.35rem; }
+
+/* Kategori açıklaması (ızgara altı) */
+.term-description{ margin-top:28px; color:var(--ct-color-text, #444); }
+
+/* Tek ürün – Beden tablosu */
+.parilte-size-box{ margin-top:14px; border:1px solid #e6e6e6; border-radius:10px; padding:.6rem .9rem; }
+.parilte-size-box summary{ cursor:pointer; font-weight:600; }
+.parilte-size-grid{ display:grid; grid-template-columns:repeat(5,minmax(60px,1fr)); gap:8px; margin:.6rem 0; }
+.parilte-size-grid > div{ border:1px dashed #ddd; border-radius:8px; padding:.4rem .5rem; text-align:center; }

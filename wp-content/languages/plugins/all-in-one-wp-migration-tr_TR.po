@@ -1,0 +1,533 @@
+# Translation of Plugins - All-in-One WP Migration and Backup - Stable (latest release) in Turkish
+# This file is distributed under the same license as the Plugins - All-in-One WP Migration and Backup - Stable (latest release) package.
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2026-01-19 21:31:29+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: GlotPress/4.0.3\n"
+"Language: tr\n"
+"Project-Id-Version: Plugins - All-in-One WP Migration and Backup - Stable (latest release)\n"
+
+#: lib/view/common/leave-feedback.php:64
+msgid "I agree to let All-in-One WP Migration use my <strong>email</strong> to respond to my request."
+msgstr "All-in-One WP Migration’ın talebimle ilgili benimle iletişime geçmek için <strong>e-posta</strong> adresimi kullanmasını kabul ediyorum."
+
+#: lib/view/common/leave-feedback.php:56
+msgid "Email address"
+msgstr "E-posta adresi"
+
+#: lib/view/common/leave-feedback.php:49
+msgid "I need help"
+msgstr "Yardıma ihtiyacım var"
+
+#: lib/view/reset/index.php:41
+msgid "Reset Hub Demo"
+msgstr "Hub Demosunu Sıfırla"
+
+#: lib/view/reset/index.php:41
+msgid "Upgrade to Premium "
+msgstr "Premium'a Yükseltme "
+
+#: lib/view/reset/index.php:39
+msgid "Please note, the features displayed below are part of an image showcasing the potential of Reset Hub in its Premium version. To activate and enjoy these advanced features, <a href=\"https://servmask.com/products/unlimited-extension\" title=\"Upgrade to Premium\" target=\"_blank\">upgrade to Premium now</a>! Elevate your website management experience with these exclusive functionalities and priority support."
+msgstr "Lütfen aşağıda gösterilen özelliklerin Reset Hub'ın Premium sürümündeki potansiyelini gösteren bir görüntünün parçası olduğunu unutmayın. Bu gelişmiş özellikleri etkinleştirmek ve keyfini çıkarmak için <a href=\"https://servmask.com/products/unlimited-extension\" title=\"Upgrade to Premium\" target=\"_blank\">upgrade to Premium now</a>! Bu özel işlevler ve öncelikli destek ile web sitesi yönetim deneyiminizi yükseltin."
+
+#: lib/view/reset/index.php:37
+msgid "Experience Full Functionality with Premium!"
+msgstr "Premium ile Tam İşlevselliği Deneyimleyin!"
+
+#: lib/view/reset/index.php:36
+msgid "Star"
+msgstr "Yıldız"
+
+#: lib/controller/class-ai1wm-main-controller.php:728
+#: lib/controller/class-ai1wm-main-controller.php:729
+msgid "Reset Hub"
+msgstr "Hub'ı Sıfırla"
+
+#: lib/view/main/premium-badge.php:33
+msgid "Premium"
+msgstr "Premium"
+
+#: lib/view/schedules/index.php:111
+msgid "Leverage the simplicity of Dropbox for your backup needs. Direct your scheduled backups to be stored in Dropbox. It's secure, straightforward, and keeps your backups at your fingertips."
+msgstr "Yedekleme ihtiyaçlarınız için Dropbox'ın basitliğinden yararlanın. Zamanlanmış yedeklemelerinizi Dropbox'ta depolanacak şekilde yönlendirin. Güvenli, basit ve yedeklerinizi parmaklarınızın ucunda tutar."
+
+#: lib/view/schedules/index.php:163
+msgid "Tailor your backup schedules to fit the complexity of your WordPress Multisite. Choose to export the entire network or only a selection of subsites according to your requirements. Effortless management for even the most intricate site networks."
+msgstr "Yedekleme programlarınızı WordPress Multisite'ınızın karmaşıklığına uyacak şekilde uyarlayın. Gereksinimlerinize göre tüm ağı veya yalnızca belirli alt siteleri dışa aktarmayı seçin. En karmaşık site ağları için bile zahmetsiz yönetim."
+
+#: lib/view/schedules/index.php:150
+msgid "We've got you covered with an array of supported storage providers. Whether you prefer Box, Amazon S3, WebDav or something else, you can choose the one that fits your needs best. Secure your backups exactly where you want them."
+msgstr "Desteklenen bir dizi depolama sağlayıcısı ile sizi teminat altına aldık. Box, Amazon S3, WebDav veya başka bir şey tercih ederseniz, ihtiyaçlarınıza en uygun olanı seçebilirsiniz. Yedeklerinizi tam olarak istediğiniz yerde güvence altına alın."
+
+#: lib/view/schedules/index.php:137
+msgid "Enjoy the flexibility of FTP storage. Direct your scheduled backups to your own FTP server. You'll have full control over your data, providing you with a versatile and private storage solution."
+msgstr "FTP depolama esnekliğinin keyfini çıkarın. Zamanlanmış yedeklemelerinizi kendi FTP sunucunuza yönlendirin. Verileriniz üzerinde tam kontrole sahip olacaksınız ve size çok yönlü ve özel bir depolama çözümü sunacak."
+
+#: lib/view/schedules/index.php:124
+msgid "Harness the power of OneDrive for your backups. Set up your scheduled backups to be saved directly in your OneDrive. It's secure, integrated with your Microsoft account, and keeps your data readily accessible."
+msgstr "Yedeklemeleriniz için OneDrive'ın gücünden yararlanın. Zamanlanmış yedeklemelerinizi doğrudan OneDrive'ınıza kaydedilecek şekilde ayarlayın. Güvenli, Microsoft hesabınızla tümleşik ve verilerinizin kolayca erişilebilir olmasını sağlar."
+
+#: lib/view/schedules/index.php:98
+msgid "Benefit from the robustness of Google Drive. Schedule your backups to be saved directly to your Google Drive account. Simple, secure, and integrated into a platform you already use."
+msgstr "Google Drive'ın sağlamlığından yararlanın. Yedeklemelerinizi doğrudan Google Drive hesabınıza kaydedilecek şekilde planlayın. Basit, güvenli ve zaten kullandığınız bir platforma entegre."
+
+#: lib/view/schedules/index.php:85
+msgid "Manage your storage effectively with our flexible retention settings. Decide how many backups you want to keep at a time. Old backups are automatically cleared, keeping your storage neat and efficient."
+msgstr "Esnek saklama ayarlarımızla depolama alanınızı etkili bir şekilde yönetin. Bir seferde kaç yedekleme saklamak istediğinize karar verin. Eski yedekler otomatik olarak temizlenir, böylece depolama alanınız düzenli ve verimli kalır."
+
+#: lib/view/schedules/index.php:77 lib/view/schedules/index.php:82
+msgid "Retention settings"
+msgstr "Saklama ayarları"
+
+#: lib/view/schedules/index.php:72
+msgid "Stay informed, not overwhelmed. Tailor your notification preferences to get updates that matter to you. Whether it's the status of each backup, or just critical alerts, control what you want to be notified about."
+msgstr "Bilgi sahibi olun, bunalmayın. Sizin için önemli olan güncellemeleri almak için bildirim tercihlerinizi uyarlayın. İster her yedeklemenin durumu, ister yalnızca kritik uyarılar olsun, nelerden haberdar olmak istediğinizi kontrol edin."
+
+#: lib/view/schedules/index.php:64 lib/view/schedules/index.php:69
+msgid "Notification settings"
+msgstr "Bildirim ayarları"
+
+#: lib/view/schedules/index.php:59
+msgid "Never worry about forgetting to back up your site again. Choose from various scheduling options, from daily to monthly, and we'll automate the rest. Backups happen like clockwork, giving you peace of mind and a solid safety net"
+msgstr "Bir daha asla sitenizi yedeklemeyi unutma konusunda endişelenmeyin. Günlükten aylığa kadar çeşitli zamanlama seçeneklerinden birini seçin, gerisini biz otomatikleştirelim. Yedeklemeler saat gibi gerçekleşir, size gönül rahatlığı ve sağlam bir güvenlik ağı sağlar"
+
+#: lib/view/schedules/index.php:56 lib/view/schedules/index.php:69
+#: lib/view/schedules/index.php:82 lib/view/schedules/index.php:95
+#: lib/view/schedules/index.php:108 lib/view/schedules/index.php:121
+#: lib/view/schedules/index.php:134 lib/view/schedules/index.php:147
+#: lib/view/schedules/index.php:160
+msgid "Enable this feature"
+msgstr "Bu özelliği etkinleştirin"
+
+#: lib/view/schedules/index.php:51
+msgid "Backup scheduler"
+msgstr "Yedekleme zamanlayıcısı"
+
+#: lib/view/schedules/index.php:45 lib/view/schedules/index.php:155
+#: lib/view/schedules/index.php:160
+msgid "Multisite Schedules"
+msgstr "Çoklu Site Programları"
+
+#: lib/view/schedules/index.php:44 lib/view/schedules/index.php:142
+#: lib/view/schedules/index.php:147
+msgid "More Storage Providers"
+msgstr "Daha Fazla Depolama Sağlayıcısı"
+
+#: lib/view/schedules/index.php:43 lib/view/schedules/index.php:129
+#: lib/view/schedules/index.php:134
+msgid "FTP Storage"
+msgstr "FTP Depolama"
+
+#: lib/view/schedules/index.php:42 lib/view/schedules/index.php:116
+#: lib/view/schedules/index.php:121
+msgid "OneDrive Storage"
+msgstr "OneDrive Depolama Alanı"
+
+#: lib/view/schedules/index.php:41 lib/view/schedules/index.php:103
+#: lib/view/schedules/index.php:108
+msgid "Dropbox Storage"
+msgstr "Dropbox Depolama Alanı"
+
+#: lib/view/schedules/index.php:40 lib/view/schedules/index.php:90
+#: lib/view/schedules/index.php:95
+msgid "Google Drive Storage"
+msgstr "Google Drive Depolama Alanı"
+
+#: lib/view/schedules/index.php:39
+msgid "Retention Settings"
+msgstr "Saklama Ayarları"
+
+#: lib/view/schedules/index.php:38
+msgid "Notification Settings"
+msgstr "Bildirim Ayarları"
+
+#: lib/view/schedules/index.php:37 lib/view/schedules/index.php:56
+msgid "Backup Scheduler"
+msgstr "Yedekleme Zamanlayıcısı"
+
+#: lib/controller/class-ai1wm-main-controller.php:737
+#: lib/controller/class-ai1wm-main-controller.php:738
+msgid "Schedules"
+msgstr "Planlamalar"
+
+#: lib/model/import/class-ai1wm-import-check-encryption.php:61
+msgid "Backup is encrypted. Please provide decryption password: "
+msgstr "Yedekleme şifrelidir. Lütfen şifre çözme şifresini sağlayın: "
+
+#: lib/view/export/advanced-settings.php:66
+msgid "Password-protect and encrypt backups"
+msgstr "Yedekleri parola ile koruma ve şifreleme"
+
+#: lib/view/export/advanced-settings.php:53
+msgid "A password is required"
+msgstr "Bir şifre gereklidir"
+
+#: lib/view/export/advanced-settings.php:46
+msgid "Encrypt this backup with a password"
+msgstr "Bu yedeklemeyi bir parola ile şifreleyin"
+
+#: lib/model/import/class-ai1wm-import-check-encryption.php:50
+msgid "Importing an encrypted backup is not supported on this server. The process cannot continue. <a href=\"https://help.servmask.com/knowledgebase/unable-to-encrypt-and-decrypt-backups/\" target=\"_blank\">Technical details</a>"
+msgstr "Şifrelenmiş bir yedeğin içe aktarılması bu sunucuda desteklenmemektedir. İşlem devam edemiyor. <a href=\"https://help.servmask.com/knowledgebase/unable-to-encrypt-and-decrypt-backups/\" target=\"_blank\">Teknik ayrıntılar</a>"
+
+#: lib/controller/class-ai1wm-main-controller.php:853
+#: lib/view/export/advanced-settings.php:58
+msgid "The passwords do not match"
+msgstr "Şifreler eşleşmiyor"
+
+#: lib/controller/class-ai1wm-main-controller.php:852
+#: lib/view/export/advanced-settings.php:56
+msgid "Repeat the password"
+msgstr "Şifreyi tekrarla"
+
+#: lib/controller/class-ai1wm-main-controller.php:850
+msgid "Submit"
+msgstr "Gönder"
+
+#: lib/controller/class-ai1wm-main-controller.php:848
+msgid "The backup is encrypted"
+msgstr "Yedekleme şifrelenmiştir"
+
+#: lib/view/backups/backups-list.php:131
+msgid "List"
+msgstr "Liste"
+
+#: lib/view/backups/backups-list.php:129
+msgid "Show backup content"
+msgstr "Yedek içeriğini göster"
+
+#: lib/view/backups/backups-list.php:122
+msgid "Downloading is not possible because backups directory is not accessible."
+msgstr "Yedekleme dizinine erişilemediği için indirme mümkün değil."
+
+#: lib/controller/class-ai1wm-main-controller.php:894
+msgid "Reading..."
+msgstr "Okunuyor..."
+
+#: lib/controller/class-ai1wm-main-controller.php:893
+msgid "List the content of the backup"
+msgstr "Yedeklemenin içeriğini listele"
+
+#: lib/controller/class-ai1wm-main-controller.php:891
+msgid "Error"
+msgstr "Hata"
+
+#: lib/view/backups/backups-list.php:95
+msgid "More"
+msgstr "Daha fazla"
+
+#. translators: 1: Number of backups.
+#: lib/controller/class-ai1wm-main-controller.php:827
+msgid "You have %d backups"
+msgstr "%d yedeğiniz mevcut"
+
+#. translators: 1: Number of backups.
+#. translators: Numbers of backups.
+#: lib/controller/class-ai1wm-main-controller.php:825
+#: lib/view/main/backups.php:33
+msgid "You have %d backup"
+msgid_plural "You have %d backups"
+msgstr[0] "%d yedeğiniz mevcut"
+msgstr[1] "%d yedeğiniz mevcut"
+
+#. translators: 1: Error message.
+#: lib/view/updater/error.php:33
+msgid "Error: %s"
+msgstr "Hata: %s"
+
+#: lib/view/main/contact-support.php:33
+msgid "Contact Support"
+msgstr "Destek ile iletişim kur"
+
+#: lib/model/import/class-ai1wm-import-permalinks.php:38
+msgid "Retrieving WordPress permalinks settings..."
+msgstr "WordPress kalıcı bağlantı ayarları getiriliyor..."
+
+#: lib/view/import/avada.php:46
+msgid "» <a class=\"ai1wm-no-underline\" href=\"https://theme-fusion.com/documentation/avada/installation-maintenance/important-update-information/#clear-caches\" target=\"_blank\">Reset Avada Fusion Builder cache</a>.<br />"
+msgstr "» <a class=\"ai1wm-no-underline\" href=\"https://theme-fusion.com/documentation/avada/installation-maintenance/important-update-information/#clear-caches\" target=\"_blank\">Avada Fusion Builder önbelleğini sıfırlayın</a>.<br />"
+
+#: lib/view/import/avada.php:33
+msgid "» Permalinks are set to default. <a class=\"ai1wm-no-underline\" href=\"https://help.servmask.com/knowledgebase/permalinks-are-set-to-default/\" target=\"_blank\">Why?</a><br />"
+msgstr "» Kalıcı bağlantılar bağlantılar varsayılan olarak ayarlanıyor. <a class=\"ai1wm-no-underline\" href=\"https://help.servmask.com/knowledgebase/permalinks-are-set-to-default/\" target=\"_blank\">Neden varsayılan olarak ayarlanıyor?</a><br />"
+
+#: lib/view/main/translate.php:33
+msgid "Translate"
+msgstr "Tercüme edin"
+
+#: lib/controller/class-ai1wm-main-controller.php:845
+msgid "I have enough disk space"
+msgstr "Yeterli disk alanına sahibim"
+
+#: lib/view/backups/backups-list.php:48 lib/view/backups/index.php:51
+msgid "Refreshing backup list..."
+msgstr "Yedekleme listesi yenileniyor..."
+
+#: lib/view/import/button-file.php:33
+msgid "To choose a file please go inside the link and click on the browse button."
+msgstr "Bir dosya seçmek için lütfen bağlantıya tıklayın ve gözat düğmesine tıklayın."
+
+#: lib/controller/class-ai1wm-main-controller.php:843
+msgid "Finish"
+msgstr "Bitir"
+
+#: lib/model/import/class-ai1wm-import-validate.php:102
+msgid "The archive file appears to be corrupted. Follow <a href=\"https://help.servmask.com/knowledgebase/corrupted-archive/\" target=\"_blank\">this article</a> for possible fixes."
+msgstr "Arşiv dosyası bozuk. Olası çözüm yöntemleri için <a href=\"https://help.servmask.com/knowledgebase/corrupted-archive/\" target=\"_blank\">bu makaleyi</a> inceleyin."
+
+#: lib/view/import/import-buttons.php:41
+msgid "Drag & Drop a backup to import it"
+msgstr "İçeri aktarmak için bir yedeklemeyi sürükleyip bırakın"
+
+#: lib/controller/class-ai1wm-main-controller.php:251
+msgid "All-in-One WP Migration Command"
+msgstr "All-in-One WP Migration komutu"
+
+#: lib/controller/class-ai1wm-main-controller.php:816
+#: lib/model/export/class-ai1wm-export-init.php:47
+msgid "Preparing to export..."
+msgstr "Dışarı aktarım için hazırlanıyor..."
+
+#. translators: Human time diff
+#: lib/view/backups/backups-list.php:84
+msgid "%s ago"
+msgstr "%s önce"
+
+#: lib/controller/class-ai1wm-main-controller.php:812
+msgid "Your purchase ID is invalid. Please <a href=\"mailto:support@servmask.com\">contact us</a>."
+msgstr "Satın alma kimliğiniz geçersiz. Lütfen <a href=\"mailto:support@servmask.com\">bize ulaşın</a>."
+
+#: lib/controller/class-ai1wm-main-controller.php:884
+msgid "Are you sure you want to delete this backup?"
+msgstr "Bu yedeği silmek istediğinizden emin misiniz?"
+
+#: lib/controller/class-ai1wm-main-controller.php:847
+msgid "Please do not close this browser window or your import will fail"
+msgstr "Lütfen tarayıcı pencerenizi kapatmayın yoksa içeri aktarma işlemi başarısız olur"
+
+#: lib/controller/class-ai1wm-main-controller.php:846
+msgid "Continue"
+msgstr "Devam"
+
+#: lib/controller/class-ai1wm-main-controller.php:844
+msgid "Proceed"
+msgstr "İlerle"
+
+#: lib/controller/class-ai1wm-main-controller.php:842
+msgid "Stop import"
+msgstr "İçeri aktarmayı durdur"
+
+#: lib/controller/class-ai1wm-main-controller.php:823
+msgid "Stop export"
+msgstr "Dışarı aktarmayı durdur"
+
+#: lib/controller/class-ai1wm-main-controller.php:822
+#: lib/controller/class-ai1wm-main-controller.php:841
+msgid "Close"
+msgstr "Kapat"
+
+#: lib/model/export/class-ai1wm-export-config.php:38
+msgid "Preparing configuration..."
+msgstr "Yapılandırma hazırlanıyor..."
+
+#. translators: Progress.
+#: lib/model/export/class-ai1wm-export-config-file.php:63
+#: lib/model/export/class-ai1wm-export-config-file.php:99
+msgid "Archiving configuration...<br />%d%% complete"
+msgstr "Yapılandırma arşivleniyor...<br />%%%d tamamlandı"
+
+#. translators: Progress.
+#: lib/model/import/class-ai1wm-import-validate.php:90
+#: lib/model/import/class-ai1wm-import-validate.php:162
+msgid "Unpacking archive...<br />%d%% complete"
+msgstr "Arşiv açılıyor... <br />%d%% tamamlandı"
+
+#. translators: Progress.
+#: lib/model/export/class-ai1wm-export-database-file.php:69
+#: lib/model/export/class-ai1wm-export-database-file.php:105
+msgid "Archiving database...<br />%d%% complete"
+msgstr "Veritabanı arşivleniyor...<br />%d%% tamamlandı"
+
+#. translators: Progress.
+#: lib/model/import/class-ai1wm-import-database.php:81
+#: lib/model/import/class-ai1wm-import-database.php:1037
+msgid "Restoring database...<br />%d%% complete"
+msgstr "Veritabanı geri yükleniyor...<br />%d%% tamamlandı"
+
+#: lib/controller/class-ai1wm-main-controller.php:833
+msgid "Preparing to import..."
+msgstr "İçeri aktarmaya hazırlanılıyor..."
+
+#: lib/controller/class-ai1wm-main-controller.php:1346
+msgid "Monthly"
+msgstr "Aylık"
+
+#: lib/controller/class-ai1wm-main-controller.php:1342
+msgid "Weekly"
+msgstr "Haftalık"
+
+#: lib/model/import/class-ai1wm-import-mu-plugins.php:37
+msgid "Activating mu-plugins..."
+msgstr "mu-plugins etkinleştiriliyor..."
+
+#: lib/model/import/class-ai1wm-import-blogs.php:37
+msgid "Preparing blogs..."
+msgstr "Bloglar hazırlanıyor..."
+
+#: lib/controller/class-ai1wm-main-controller.php:811
+#: lib/view/updater/check.php:33
+msgid "Check for updates"
+msgstr "Güncellemeleri kontrol et"
+
+#. Author of the plugin
+#: all-in-one-wp-migration.php
+msgid "ServMask"
+msgstr "ServMask"
+
+#. Plugin URI of the plugin
+#. Author URI of the plugin
+#: all-in-one-wp-migration.php
+msgid "https://servmask.com/"
+msgstr "https://servmask.com/"
+
+#: lib/view/import/index.php:39
+msgid "Import Site"
+msgstr "Siteyi içeri aktar"
+
+#: lib/view/import/import-buttons.php:45
+msgid "Import From"
+msgstr "İçeri aktarma formu"
+
+#: lib/view/export/index.php:39
+msgid "Export Site"
+msgstr "Siteyi dışarı aktar"
+
+#: lib/view/export/help-section.php:52
+msgid "Once the file is successfully downloaded on your computer, you can import it to any of your WordPress sites."
+msgstr "Dosya bir kere bilgisayarınıza indiğinde istediğiniz her WordPress sitesinde içeri aktarabilirsiniz."
+
+#: lib/view/export/help-section.php:48
+msgid "Press \"Export\" button and the site archive file will pop up in your browser."
+msgstr "\"Dışarı aktar\" tuşuna basın ve site arşiviniz tarayıcınızda karşınıza çıkacaktır."
+
+#: lib/view/export/help-section.php:44
+msgid "In the advanced settings section you can configure more precisely the way of exporting."
+msgstr "Gelişmiş ayarlar bölümünde daha detaylı dışarı aktarma ayarları belirleyebilirsiniz."
+
+#: lib/view/export/find-replace.php:54
+msgid "Add"
+msgstr "Ekle"
+
+#: lib/view/export/find-replace.php:41
+msgid "in the database"
+msgstr "veritabanında"
+
+#: lib/view/export/find-replace.php:40
+msgid "<another-text>"
+msgstr "<another-text>"
+
+#: lib/view/export/find-replace.php:39 lib/view/export/find-replace.php:47
+msgid "Replace with"
+msgstr "Şununla değiştir"
+
+#: lib/view/export/find-replace.php:38
+msgid "<text>"
+msgstr "<text>"
+
+#: lib/view/export/button-file.php:33 lib/view/import/button-file.php:34
+msgid "File"
+msgstr "Dosya"
+
+#: lib/view/export/advanced-settings.php:38
+msgid "(click to expand)"
+msgstr "(genişletmek için tıklayın)"
+
+#: lib/view/export/advanced-settings.php:37
+msgid "Advanced options"
+msgstr "Gelişmiş Seçenekler"
+
+#: lib/view/common/share-buttons.php:73
+msgid "Tweet"
+msgstr "Tweet"
+
+#: lib/view/common/leave-feedback.php:69
+msgid "Cancel"
+msgstr "İptal"
+
+#: lib/view/common/leave-feedback.php:72
+msgid "Send"
+msgstr "Gönder"
+
+#: lib/controller/class-ai1wm-main-controller.php:851
+#: lib/view/export/advanced-settings.php:51
+msgid "Enter a password"
+msgstr "Bir parola girin"
+
+#: lib/view/common/sidebar-right.php:41
+msgid "Leave Feedback"
+msgstr "Geri bildirim bırak"
+
+#: lib/view/backups/index.php:59
+msgid "Create backup"
+msgstr "Yedekleme oluştur"
+
+#: lib/view/backups/backups-list.php:136 lib/view/backups/backups-list.php:138
+msgid "Delete"
+msgstr "Sil"
+
+#: lib/view/backups/backups-list.php:101 lib/view/backups/backups-list.php:103
+msgid "Restore"
+msgstr "Geri al"
+
+#: lib/view/backups/backups-list.php:109 lib/view/backups/backups-list.php:111
+#: lib/view/backups/backups-list.php:114 lib/view/backups/backups-list.php:116
+#: lib/view/backups/backups-list.php:124
+msgid "Download"
+msgstr "İndir"
+
+#: lib/view/backups/backups-list.php:40
+msgid "Size"
+msgstr "Boyut"
+
+#: lib/view/backups/backups-list.php:39
+msgid "Date"
+msgstr "Tarih"
+
+#: lib/view/backups/backups-list.php:38
+msgid "Name"
+msgstr "İsim"
+
+#: lib/model/import/class-ai1wm-import-done.php:365
+#: lib/model/import/class-ai1wm-import-done.php:367
+#: lib/model/import/class-ai1wm-import-done.php:369
+msgid "Your site has been imported successfully!"
+msgstr "Siteniz başarıyla içeri aktarıldı!"
+
+#: lib/model/export/class-ai1wm-export-download.php:37
+msgid "Renaming export file..."
+msgstr "Dışarı aktarma dosyasının ismi değiştiriliyor..."
+
+#: lib/controller/class-ai1wm-main-controller.php:718
+#: lib/controller/class-ai1wm-main-controller.php:719
+#: lib/view/backups/index.php:39
+msgid "Backups"
+msgstr "Yedeklemeler"
+
+#: lib/controller/class-ai1wm-main-controller.php:709
+#: lib/controller/class-ai1wm-main-controller.php:710
+msgid "Import"
+msgstr "İçe Aktar"
+
+#: lib/controller/class-ai1wm-main-controller.php:700
+#: lib/controller/class-ai1wm-main-controller.php:701
+msgid "Export"
+msgstr "Dışa Aktar"
+
+#: lib/view/main/multisite-notice.php:43
+msgid "Get multisite"
+msgstr "Çoklu siteyi edin"
