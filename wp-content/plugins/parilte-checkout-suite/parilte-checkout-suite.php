@@ -2358,30 +2358,39 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-cat-card strong{display:block;margin-bottom:4px;color:var(--parilte-ink);font-family:var(--ct-heading-font-family, inherit);letter-spacing:.1em;text-transform:uppercase;font-size:.82rem}
     .parilte-cat-card span{opacity:.7;color:var(--parilte-muted)}
     .parilte-carousel{padding:18px 0 8px}
-    .parilte-showcase-card{position:relative;border-radius:30px;padding:26px;border:1px solid rgba(0,0,0,.08);overflow:hidden;
-      background:linear-gradient(135deg,#faf6f1 0%,#f2eae1 55%,#efe2d5 100%);
-      box-shadow:0 20px 36px rgba(0,0,0,.08)}
-    .parilte-showcase-card::before{content:"";position:absolute;right:-140px;top:-140px;width:280px;height:280px;border-radius:50%;
-      background:rgba(0,0,0,.03);pointer-events:none}
-    .parilte-showcase-card::after{content:"";position:absolute;left:-120px;bottom:-120px;width:240px;height:240px;border-radius:50%;
-      background:rgba(255,255,255,.5);pointer-events:none}
+    .parilte-showcase-card{
+      position:relative;border-radius:26px;padding:28px;border:1px solid rgba(0,0,0,.10);overflow:hidden;
+      background:#f7f3ee;
+      background-image:
+        linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(0,0,0,.03) 1px, transparent 1px);
+      background-size:36px 36px;
+      box-shadow:0 18px 32px rgba(0,0,0,.06)}
+    .parilte-showcase-card::before{
+      content:"";position:absolute;left:18px;right:18px;top:16px;height:1px;
+      background:rgba(0,0,0,.06);pointer-events:none
+    }
+    .parilte-showcase-card::after{
+      content:"";position:absolute;left:18px;top:16px;bottom:18px;width:1px;
+      background:rgba(0,0,0,.06);pointer-events:none
+    }
     .parilte-showcase-new{display:grid;grid-template-columns:minmax(240px,320px) 1fr;gap:24px;align-items:center}
     .parilte-showcase-best{display:grid;grid-template-columns:minmax(260px,360px) 1fr;gap:24px;align-items:stretch;
-      background:linear-gradient(135deg,#f7f1ea 0%,#efe6dc 50%,#ede0d2 100%)}
-    .parilte-showcase-sale{display:grid;grid-template-columns:1fr;gap:16px;background:linear-gradient(135deg,#f6f0e9 0%,#efe4d8 55%,#ecd9c9 100%)}
-    .parilte-showcase-copy h2{margin:6px 0 8px}
+      background:#f5f1ec}
+    .parilte-showcase-sale{display:grid;grid-template-columns:1fr;gap:16px;background:#f6f2ee}
+    .parilte-showcase-copy h2{margin:6px 0 8px;letter-spacing:.12em;text-transform:uppercase;font-weight:500}
     .parilte-showcase-copy p{margin:0 0 16px;color:var(--parilte-muted);max-width:100%}
     .parilte-showcase-actions{display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
     .parilte-showcase-tags{display:flex;gap:8px;flex-wrap:wrap}
     .parilte-showcase-tags span{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;opacity:.6}
-    .parilte-showcase-hero{border-radius:22px;min-height:260px;background-size:cover;background-position:center;position:relative;overflow:hidden}
-    .parilte-showcase-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.2),rgba(0,0,0,0) 45%,rgba(0,0,0,.35))}
+    .parilte-showcase-hero{border-radius:20px;min-height:260px;background-size:cover;background-position:center;position:relative;overflow:hidden}
+    .parilte-showcase-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,0) 45%,rgba(0,0,0,.25))}
     .parilte-showcase-hero-body{position:relative;z-index:1;color:#fff;padding:18px;display:flex;flex-direction:column;gap:8px}
     .parilte-showcase-hero-body h2{margin:0;color:#fff}
     .parilte-showcase-hero-body p{margin:0;color:rgba(255,255,255,.85)}
     .parilte-showcase-rail{position:relative}
     .parilte-chip-link{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;
-      border:1px solid rgba(0,0,0,.12);background:#fff;text-decoration:none;letter-spacing:.16em;text-transform:uppercase;
+      border:1px solid rgba(0,0,0,.15);background:rgba(255,255,255,.9);text-decoration:none;letter-spacing:.16em;text-transform:uppercase;
       font-size:.72rem;color:var(--parilte-ink)}
     .parilte-carousel-track{position:relative;overflow:hidden}
     .parilte-carousel-controls{position:absolute;top:10px;right:10px;display:flex;gap:8px;z-index:2}
@@ -2460,7 +2469,7 @@ add_action('wp_enqueue_scripts', function () {
         .parilte-editorial-card.wide{grid-column:auto;grid-row:auto;min-height:220px}
         .parilte-showcase-new,
         .parilte-showcase-best{grid-template-columns:1fr}
-        .parilte-showcase-card{padding:clamp(14px,3.5vw,22px)}
+        .parilte-showcase-card{padding:clamp(14px,3.5vw,22px);background-size:28px 28px}
         .parilte-showcase-copy h2{font-size:clamp(1.1rem,4.5vw,1.35rem)}
         .parilte-showcase-copy p{font-size:clamp(.88rem,3.4vw,1rem)}
         .parilte-showcase-hero{min-height:clamp(180px,60vw,260px)}
@@ -2526,7 +2535,7 @@ add_action('wp_enqueue_scripts', function () {
         .parilte-carousel-track .products li.product{flex-basis:100%}
         .parilte-header-icons{font-size:clamp(.58rem,2.6vw,.7rem);letter-spacing:.1em;justify-content:center}
         .parilte-cart-count{min-width:14px;height:14px;font-size:.58rem}
-        .parilte-showcase-card{padding:clamp(12px,4vw,20px);border-radius:22px}
+        .parilte-showcase-card{padding:clamp(12px,4vw,20px);border-radius:22px;background-size:26px 26px}
         .parilte-showcase-hero{min-height:clamp(160px,60vw,240px);border-radius:18px}
         .parilte-showcase-copy h2{font-size:clamp(1rem,4.8vw,1.25rem)}
         .parilte-showcase-copy p{font-size:clamp(.86rem,3.6vw,.98rem)}
