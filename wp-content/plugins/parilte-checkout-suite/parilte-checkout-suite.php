@@ -1026,6 +1026,12 @@ function parilte_cs_header_markup(){
     $account_label = is_user_logged_in() ? 'Hesabım' : 'Giriş';
     ob_start(); ?>
     <div class="parilte-header-icons">
+      <div class="parilte-header-cats">
+        <button type="button" class="parilte-header-cats-toggle" aria-haspopup="true" aria-expanded="false">Kategoriler</button>
+        <div class="parilte-header-cats-panel">
+          <?php echo parilte_cs_category_tree_block(); ?>
+        </div>
+      </div>
       <a class="parilte-account" href="<?php echo $account_url; ?>" aria-label="Hesabım">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
           <span><?php echo esc_html($account_label); ?></span>
@@ -1197,20 +1203,7 @@ add_action('wp_enqueue_scripts', function () {
         });
       });
 
-      if (\$cats.length) {
-        var \$topItems = \$cats.children('li');
-        var maxCats = 12;
-        if (\$topItems.length > maxCats) {
-          \$topItems.slice(maxCats).addClass('parilte-cat-hidden');
-          var \$more = $('<button type=\"button\" class=\"parilte-cat-more\">Tümünü Gör</button>');
-          \$more.on('click', function(){
-            var expanded = \$cats.hasClass('parilte-cat-expanded');
-            \$cats.toggleClass('parilte-cat-expanded', !expanded);
-            \$more.text(expanded ? 'Tümünü Gör' : 'Kısalt');
-          });
-          \$cats.after(\$more);
-        }
-      }
+      // show all categories (no truncation)
 
       var \$treeSrc = $('#parilte-cat-tree-source').first();
       if (\$treeSrc.length) {
@@ -2141,6 +2134,24 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-header-icons{display:flex;gap:14px;align-items:center;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase}
     .parilte-header-icons a{display:inline-flex;gap:6px;align-items:center;text-decoration:none;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit}
     .parilte-header-icons svg{fill:currentColor;opacity:.6;width:14px;height:14px}
+    .parilte-header-cats{position:relative}
+    .parilte-header-cats-toggle{
+      border:0;background:transparent;cursor:pointer;padding:0;letter-spacing:.14em;text-transform:uppercase;font:inherit;color:inherit;
+      display:inline-flex;align-items:center;gap:6px
+    }
+    .parilte-header-cats-toggle::after{content:"▾";font-size:.7rem;opacity:.6}
+    .parilte-header-cats-panel{
+      position:absolute;left:0;top:100%;margin-top:10px;min-width:260px;max-width:360px;
+      background:rgba(255,255,255,.98);border:1px solid rgba(0,0,0,.08);border-radius:16px;padding:12px;
+      box-shadow:0 18px 36px rgba(0,0,0,.12);display:none;z-index:50;
+      max-height:70vh;overflow-y:auto
+    }
+    .parilte-header-cats:hover .parilte-header-cats-panel,
+    .parilte-header-cats:focus-within .parilte-header-cats-panel{display:block}
+    .parilte-header-cats .parilte-cat-tree{margin:0;padding:0;border:0;background:transparent}
+    .parilte-header-cats .parilte-cat-tree-head{display:none}
+    .parilte-header-cats .parilte-cat-tree-list{gap:4px}
+    .parilte-header-cats .parilte-cat-tree-children{margin-left:8px}
     .parilte-cart-count{min-width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;
       font-size:.62rem;border-radius:999px;background:currentColor;color:#fff;padding:0 5px;line-height:1}
     .parilte-search-form{display:flex;align-items:center;gap:6px}
@@ -2485,6 +2496,7 @@ add_action('wp_enqueue_scripts', function () {
         .woocommerce .woocommerce-ordering{margin:6px 0 12px}
         .parilte-sidebar-quick{gap:6px}
         .parilte-cat-tree{padding:10px}
+        .parilte-header-cats{display:none}
         .parilte-showcase-tags{display:none}
         .woocommerce ul.products li.product .product-category,
         .woocommerce ul.products li.product .product-categories,
@@ -2524,12 +2536,12 @@ add_action('wp_enqueue_scripts', function () {
         .parilte-cat-tree{margin-bottom:12px}
         .parilte-carousel-track .products{gap:12px}
         .parilte-carousel-track .products li.product{max-width:calc(100vw - 2 * clamp(12px,4vw,20px));margin-left:auto;margin-right:auto}
-        .ct-offcanvas-container{background:rgba(245,241,236,.98)}
-        .ct-offcanvas-overlay{background:rgba(0,0,0,.35)}
-        .ct-offcanvas-container,
-        .ct-panel{height:100vh}
-        .ct-panel{max-width:100vw;width:100vw}
-        .ct-panel-content{padding:16px}
+      .ct-offcanvas-container{background:rgba(245,241,236,.98)}
+      .ct-offcanvas-overlay{background:rgba(0,0,0,.35)}
+      .ct-offcanvas-container,
+      .ct-panel{height:100vh}
+      .ct-panel{max-width:100vw;width:100vw}
+      .ct-panel-content{padding:16px;overflow-y:auto;max-height:100vh;-webkit-overflow-scrolling:touch}
       }
       @media (max-width: 560px){
         .parilte-carousel-track .products li.product{flex-basis:100%}
