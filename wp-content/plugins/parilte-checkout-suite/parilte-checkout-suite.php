@@ -2325,6 +2325,25 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-header-icons{flex-wrap:wrap;justify-content:center;gap:10px}
       .parilte-search-form{width:100%}
       .parilte-search-input{width:100%;max-width:none}
+
+      /* Showcase panels: force mobile-safe layout */
+      .parilte-showcase-card{overflow:hidden}
+      .parilte-showcase-new,
+      .parilte-showcase-best,
+      .parilte-showcase-sale{display:flex;flex-direction:column;gap:16px}
+      .parilte-showcase-copy,
+      .parilte-showcase-rail,
+      .parilte-showcase-hero{min-width:0;max-width:100%}
+      .parilte-showcase-copy{overflow-wrap:anywhere;word-break:break-word;hyphens:auto}
+      .parilte-showcase-hero{width:100%}
+      .parilte-showcase-hero-body{max-width:100%}
+      .parilte-carousel-track .products{padding-left:2px;padding-right:2px}
+      .parilte-carousel-track .products li.product{
+        flex:0 0 86vw !important;
+        max-width:86vw !important;
+      }
+      .parilte-carousel-track .products li.product:nth-child(3n),
+      .parilte-carousel-track .products li.product:nth-child(4n){margin-top:0 !important}
       ';
     wp_add_inline_style('parilte-checkout-suite', $css);
 }, 22);
