@@ -1250,6 +1250,8 @@ add_action('wp_enqueue_scripts', function () {
       // Filters panel toggle (mobile)
       var \$sidebar = \$widgetScope.filter('.sidebar-woocommerce, .ct-sidebar, .woocommerce-sidebar').first();
       if (\$sidebar.length) {
+        // Reset default widget spacing to avoid "floating" look
+        \$sidebar.children('.widget').css({'margin':'0 0 12px','padding':'0','border':'0','background':'transparent'});
         if (!\$sidebar.parent().hasClass('parilte-filters-wrap')) {
           \$sidebar.wrap('<div class=\"parilte-filters-wrap\"></div>');
         }
@@ -1985,6 +1987,13 @@ add_filter('gettext', function ($translated, $text, $domain) {
         'Quantity' => 'Adet',
         'Proceed to checkout' => 'Ödemeye geç',
         'Checkout' => 'Ödeme',
+        'Shipping to' => 'Gönderim adresi',
+        'Calculate shipping' => 'Kargo hesapla',
+        'Coupon:' => 'Kupon:',
+        'Have a coupon?' => 'Kuponunuz var mı?',
+        'Enter your coupon code' => 'Kupon kodunuzu girin',
+        'Cart updated.' => 'Sepet güncellendi.',
+        'Your cart is currently empty.' => 'Sepetiniz şu an boş.',
     ];
     if (isset($map[$text])) return $map[$text];
     return $translated;
@@ -2024,6 +2033,91 @@ function parilte_cs_footer_links() {
     <?php
 }
 add_action('wp_footer', 'parilte_cs_footer_links', 30);
+
+function parilte_cs_update_legal_pages_once() {
+    if (!current_user_can('manage_options')) return;
+    if (get_option('parilte_legal_pages_v2')) return;
+
+    $pages = [
+        'hakkimizda' => '<h2>Hakkımızda</h2>
+<p>Parılté Butik, yalnızca bir moda markası değil; kendini değerli, güçlü ve özel hissetmek isteyen kadınların hikâyesidir.</p>
+<p>Parılté, ışığını kaybetmeyen, her ortamda zarafetiyle fark yaratan kadınlardan ilham alır.</p>
+<p>Her koleksiyonumuz; şıklığı, konforu ve zamansız stili bir araya getirmek için özenle seçilir.</p>
+<p>Biz modayı bir yarış değil, bir ifade biçimi olarak görüyoruz.</p>
+<p>Bir elbise yalnızca bir elbise değildir; bir duruş, bir özgüven ve bir hatıradır.</p>
+<p>Parılté Butik’te bulacağınız her parça:</p>
+<ul>
+  <li>Kendinizi iyi hissetmeniz için</li>
+  <li>Günün her anında şık olmanız için</li>
+  <li>Yıllar sonra bile severek giymeniz için</li>
+</ul>
+<p>seçilmiştir.</p>
+<p>Bizim için her kadın kendi ışığını taşır. Biz sadece onu ortaya çıkarırız.</p>
+<p><strong>Parılté – Çünkü her kadın parıldamayı hak eder.</strong></p>',
+        'teslimat-kargo' => '<h2>Teslimat & Kargo</h2>
+<p>Parılté Butik’ten verdiğiniz tüm siparişler özenle hazırlanır ve güvenle kargoya teslim edilir.</p>
+<h3>Kargo süreci</h3>
+<ul>
+  <li>Siparişleriniz 1–3 iş günü içerisinde hazırlanarak kargoya verilir.</li>
+  <li>Türkiye’nin her yerine gönderim yapılır.</li>
+  <li>Gönderiler anlaşmalı kargo firmamız aracılığıyla ulaştırılır.</li>
+  <li>Siparişiniz kargoya verildiğinde tarafınıza kargo takip numarası gönderilir.</li>
+</ul>
+<h3>Kargo teslimatı</h3>
+<ul>
+  <li>Kargonuz bulunduğunuz şehre göre genellikle 1–3 iş günü içinde adresinize ulaşır.</li>
+  <li>Teslimat sırasında paketinizi kontrol etmenizi öneririz. Hasarlı paketleri teslim almadan kargo görevlisine tutanak tutturmanızı rica ederiz.</li>
+</ul>
+<p>Parılté Butik olarak ürünlerinizi yalnızca şık değil, güvenli ve özenli şekilde size ulaştırırız.</p>',
+        'iade-degisim' => '<h2>İade & Değişim</h2>
+<p>Parılté Butik’te müşteri memnuniyeti her zaman önceliğimizdir.</p>
+<p>Satın aldığınız ürünler için teslim tarihinden itibaren 3 gün içerisinde iade veya değişim talebinde bulunabilirsiniz.</p>
+<h3>İade ve değişim şartları</h3>
+<ul>
+  <li>Kullanılmamış olması</li>
+  <li>Etiketlerinin koparılmamış olması</li>
+  <li>Hasar görmemiş olması</li>
+  <li>Orijinal ambalajında olması</li>
+  <li>Tekrar satılabilir durumda olması</li>
+</ul>
+<p>İç giyim, mayo, küpe, takı ve kişisel kullanım ürünlerinde hijyen sebebiyle iade ve değişim kabul edilmez.</p>
+<h3>Süreç nasıl işler?</h3>
+<ol>
+  <li>Talebinizi 3 gün içinde bize bildirirsiniz.</li>
+  <li>Ürün tarafımıza ulaştıktan sonra kontrol edilir.</li>
+  <li>Şartlara uygunsa değişim yapılır veya iade süreci başlatılır.</li>
+  <li>İade onaylandıktan sonra ücretiniz 7 iş günü içerisinde ödeme yaptığınız yönteme geri yatırılır.</li>
+</ol>
+<p>Parılté Butik olarak amacımız, alışverişinizden memnun kalmanız ve güvenle tekrar bizi tercih etmenizdir.</p>',
+        'kvkk-gizlilik' => '<h2>KVKK & Gizlilik Politikası</h2>
+<p>Parılté Butik olarak kişisel verilerinizin güvenliği bizim için büyük önem taşır.</p>
+<p>Web sitemiz üzerinden paylaştığınız;</p>
+<ul>
+  <li>Ad, soyad</li>
+  <li>Telefon numarası</li>
+  <li>E-posta adresi</li>
+  <li>Teslimat adresi</li>
+  <li>Sipariş ve ödeme bilgileri</li>
+</ul>
+<p>yalnızca siparişlerinizi oluşturmak, teslim etmek, sizinle iletişim kurmak ve yasal yükümlülüklerimizi yerine getirmek amacıyla kullanılmaktadır.</p>
+<p>Kişisel verileriniz;</p>
+<ul>
+  <li>Üçüncü kişilerle paylaşılmaz</li>
+  <li>Satılmaz</li>
+  <li>Reklam veya pazarlama amacıyla izinsiz kullanılmaz</li>
+</ul>
+<p>Verileriniz 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında güvenli şekilde saklanır.</p>
+<p>Dilediğiniz zaman kişisel verilerinizin silinmesini, güncellenmesini veya hangi amaçla işlendiğini öğrenmek için bizimle iletişime geçebilirsiniz.</p>',
+    ];
+
+    foreach ($pages as $slug => $html) {
+        $p = get_page_by_path($slug);
+        if (!$p) continue;
+        wp_update_post(['ID' => $p->ID, 'post_content' => wp_kses_post($html)]);
+    }
+    update_option('parilte_legal_pages_v2', 1);
+}
+add_action('admin_init', 'parilte_cs_update_legal_pages_once', 36);
 
 add_action('woocommerce_product_query', function ($q) {
     if (is_admin()) return;
@@ -2285,7 +2379,21 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-filters-wrap.is-collapsed .sidebar-woocommerce,
     .parilte-filters-wrap.is-collapsed .ct-sidebar,
     .parilte-filters-wrap.is-collapsed .woocommerce-sidebar{display:none}
-    .parilte-filters-wrap{background:rgba(255,255,255,.55);border:1px solid rgba(0,0,0,.08);border-radius:18px;padding:12px;margin-bottom:18px}
+    .parilte-filters-wrap{
+      background:rgba(255,255,255,.72);
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:18px;
+      padding:14px;
+      margin:0 0 18px;
+      box-shadow:0 14px 28px rgba(0,0,0,.06);
+    }
+    .parilte-filters-wrap .widget{margin:0 0 12px;padding:10px 12px;border:1px solid rgba(0,0,0,.06);border-radius:14px;background:#fff}
+    .parilte-filters-wrap .widget:last-child{margin-bottom:0}
+    .parilte-filters-wrap .widget-title{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px}
+    .parilte-filters-wrap .product-categories,
+    .parilte-filters-wrap .wc-block-product-categories-list{gap:0}
+    .parilte-filters-wrap .product-categories li,
+    .parilte-filters-wrap .wc-block-product-categories-list li{padding:6px 0}
     @media (min-width: 901px){
       .parilte-filters-toggle{display:none}
       .parilte-filters-wrap{padding:0;border:0;background:transparent}
@@ -2733,14 +2841,16 @@ add_action('woocommerce_single_product_summary', function () {
     }
 
     echo '<div class="parilte-single-opts">';
-    echo '<div class="parilte-opt-row"><span class="parilte-opt-label">Beden</span><div class="parilte-opt-list">';
-    foreach ($sizes_all as $s) {
-        $is_selected = isset($selected_sizes[$s]);
-        $is_on = $is_selected && !empty($in_stock_sizes[$s]);
-        $cls = 'parilte-opt size ' . ($is_on ? 'on' : 'off');
-        echo '<span class="'.esc_attr($cls).'">'.esc_html($s).'</span>';
+    if (!empty($selected_sizes)) {
+        echo '<div class="parilte-opt-row"><span class="parilte-opt-label">Beden</span><div class="parilte-opt-list">';
+        foreach ($sizes_all as $s) {
+            if (!isset($selected_sizes[$s])) continue;
+            $is_on = !empty($in_stock_sizes[$s]);
+            $cls = 'parilte-opt size ' . ($is_on ? 'on' : 'off');
+            echo '<span class="'.esc_attr($cls).'">'.esc_html($s).'</span>';
+        }
+        echo '</div></div>';
     }
-    echo '</div></div>';
 
     if (!empty($selected_colors)) {
         echo '<div class="parilte-opt-row"><span class="parilte-opt-label">Renk</span><div class="parilte-opt-list">';
