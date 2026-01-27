@@ -1250,7 +1250,7 @@ add_action('wp_enqueue_scripts', function () {
       // Filters panel toggle (mobile)
       var \$sidebar = \$widgetScope.filter('.sidebar-woocommerce, .ct-sidebar, .woocommerce-sidebar').first();
       if (\$sidebar.length) {
-        // Reset default widget spacing to avoid "floating" look
+        // Reset default widget spacing to avoid floating look
         \$sidebar.children('.widget').css({'margin':'0 0 12px','padding':'0','border':'0','background':'transparent'});
         if (!\$sidebar.parent().hasClass('parilte-filters-wrap')) {
           \$sidebar.wrap('<div class=\"parilte-filters-wrap\"></div>');
