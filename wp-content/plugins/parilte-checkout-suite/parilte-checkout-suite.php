@@ -232,11 +232,14 @@ function parilte_cs_setup_widgets(){
     parilte_cs_add_widget_to_sidebar($sidebar_id, 'woocommerce_layered_nav', [
         'title'=>'Renk','attribute'=>'renk','display_type'=>'list','query_type'=>'and'
     ]);
+    parilte_cs_add_widget_to_sidebar($sidebar_id, 'woocommerce_layered_nav', [
+        'title'=>'Boy','attribute'=>'boy','display_type'=>'list','query_type'=>'and'
+    ]);
 }
 
 add_filter('woocommerce_product_categories_widget_args', function ($args) {
     $args['hierarchical'] = 1;
-    $args['depth'] = 1;
+    $args['depth'] = 0;
     $args['show_children_only'] = 0;
     $args['hide_empty'] = 0;
     $args['count'] = 0;
@@ -349,6 +352,33 @@ function parilte_cs_setup_shipping(){
             'enabled' => 'yes',
         ]);
     }
+}
+
+function parilte_cs_setup_tax_rate_once() {
+    if (!current_user_can('manage_options')) return;
+    if (get_option('parilte_tax_10_set')) return;
+    if (!function_exists('WC_Tax')) return;
+    global $wpdb;
+    $table = $wpdb->prefix . 'woocommerce_tax_rates';
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table'") != $table) return;
+    $exists = $wpdb->get_var($wpdb->prepare(
+        "SELECT tax_rate_id FROM $table WHERE tax_rate_country=%s AND tax_rate_state='' LIMIT 1",
+        'TR'
+    ));
+    if (!$exists) {
+        $wpdb->insert($table, [
+            'tax_rate_country' => 'TR',
+            'tax_rate_state' => '',
+            'tax_rate' => '10.0000',
+            'tax_rate_name' => 'KDV',
+            'tax_rate_priority' => 1,
+            'tax_rate_compound' => 0,
+            'tax_rate_shipping' => 1,
+            'tax_rate_order' => 0,
+            'tax_rate_class' => '',
+        ]);
+    }
+    update_option('parilte_tax_10_set', 1);
 }
 
 function parilte_cs_setup_payments(){
@@ -867,12 +897,22 @@ function parilte_cs_bootstrap(){
         if (!$aid) $aid = wc_create_attribute(['name'=>'Beden','slug'=>'beden','type'=>'select','order_by'=>'menu_order','has_archives'=>true]);
         $rid = wc_attribute_taxonomy_id_by_name('renk');
         if (!$rid) $rid = wc_create_attribute(['name'=>'Renk','slug'=>'renk','type'=>'select','order_by'=>'menu_order','has_archives'=>true]);
+        $lid = wc_attribute_taxonomy_id_by_name('boy');
+        if (!$lid) $lid = wc_create_attribute(['name'=>'Boy','slug'=>'boy','type'=>'select','order_by'=>'menu_order','has_archives'=>true]);
         if (function_exists('register_taxonomy')) {
             register_taxonomy('pa_beden','product',['hierarchical'=>false,'show_ui'=>false]);
             register_taxonomy('pa_renk','product',['hierarchical'=>false,'show_ui'=>false]);
+            register_taxonomy('pa_boy','product',['hierarchical'=>false,'show_ui'=>false]);
         }
-        foreach (['XS','S','M','L','XL'] as $s) if (!term_exists($s,'pa_beden')) wp_insert_term($s,'pa_beden',['slug'=>strtolower($s)]);
-        foreach (['Mavi','Siyah','Beyaz','Gri','Bej','Haki'] as $c) if (!term_exists($c,'pa_renk')) wp_insert_term($c,'pa_renk',['slug'=>sanitize_title($c)]);
+        foreach (['34','36','38','40','42','44','46','48','50','XS','S','M','L','XL','2XL','3XL','4XL','5XL'] as $s) {
+            if (!term_exists($s,'pa_beden')) wp_insert_term($s,'pa_beden',['slug'=>sanitize_title($s)]);
+        }
+        foreach (['Siyah','Beyaz','Gri','Antrasit','Lacivert','Mavi','Buz Mavi','Bordo','Kırmızı','Pembe','Pudra','Mor','Lila','Turuncu','Hardal','Sarı','Yeşil','Zümrüt','Haki','Bej','Camel','Vizon','Taba','Kahverengi','Acı Kahve','Krem','Ekru','Taş'] as $c) {
+            if (!term_exists($c,'pa_renk')) wp_insert_term($c,'pa_renk',['slug'=>sanitize_title($c)]);
+        }
+        foreach (['Mini','Kısa','Midi','Maxi','Uzun'] as $b) {
+            if (!term_exists($b,'pa_boy')) wp_insert_term($b,'pa_boy',['slug'=>sanitize_title($b)]);
+        }
     }
 
     // 8) Menu “Ana Menü” + konum
@@ -959,6 +999,7 @@ function parilte_cs_bootstrap(){
     // 10) Woo yan panel widgetlari + kargo/odeme + demo icerik
     parilte_cs_setup_widgets();
     parilte_cs_setup_shipping();
+    parilte_cs_setup_tax_rate_once();
     parilte_cs_setup_payments();
     parilte_cs_seed_demo_content($cat);
 
@@ -1188,6 +1229,46 @@ add_action('wp_enqueue_scripts', function () {
             \$widgetScope.prepend(\$tree);
           }
         }
+      }
+
+      // Mobile offcanvas: show full category tree, remove duplicate account/cart items
+      var \$panel = $('.ct-panel, .ct-offcanvas-panel').first();
+      if (\$panel.length && \$treeSrc.length) {
+        var \$treeClone = \$treeSrc.find('.parilte-cat-tree').first().clone(true);
+        if (\$treeClone.length && !\$panel.find('.parilte-cat-tree').length) {
+          \$panel.find('.ct-panel-content').prepend(
+            $('<div class=\"parilte-offcanvas-cats\"></div>').append(\$treeClone)
+          );
+        }
+        \$panel.find('a').filter(function(){
+          var href = (\$(this).attr('href') || '').toLowerCase();
+          var txt = \$.trim(\$(this).text()).toLowerCase();
+          return href.indexOf('/hesabim') > -1 || href.indexOf('/sepet') > -1 || txt === 'hesabım' || txt === 'sepet' || txt === 'kategoriler' || txt === 'kategori';
+        }).closest('li').remove();
+      }
+
+      // Filters panel toggle (mobile)
+      var \$sidebar = \$widgetScope.filter('.sidebar-woocommerce, .ct-sidebar, .woocommerce-sidebar').first();
+      if (\$sidebar.length) {
+        if (!\$sidebar.parent().hasClass('parilte-filters-wrap')) {
+          \$sidebar.wrap('<div class=\"parilte-filters-wrap\"></div>');
+        }
+        if (!\$sidebar.prev('.parilte-filters-toggle').length) {
+          $('<button type=\"button\" class=\"parilte-filters-toggle\">Filtreler</button>').insertBefore(\$sidebar);
+        }
+        function updateFilters(){
+          var isMobile = window.matchMedia && window.matchMedia('(max-width: 900px)').matches;
+          if (isMobile) {
+            \$sidebar.parent().addClass('is-collapsed');
+          } else {
+            \$sidebar.parent().removeClass('is-collapsed');
+          }
+        }
+        updateFilters();
+        \$(window).on('resize', updateFilters);
+        \$sidebar.prev('.parilte-filters-toggle').off('click').on('click', function(){
+          \$sidebar.parent().toggleClass('is-collapsed');
+        });
       }
 
       var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1768,7 +1849,7 @@ function parilte_cs_category_tree_block() {
 }
 
 add_action('wp_footer', function () {
-    if (!is_shop() && !is_product_taxonomy() && !is_product_category() && !is_product_tag()) return;
+    if (!is_shop() && !is_product_taxonomy() && !is_product_category() && !is_product_tag() && !is_front_page()) return;
     $block = parilte_cs_category_tree_block();
     if (!$block) return;
     echo '<div id="parilte-cat-tree-source" style="display:none">'.$block.'</div>';
@@ -1786,7 +1867,6 @@ function parilte_cs_fix_category_hierarchy_once() {
         'Elbise' => ['Düğün','Günlük Elbise','Mezuniyet','Şık Elbise'],
         'Takı' => ['Bel Zinciri','Bileklik','Bilezik','Kolye','Küpe'],
         'Üst Giyim' => ['Atlet','Badi','Bluz','Bodysuit','Crop','Gömlek','Kazak','Sweatshirt','Tişört','Triko','Tshirt'],
-        'Genel' => ['İlkbahar - Yaz Sezonu','Sonbahar - Kış Sezonu'],
         'Yeni Sezon' => ['Yeni Ürünler'],
     ];
 
@@ -1804,6 +1884,46 @@ function parilte_cs_fix_category_hierarchy_once() {
     update_option('parilte_cat_hierarchy_fixed', 1);
 }
 add_action('admin_init', 'parilte_cs_fix_category_hierarchy_once', 30);
+
+function parilte_cs_cleanup_categories_once() {
+    if (!current_user_can('manage_options')) return;
+    if (get_option('parilte_cat_cleanup_done')) return;
+
+    // Remove seasonal categories
+    $remove_slugs = ['ilkbahar-yaz-sezonu','sonbahar-kis-sezonu'];
+    $fallback_parent = get_term_by('slug', 'genel', 'product_cat');
+    foreach ($remove_slugs as $slug) {
+        $term = get_term_by('slug', $slug, 'product_cat');
+        if (!$term || is_wp_error($term)) continue;
+        $posts = get_posts([
+            'post_type' => 'product',
+            'posts_per_page' => -1,
+            'fields' => 'ids',
+            'tax_query' => [[ 'taxonomy'=>'product_cat', 'field'=>'term_id', 'terms'=>$term->term_id ]]
+        ]);
+        if ($posts && $fallback_parent && !is_wp_error($fallback_parent)) {
+            foreach ($posts as $pid) {
+                wp_set_object_terms($pid, [(int)$fallback_parent->term_id], 'product_cat', true);
+            }
+        }
+        wp_delete_term($term->term_id, 'product_cat');
+    }
+
+    // Ensure Ceket&Yelek under Dış Giyim
+    $child = get_term_by('slug', 'ceket-yelek', 'product_cat');
+    if (!$child || is_wp_error($child)) {
+        $child = get_term_by('slug', 'ceketyelek', 'product_cat');
+    }
+    $parent = get_term_by('slug', 'dis-giyim', 'product_cat');
+    if ($child && $parent && !is_wp_error($child) && !is_wp_error($parent)) {
+        if ((int)$child->parent !== (int)$parent->term_id) {
+            wp_update_term($child->term_id, 'product_cat', ['parent' => (int)$parent->term_id]);
+        }
+    }
+
+    update_option('parilte_cat_cleanup_done', 1);
+}
+add_action('admin_init', 'parilte_cs_cleanup_categories_once', 31);
 
 add_action('template_redirect', function () {
     if (!is_tax('product_cat')) return;
@@ -1849,8 +1969,24 @@ add_filter('woocommerce_sale_flash', function () {
 });
 
 add_filter('gettext', function ($translated, $text, $domain) {
-    if ($domain !== 'woocommerce') return $translated;
-    if ($text === 'Sale!' || $text === 'Sale') return 'İndirim';
+    $map = [
+        'Sale!' => 'İndirim',
+        'Sale' => 'İndirim',
+        'Free shipping' => 'Ücretsiz kargo',
+        'Coupon code' => 'Kupon kodu',
+        'Apply coupon' => 'Kuponu uygula',
+        'Update cart' => 'Sepeti güncelle',
+        'Cart totals' => 'Sepet toplamı',
+        'Subtotal' => 'Ara toplam',
+        'Shipping' => 'Kargo',
+        'Total' => 'Toplam',
+        'Product' => 'Ürün',
+        'Product quantity' => 'Ürün adedi',
+        'Quantity' => 'Adet',
+        'Proceed to checkout' => 'Ödemeye geç',
+        'Checkout' => 'Ödeme',
+    ];
+    if (isset($map[$text])) return $map[$text];
     return $translated;
 }, 10, 3);
 
@@ -1876,6 +2012,12 @@ function parilte_cs_footer_links() {
             <a href="<?php echo esc_url($l['url']); ?>"><?php echo esc_html($l['label']); ?></a>
           <?php } ?>
         </nav>
+        <div class="parilte-legal-contact" aria-label="İletişim">
+          <span>Instagram: <a href="https://www.instagram.com/butik_parilte_/" target="_blank" rel="noopener">@butik_parilte_</a></span>
+          <span>WhatsApp: <a href="https://wa.me/905394353913" target="_blank" rel="noopener">0539 435 39 13</a></span>
+          <span>Mail: <a href="mailto:g-zemkoroglu-772011@hotmail.com">g-zemkoroglu-772011@hotmail.com</a></span>
+          <span>Adres: Parılte Butik, Rüstempaşa Mah. Çeşme Sk. No:17/D, Yalova/Merkez</span>
+        </div>
         <span class="parilte-legal-copy">© <?php echo date('Y'); ?> Parilté</span>
       </div>
     </div>
@@ -1954,7 +2096,7 @@ add_action('wp_enqueue_scripts', function () {
       .term-description{margin-top:28px}
       .parilte-size-box{margin-top:14px;border:1px solid #e6e6e6;border-radius:10px;padding:.6rem .9rem}
       .parilte-size-box summary{cursor:pointer;font-weight:600}
-      .parilte-size-grid{display:grid;grid-template-columns:repeat(5,minmax(60px,1fr));gap:8px;margin:.6rem 0}
+      .parilte-size-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:8px;margin:.6rem 0}
       .parilte-size-grid > div{border:1px dashed #ddd;border-radius:8px;padding:.4rem .5rem;text-align:center}
     .parilte-front{--parilte-ink:var(--ct-color-text, #1c2430);--parilte-muted:#6b7280;--parilte-surface:var(--ct-color-background, #f7f5f2);--parilte-cream:#f3efe8;--parilte-border:rgba(0,0,0,.08);--parilte-shadow:0 14px 30px rgba(0,0,0,.08)}
     .parilte-container{max-width:1140px;margin:0 auto;padding:0 16px}
@@ -1996,6 +2138,8 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-legal-links{display:flex;flex-wrap:wrap;gap:14px;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase}
     .parilte-legal-links a{text-decoration:none;color:var(--parilte-ink);opacity:.8}
     .parilte-legal-links a:hover{opacity:1}
+    .parilte-legal-contact{display:flex;flex-direction:column;gap:6px;font-size:.78rem;opacity:.85;max-width:420px}
+    .parilte-legal-contact a{text-decoration:none;color:var(--parilte-ink)}
     .parilte-legal-copy{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;opacity:.6}
     .parilte-text-link{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--parilte-ink);opacity:.8}
     .parilte-text-link:hover{opacity:1}
@@ -2127,6 +2271,28 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-cat-tree-children{flex-basis:100%;margin:2px 0 6px 8px;padding-left:10px;border-left:1px solid rgba(0,0,0,.08)}
     .parilte-cat-tree-children .parilte-cat-tree-item > a{font-family:inherit;font-weight:500;letter-spacing:.04em;font-size:.84rem;opacity:.9}
     .parilte-cat-more{margin-top:10px;border:1px solid rgba(0,0,0,.12);border-radius:999px;padding:6px 12px;background:#fff;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+    .parilte-offcanvas-cats{padding:14px 14px 6px}
+    .parilte-offcanvas-cats .parilte-cat-tree{margin-bottom:12px;background:#fff}
+    .ct-panel .ct-header-account,
+    .ct-panel .ct-header-cart,
+    .ct-panel .ct-account-item,
+    .ct-panel .ct-cart-item{display:none !important}
+    .parilte-filters-toggle{
+      width:100%;margin:0 0 10px;border:1px solid rgba(0,0,0,.12);border-radius:999px;
+      padding:8px 14px;background:#fff;letter-spacing:.14em;text-transform:uppercase;font-size:.76rem;
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    }
+    .parilte-filters-wrap.is-collapsed .sidebar-woocommerce,
+    .parilte-filters-wrap.is-collapsed .ct-sidebar,
+    .parilte-filters-wrap.is-collapsed .woocommerce-sidebar{display:none}
+    .parilte-filters-wrap{background:rgba(255,255,255,.55);border:1px solid rgba(0,0,0,.08);border-radius:18px;padding:12px;margin-bottom:18px}
+    @media (min-width: 901px){
+      .parilte-filters-toggle{display:none}
+      .parilte-filters-wrap{padding:0;border:0;background:transparent}
+      .parilte-filters-wrap .sidebar-woocommerce,
+      .parilte-filters-wrap .ct-sidebar,
+      .parilte-filters-wrap .woocommerce-sidebar{display:block}
+    }
     .woocommerce .widget_price_filter .price_slider_wrapper{margin-top:10px}
     .woocommerce .widget_price_filter .price_slider{height:6px;border-radius:999px;background:rgba(0,0,0,.12);position:relative}
     .woocommerce .widget_price_filter .ui-slider-range{background:var(--parilte-ink);border-radius:999px}
@@ -2451,16 +2617,20 @@ add_action('after_setup_theme', function () {
 add_action('woocommerce_single_product_summary', function () {
   ?>
   <details class="parilte-size-box">
-      <summary>Beden Tablosu</summary>
-      <div class="parilte-size-grid">
-        <div><strong>XS</strong><span>34</span></div>
-        <div><strong>S</strong><span>36</span></div>
-        <div><strong>M</strong><span>38</span></div>
-        <div><strong>L</strong><span>40</span></div>
-        <div><strong>XL</strong><span>42</span></div>
-      </div>
-      <small>Kalıp: Normal. İki beden arasında kaldıysan bir büyüğünü öneririz.</small>
-    </details>
+    <summary>Beden Tablosu</summary>
+    <div class="parilte-size-grid">
+      <div><strong>34</strong><span>XS</span></div>
+      <div><strong>36</strong><span>S</span></div>
+      <div><strong>38</strong><span>M</span></div>
+      <div><strong>40</strong><span>L</span></div>
+      <div><strong>42</strong><span>XL</span></div>
+      <div><strong>44</strong><span>2XL</span></div>
+      <div><strong>46</strong><span>3XL</span></div>
+      <div><strong>48</strong><span>4XL</span></div>
+      <div><strong>50</strong><span>5XL</span></div>
+    </div>
+    <small>Kalıp: Normal. Beden dönüşümleri markaya göre değişebilir.</small>
+  </details>
   <?php
 }, 26);
 
@@ -2493,11 +2663,13 @@ function parilte_cs_term_label($taxonomy, $value){
 function parilte_cs_color_hex($label){
     $slug = sanitize_title($label);
     $map = [
-        'siyah'=>'#000000','beyaz'=>'#ffffff','gri'=>'#9ca3af','lacivert'=>'#0b2e59',
-        'kahverengi'=>'#6b4f3a','bej'=>'#e7d7b5','krem'=>'#f5f0e6','ekru'=>'#f2efe6',
-        'kirmizi'=>'#d0021b','kırmızı'=>'#d0021b','mavi'=>'#2a6fdb','yesil'=>'#2e8b57','yeşil'=>'#2e8b57',
-        'bordo'=>'#5b1215','pembe'=>'#f3a6c8','mor'=>'#7e57c2','turuncu'=>'#f39c12',
-        'sari'=>'#f1c40f','sarı'=>'#f1c40f','haki'=>'#6b8e23','aci-kahve'=>'#4a2f24','acı-kahve'=>'#4a2f24'
+        'siyah'=>'#000000','beyaz'=>'#ffffff','gri'=>'#9ca3af','antrasit'=>'#444444','lacivert'=>'#0b2e59',
+        'kahverengi'=>'#6b4f3a','bej'=>'#e7d7b5','krem'=>'#f5f0e6','ekru'=>'#f2efe6','tas'=>'#e4ded5',
+        'kirmizi'=>'#d0021b','kırmızı'=>'#d0021b','mavi'=>'#2a6fdb','buz-mavi'=>'#cfe8f7',
+        'yesil'=>'#2e8b57','yeşil'=>'#2e8b57','zumrut'=>'#0f7d4a','zümrüt'=>'#0f7d4a','haki'=>'#6b8e23',
+        'bordo'=>'#5b1215','pembe'=>'#f3a6c8','pudra'=>'#f1cfd2','mor'=>'#7e57c2','lila'=>'#b59bd9',
+        'turuncu'=>'#f39c12','hardal'=>'#d6a21f','sari'=>'#f1c40f','sarı'=>'#f1c40f',
+        'camel'=>'#c19a6b','vizon'=>'#b8a089','taba'=>'#9a6b3f','aci-kahve'=>'#4a2f24','acı-kahve'=>'#4a2f24'
     ];
     return $map[$slug] ?? '#e5e5e5';
 }
@@ -2507,11 +2679,13 @@ add_action('woocommerce_single_product_summary', function () {
     global $product;
     if (!$product instanceof WC_Product) return;
 
-    $sizes_all = ['XS','S','M','L','XL'];
+    $sizes_all = ['34','36','38','40','42','44','46','48','50','XS','S','M','L','XL','2XL','3XL','4XL','5XL'];
     $selected_sizes = [];
     $in_stock_sizes = [];
     $selected_colors = [];
     $in_stock_colors = [];
+    $selected_lengths = [];
+    $in_stock_lengths = [];
 
     if ($product->is_type('variable')) {
         foreach ($product->get_children() as $vid) {
@@ -2529,6 +2703,11 @@ add_action('woocommerce_single_product_summary', function () {
                 $selected_colors[$label] = true;
                 if ($in) $in_stock_colors[$label] = true;
             }
+            if (!empty($attrs['pa_boy'])) {
+                $label = parilte_cs_term_label('pa_boy', $attrs['pa_boy']);
+                $selected_lengths[$label] = true;
+                if ($in) $in_stock_lengths[$label] = true;
+            }
         }
     } else {
         foreach ($product->get_attributes() as $attr) {
@@ -2542,6 +2721,12 @@ add_action('woocommerce_single_product_summary', function () {
                 foreach (parilte_cs_attr_labels($attr, 'pa_renk') as $label) {
                     $selected_colors[$label] = true;
                     if ($product->is_in_stock()) $in_stock_colors[$label] = true;
+                }
+            }
+            if ($attr->get_name()==='pa_boy') {
+                foreach (parilte_cs_attr_labels($attr, 'pa_boy') as $label) {
+                    $selected_lengths[$label] = true;
+                    if ($product->is_in_stock()) $in_stock_lengths[$label] = true;
                 }
             }
         }
@@ -2564,6 +2749,15 @@ add_action('woocommerce_single_product_summary', function () {
             $cls = 'parilte-opt color ' . ($is_on ? 'on' : 'off');
             $hex = parilte_cs_color_hex($c);
             echo '<span class="'.esc_attr($cls).'" style="--chip-color: '.esc_attr($hex).';"><span class="dot"></span>'.esc_html($c).'</span>';
+        }
+        echo '</div></div>';
+    }
+    if (!empty($selected_lengths)) {
+        echo '<div class="parilte-opt-row"><span class="parilte-opt-label">Boy</span><div class="parilte-opt-list">';
+        foreach (array_keys($selected_lengths) as $b) {
+            $is_on = !empty($in_stock_lengths[$b]);
+            $cls = 'parilte-opt ' . ($is_on ? 'on' : 'off');
+            echo '<span class="'.esc_attr($cls).'">'.esc_html($b).'</span>';
         }
         echo '</div></div>';
     }
