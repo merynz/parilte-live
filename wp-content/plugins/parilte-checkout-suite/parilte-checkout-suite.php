@@ -2213,6 +2213,32 @@ add_action('wp_enqueue_scripts', function () {
         .parilte-sidebar-quick{gap:6px}
         .parilte-cat-tree{padding:10px}
       }
+      @media (max-width: 768px){
+        body{overflow-x:hidden}
+        .parilte-container,
+        .ct-container{padding-left:12px;padding-right:12px}
+        .ct-header .ct-container,
+        .ct-header .ct-row{flex-wrap:wrap}
+        .ct-header .ct-container > *{flex:1 1 100%}
+        .site-title,
+        .site-title a{letter-spacing:.2rem;font-size:1.2rem}
+        .parilte-hero{padding:5vh 0}
+        .parilte-hero-actions{flex-direction:column;align-items:flex-start}
+        .parilte-hero-visual{margin-top:16px}
+        .parilte-hero-photo{min-height:260px}
+        .parilte-strip-grid{grid-template-columns:1fr;gap:10px}
+        .parilte-strip-grid div{padding:12px}
+        .parilte-cats-grid{grid-template-columns:1fr}
+        .parilte-lookbook-grid{grid-template-columns:1fr}
+        .parilte-showcase-rail .products{padding-bottom:12px}
+        .woocommerce .sidebar-woocommerce,
+        .woocommerce .ct-sidebar,
+        .woocommerce .woocommerce-sidebar{width:100%;margin-bottom:16px}
+        .woocommerce ul.products{margin:0}
+        .woocommerce ul.products li.product{float:none;width:100% !important;margin:0 0 18px !important}
+        .woocommerce .woocommerce-ordering select{width:100%}
+        .parilte-cat-tree{margin-bottom:12px}
+      }
       @media (max-width: 560px){
         .parilte-carousel-track .products li.product{flex-basis:100%}
         .parilte-header-icons{font-size:.66rem;letter-spacing:.12em}
