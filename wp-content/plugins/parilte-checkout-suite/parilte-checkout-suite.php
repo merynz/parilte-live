@@ -1335,7 +1335,7 @@ add_action('wp_enqueue_scripts', function () {
         }
       });
 
-      $('.parilte-cat-tree').on('click', '.parilte-cat-toggle', function(e){
+      $(document).on('click', '.parilte-cat-tree .parilte-cat-toggle', function(e){
         e.preventDefault();
         var \$btn = $(this);
         var \$wrap = \$btn.closest('.parilte-cat-tree-item');
@@ -1344,6 +1344,20 @@ add_action('wp_enqueue_scripts', function () {
         var isOpen = \$btn.attr('aria-expanded') === 'true';
         \$btn.attr('aria-expanded', isOpen ? 'false' : 'true');
         \$children.toggle(!isOpen);
+      });
+
+      // Desktop header categories: click-to-pin open + click outside to close
+      $(document).on('click', '.parilte-header-cats-toggle', function(e){
+        e.preventDefault();
+        var \$wrap = $(this).closest('.parilte-header-cats');
+        var isOpen = \$wrap.hasClass('is-open');
+        $('.parilte-header-cats').removeClass('is-open');
+        \$wrap.toggleClass('is-open', !isOpen);
+      });
+      $(document).on('click', function(e){
+        if (!$(e.target).closest('.parilte-header-cats').length) {
+          $('.parilte-header-cats').removeClass('is-open');
+        }
       });
     });");
 }, 23);
@@ -2147,7 +2161,8 @@ add_action('wp_enqueue_scripts', function () {
       max-height:70vh;overflow-y:auto
     }
     .parilte-header-cats:hover .parilte-header-cats-panel,
-    .parilte-header-cats:focus-within .parilte-header-cats-panel{display:block}
+    .parilte-header-cats:focus-within .parilte-header-cats-panel,
+    .parilte-header-cats.is-open .parilte-header-cats-panel{display:block}
     .parilte-header-cats .parilte-cat-tree{margin:0;padding:0;border:0;background:transparent}
     .parilte-header-cats .parilte-cat-tree-head{display:none}
     .parilte-header-cats .parilte-cat-tree-list{gap:4px}
@@ -2541,7 +2556,8 @@ add_action('wp_enqueue_scripts', function () {
       .ct-offcanvas-container,
       .ct-panel{height:100vh}
       .ct-panel{max-width:100vw;width:100vw}
-      .ct-panel-content{padding:16px;overflow-y:auto;max-height:100vh;-webkit-overflow-scrolling:touch}
+      .ct-panel-content{padding:16px;overflow-y:auto;max-height:100vh;height:100%;-webkit-overflow-scrolling:touch}
+      .ct-panel{overflow:hidden}
       }
       @media (max-width: 560px){
         .parilte-carousel-track .products li.product{flex-basis:100%}
