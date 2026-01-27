@@ -1248,19 +1248,43 @@ add_action('wp_enqueue_scripts', function () {
         });
 
         if (!reduce) {
-          var timer;
-          function tick(){
-            var max = \$list[0].scrollWidth - \$list[0].clientWidth;
-            if (max <= 0) return;
-            var step = \$items.first().outerWidth(true) || 0;
-            if (!step) return;
-            var next = \$list.scrollLeft() + step;
-            if (next >= max - 4) next = 0;
-            \$list.stop().animate({scrollLeft: next}, 520);
+          var rafId = null;
+          var paused = false;
+          var resumeTimer = null;
+          var speed = 0.35;
+          var root = \$list[0];
+
+          function step(){
+            if (paused) { rafId = null; return; }
+            var max = root.scrollWidth - root.clientWidth;
+            if (max > 0) {
+              root.scrollLeft += speed;
+              if (root.scrollLeft >= max - 1) root.scrollLeft = 0;
+            }
+            rafId = window.requestAnimationFrame(step);
           }
-          timer = setInterval(tick, 5200);
-          \$track.on('mouseenter focusin', function(){ clearInterval(timer); });
-          \$track.on('mouseleave focusout', function(){ timer = setInterval(tick, 5200); });
+
+          function setPaused(state){
+            paused = state;
+            if (paused && rafId) { window.cancelAnimationFrame(rafId); rafId = null; }
+            if (!paused && !rafId) rafId = window.requestAnimationFrame(step);
+          }
+
+          function pauseFor(ms){
+            setPaused(true);
+            clearTimeout(resumeTimer);
+            resumeTimer = setTimeout(function(){ setPaused(false); }, ms || 2400);
+          }
+
+          setPaused(false);
+
+          \$track.on('mouseenter focusin', function(){ pauseFor(3200); });
+          \$track.on('mouseleave focusout', function(){ pauseFor(1200); });
+          \$track.on('touchstart pointerdown wheel', function(){ pauseFor(4000); });
+          \$track.on('touchend pointerup', function(){ pauseFor(1600); });
+          \$list.on('scroll', function(){ pauseFor(2000); });
+
+          \$controls.on('click', 'button', function(){ pauseFor(2600); });
         }
       });
 
@@ -2161,7 +2185,11 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-carousel-track .products li.product:nth-child(4n){margin-top:6px !important}
     .parilte-carousel-track .products li.product .woocommerce-LoopProduct-link{display:block}
     .parilte-carousel-track .products li.product img{border-radius:14px;aspect-ratio:3/4;object-fit:cover;background:#f1ede7}
-    .parilte-carousel-track .products li.product .woocommerce-loop-product__title{margin-top:10px;font-size:.95rem;letter-spacing:.04em;font-weight:500}
+    .parilte-carousel-track .products li.product .woocommerce-loop-product__title{
+      margin-top:10px;font-size:.95rem;letter-spacing:.04em;font-weight:500;
+      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+      overflow-wrap:anywhere;word-break:break-word;line-height:1.35;min-height:2.7em;
+    }
     .parilte-carousel-track .products li.product .price{display:block;margin-top:4px;font-weight:600;font-size:.95rem}
     .woocommerce ul.products li.product .button,
     .woocommerce ul.products li.product .add_to_cart_button,
@@ -2311,6 +2339,7 @@ add_action('wp_enqueue_scripts', function () {
         margin-right:auto;
       }
       .parilte-carousel-track .products li.product img{aspect-ratio:4/5;max-height:clamp(240px,60vh,420px)}
+      .parilte-carousel-track .products li.product .woocommerce-loop-product__title{font-size:clamp(.84rem,3.6vw,.95rem)}
       .parilte-lookbook-tiles{grid-auto-rows:clamp(180px,46vw,240px)}
       .parilte-cats-grid{grid-template-columns:1fr}
       .parilte-cat-card{padding:16px}
