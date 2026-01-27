@@ -3,6 +3,6 @@ deployment:
   tasks:
     - export DEPLOYPATH=/home/pariltec/public_html/wp-content
     - /bin/mkdir -p $DEPLOYPATH
-    - /usr/bin/rsync -a --delete wp-content/plugins/ $DEPLOYPATH/plugins/
-    - /usr/bin/rsync -a --delete wp-content/themes/  $DEPLOYPATH/themes/
-    - if [ -d wp-content/mu-plugins ]; then /usr/bin/rsync -a --delete wp-content/mu-plugins/ $DEPLOYPATH/mu-plugins/; fi
+    - rsync -a --delete wp-content/plugins/ $DEPLOYPATH/plugins/
+    - rsync -a --delete wp-content/themes/  $DEPLOYPATH/themes/
+    - if [ -d wp-content/mu-plugins ]; then rsync -a --delete wp-content/mu-plugins/ $DEPLOYPATH/mu-plugins/; fi
