@@ -2216,18 +2216,24 @@ add_action('wp_enqueue_scripts', function () {
       @media (max-width: 768px){
         body{overflow-x:hidden}
         .parilte-container,
-        .ct-container{padding-left:12px;padding-right:12px}
+        .ct-container{padding-left:clamp(12px,4vw,20px);padding-right:clamp(12px,4vw,20px)}
         .ct-header .ct-container,
-        .ct-header .ct-row{flex-wrap:wrap}
+        .ct-header .ct-row{flex-wrap:wrap;flex-direction:column;align-items:center;gap:clamp(6px,2.5vw,10px)}
         .ct-header .ct-container > *{flex:1 1 100%}
+        .ct-header .site-branding{width:100%;text-align:center}
         .site-title,
-        .site-title a{letter-spacing:.2rem;font-size:1.2rem}
-        .parilte-hero{padding:5vh 0}
+        .site-title a{letter-spacing:clamp(.08rem,.6vw,.18rem);font-size:clamp(1rem,3.8vw,1.2rem);white-space:normal}
+        .site-branding .site-title,
+        .site-branding .site-title a{white-space:normal}
+        .ct-header .menu{width:100%;justify-content:center;flex-wrap:wrap;gap:8px}
+        .ct-header .menu > li{flex:0 0 auto}
+        .ct-header .menu .parilte-menu-tools{width:100%;justify-content:center;margin-left:0}
+        .parilte-hero{padding:clamp(24px,6vh,48px) 0}
         .parilte-hero-actions{flex-direction:column;align-items:flex-start}
         .parilte-hero-visual{margin-top:16px}
-        .parilte-hero-photo{min-height:260px}
+        .parilte-hero-photo{min-height:clamp(220px,60vw,320px)}
         .parilte-strip-grid{grid-template-columns:1fr;gap:10px}
-        .parilte-strip-grid div{padding:12px}
+        .parilte-strip-grid div{padding:clamp(10px,3.2vw,16px)}
         .parilte-cats-grid{grid-template-columns:1fr}
         .parilte-lookbook-grid{grid-template-columns:1fr}
         .parilte-showcase-rail .products{padding-bottom:12px}
@@ -2238,18 +2244,21 @@ add_action('wp_enqueue_scripts', function () {
         .woocommerce ul.products li.product{float:none;width:100% !important;margin:0 0 18px !important}
         .woocommerce .woocommerce-ordering select{width:100%}
         .parilte-cat-tree{margin-bottom:12px}
+        .parilte-carousel-track .products{gap:14px}
+        .parilte-carousel-track .products li.product{max-width:calc(100vw - 2 * clamp(12px,4vw,20px))}
       }
       @media (max-width: 560px){
         .parilte-carousel-track .products li.product{flex-basis:100%}
-        .parilte-header-icons{font-size:.66rem;letter-spacing:.12em}
+        .parilte-header-icons{font-size:clamp(.58rem,2.6vw,.7rem);letter-spacing:.1em;justify-content:center}
         .parilte-cart-count{min-width:14px;height:14px;font-size:.58rem}
-        .parilte-showcase-card{padding:14px;border-radius:22px}
-        .parilte-showcase-hero{min-height:180px;border-radius:18px}
+        .parilte-showcase-card{padding:clamp(12px,3.6vw,18px);border-radius:22px}
+        .parilte-showcase-hero{min-height:clamp(160px,55vw,220px);border-radius:18px}
         .parilte-showcase-copy p{max-width:none}
-        .parilte-chip-link{padding:6px 12px;font-size:.68rem}
+        .parilte-chip-link{padding:clamp(6px,2.6vw,10px) clamp(10px,4vw,16px);font-size:clamp(.62rem,2.4vw,.78rem)}
         .parilte-cat-tree-item > a{font-size:.86rem}
         .parilte-cat-tree-children .parilte-cat-tree-item > a{font-size:.82rem}
         .woocommerce ul.products[class*="columns-"] li.product{width:100%}
+        .parilte-carousel-track .products li.product img{aspect-ratio:4/5;max-height:clamp(260px,60vh,420px)}
       }
       @media (prefers-reduced-motion: reduce){
         .parilte-hero-copy,
