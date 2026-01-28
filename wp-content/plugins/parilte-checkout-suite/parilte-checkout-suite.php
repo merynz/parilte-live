@@ -1081,6 +1081,29 @@ function parilte_cs_mobile_drawer_markup() {
         </div>
       </aside>
     </div>
+    <script>
+      (function(){
+        function openMenu(){
+          document.body.classList.add('parilte-mobile-open');
+          var drawer = document.getElementById('parilte-mobile-drawer');
+          if (drawer) drawer.setAttribute('aria-hidden','false');
+          var btn = document.querySelector('.parilte-mobile-menu-toggle');
+          if (btn) btn.setAttribute('aria-expanded','true');
+        }
+        function closeMenu(){
+          document.body.classList.remove('parilte-mobile-open');
+          var drawer = document.getElementById('parilte-mobile-drawer');
+          if (drawer) drawer.setAttribute('aria-hidden','true');
+          var btn = document.querySelector('.parilte-mobile-menu-toggle');
+          if (btn) btn.setAttribute('aria-expanded','false');
+        }
+        document.addEventListener('click', function(e){
+          if (e.target.closest('.parilte-mobile-menu-toggle')) { e.preventDefault(); openMenu(); }
+          if (e.target.closest('.parilte-mobile-close') || e.target.closest('.parilte-mobile-backdrop')) { e.preventDefault(); closeMenu(); }
+        });
+        document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeMenu(); });
+      })();
+    </script>
     <?php
 }
 add_action('wp_footer', 'parilte_cs_mobile_drawer_markup', 25);
@@ -1386,23 +1409,6 @@ add_action('wp_enqueue_scripts', function () {
       $(document).on('click', function(e){
         if (!$(e.target).closest('.parilte-header-cats').length) {
           $('.parilte-header-cats').removeClass('is-open');
-        }
-      });
-
-      // Custom mobile drawer (disable Blocksy offcanvas usage)
-      $(document).on('click', '.parilte-mobile-menu-toggle', function(e){
-        e.preventDefault();
-        $('body').addClass('parilte-mobile-open');
-        $('#parilte-mobile-drawer').attr('aria-hidden','false');
-      });
-      $(document).on('click', '.parilte-mobile-close, .parilte-mobile-backdrop', function(){
-        $('body').removeClass('parilte-mobile-open');
-        $('#parilte-mobile-drawer').attr('aria-hidden','true');
-      });
-      $(document).on('keydown', function(e){
-        if (e.key === 'Escape') {
-          $('body').removeClass('parilte-mobile-open');
-          $('#parilte-mobile-drawer').attr('aria-hidden','true');
         }
       });
     });");
@@ -2223,6 +2229,7 @@ add_action('wp_enqueue_scripts', function () {
 
     .parilte-mobile-drawer{position:fixed;inset:0;display:none;z-index:9999}
     body.parilte-mobile-open .parilte-mobile-drawer{display:block}
+    body.parilte-mobile-open{overflow:hidden}
     .parilte-mobile-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45)}
     .parilte-mobile-panel{position:absolute;left:0;top:0;bottom:0;width:min(86vw,360px);background:#f7f4ef;
       padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;-webkit-overflow-scrolling:touch}
