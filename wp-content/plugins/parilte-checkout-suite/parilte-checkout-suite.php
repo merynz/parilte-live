@@ -1495,62 +1495,6 @@ function parilte_cs_front_markup(){
           ['Aksesuar','/kategori/aksesuar/'],
           ['Dış Giyim','/kategori/dis-giyim/'],
         ];
-        $used_ids = [];
-        $all_ids = parilte_cs_get_product_ids([
-          'limit'   => 12,
-          'orderby' => 'date',
-          'order'   => 'DESC',
-        ]);
-        $new_ids = $all_ids;
-        $used_ids = array_merge($used_ids, $new_ids);
-
-        $best_ids = parilte_cs_get_product_ids([
-          'limit'     => 12,
-          'orderby'   => 'meta_value_num',
-          'meta_key'  => 'total_sales',
-          'order'     => 'DESC',
-          'meta_query'=> [[ 'key' => 'total_sales', 'value' => 0, 'compare' => '>', 'type' => 'NUMERIC' ]],
-        ], $used_ids);
-        if (empty($best_ids)) {
-            $best_ids = parilte_cs_get_product_ids([
-              'limit'   => 8,
-              'orderby' => 'rand',
-            ], $used_ids);
-        }
-        if (empty($best_ids)) {
-            $best_ids = $all_ids;
-        }
-        $used_ids = array_merge($used_ids, $best_ids);
-
-        $sale_ids_raw = function_exists('wc_get_product_ids_on_sale') ? wc_get_product_ids_on_sale() : [];
-        $sale_ids = [];
-        if (!empty($sale_ids_raw)) {
-            $sale_pool = array_values(array_diff($sale_ids_raw, $used_ids));
-            if (!empty($sale_pool)) {
-                $sale_ids = parilte_cs_get_product_ids([
-                  'include' => $sale_pool,
-                  'orderby' => 'date',
-                  'order'   => 'DESC',
-                  'limit'   => 12,
-                ]);
-            } else {
-                $sale_ids = parilte_cs_get_product_ids([
-                  'include' => $sale_ids_raw,
-                  'orderby' => 'date',
-                  'order'   => 'DESC',
-                  'limit'   => 12,
-                ]);
-            }
-        }
-        if (empty($sale_ids)) {
-            $sale_ids = parilte_cs_get_product_ids([
-              'limit'   => 8,
-              'orderby' => 'rand',
-            ], $used_ids);
-            if (empty($sale_ids)) {
-                $sale_ids = $all_ids;
-            }
-        }
         $assets = [
           'hero'  => plugins_url('assets/hero.jpg', __FILE__),
           'ed1'   => plugins_url('assets/editorial-1.jpg', __FILE__),
@@ -1558,63 +1502,46 @@ function parilte_cs_front_markup(){
           'ed3'   => plugins_url('assets/editorial-3.jpg', __FILE__),
           'look'  => plugins_url('assets/lookbook.jpg', __FILE__),
         ];
+        $posts = get_posts([
+          'post_type'      => 'post',
+          'posts_per_page' => 3,
+          'post_status'    => 'publish',
+        ]);
       ?>
-      <section class="parilte-hero">
-        <div class="parilte-container">
-          <div class="parilte-hero-grid">
-            <div class="parilte-hero-copy">
-              <span class="parilte-eyebrow">Parilté Studio</span>
-              <h1>Dingin şıklık, modern siluetler.</h1>
-              <p>Doğal dokular, dengeli kesimler ve uzun ömürlü parçalarla sade ama güçlü bir gardırop.</p>
-              <div class="parilte-hero-actions">
-                <a class="ct-button" href="<?php echo esc_url($shop_url); ?>">Mağazaya Git</a>
-                <a class="parilte-text-link" href="<?php echo esc_url(add_query_arg('orderby', 'date', $shop_url)); ?>">Yeni Gelenler</a>
-              </div>
-              <div class="parilte-hero-notes">
-                <div class="parilte-note">
-                  <strong>Kumaş</strong>
-                  <span>Doğal dokular, yumuşak his.</span>
-                </div>
-                <div class="parilte-note">
-                  <strong>Kalıp</strong>
-                  <span>Rahat ve dengeli duruş.</span>
-                </div>
-              </div>
-            </div>
-            <div class="parilte-hero-visual">
-              <div class="parilte-hero-photo" style="background-image:url('<?php echo esc_url($assets['hero']); ?>');"></div>
-              <div class="parilte-hero-stack">
-                <div class="parilte-hero-card" style="background-image:url('<?php echo esc_url($assets['ed2']); ?>');"><span>Yeni Sezon</span></div>
-                <div class="parilte-hero-card small" style="background-image:url('<?php echo esc_url($assets['ed1']); ?>');"><span>Günlük</span></div>
-              </div>
+      <section class="parilte-mag-hero">
+        <div class="parilte-container parilte-mag-hero-grid">
+          <div class="parilte-mag-hero-copy">
+            <span class="parilte-eyebrow">Parilté Studio</span>
+            <h1>Dingin şıklık, modern siluetler.</h1>
+            <p>Minimal çizgiler, yumuşak dokular ve zamansız parçalarla sakin bir şehir ritmi.</p>
+            <div class="parilte-mag-hero-actions">
+              <a class="ct-button" href="<?php echo esc_url($shop_url); ?>">Mağazaya Git</a>
+              <a class="parilte-text-link" href="<?php echo esc_url($shop_url); ?>">Koleksiyonları keşfet →</a>
             </div>
           </div>
+          <div class="parilte-mag-hero-media" style="background-image:url('<?php echo esc_url($assets['hero']); ?>');"></div>
         </div>
       </section>
 
-      <section class="parilte-editorial">
-        <div class="parilte-container">
-          <div class="parilte-section-head">
-            <h2>Sezon Seçkisi</h2>
-            <a href="<?php echo esc_url($shop_url); ?>">Tümünü Gör</a>
-          </div>
-          <div class="parilte-editorial-grid">
-            <article class="parilte-editorial-card large" style="background-image:url('<?php echo esc_url($assets['ed3']); ?>');">
-              <div class="parilte-editorial-body">
-                <span class="parilte-eyebrow">Palet</span>
-                <h3>Krem + Siyah</h3>
-                <p>Günlükten akşama akışkan geçiş.</p>
-              </div>
-            </article>
-            <article class="parilte-editorial-card tall" style="background-image:url('<?php echo esc_url($assets['ed1']); ?>');">
-              <div class="parilte-editorial-body">
+      <section class="parilte-mag-story">
+        <div class="parilte-container parilte-mag-story-grid">
+          <article class="parilte-mag-card large" style="background-image:url('<?php echo esc_url($assets['ed3']); ?>');">
+            <div class="parilte-mag-card-body">
+              <span class="parilte-eyebrow">Sezon Notu</span>
+              <h2>Krem + Siyah</h2>
+              <p>Günlükten akşama akışkan geçişler için sade palet.</p>
+            </div>
+          </article>
+          <div class="parilte-mag-stack">
+            <article class="parilte-mag-card tall" style="background-image:url('<?php echo esc_url($assets['ed1']); ?>');">
+              <div class="parilte-mag-card-body">
                 <span class="parilte-eyebrow">Form</span>
                 <h3>Tek parçada şıklık</h3>
                 <p>Elbise & üstler.</p>
               </div>
             </article>
-            <article class="parilte-editorial-card wide" style="background-image:url('<?php echo esc_url($assets['ed2']); ?>');">
-              <div class="parilte-editorial-body">
+            <article class="parilte-mag-card wide" style="background-image:url('<?php echo esc_url($assets['ed2']); ?>');">
+              <div class="parilte-mag-card-body">
                 <span class="parilte-eyebrow">Detay</span>
                 <h3>Zarif dokunuşlar</h3>
                 <p>İnce aksesuarlar.</p>
@@ -1624,41 +1551,15 @@ function parilte_cs_front_markup(){
         </div>
       </section>
 
-      <section class="parilte-carousel parilte-carousel-new">
-        <div class="parilte-container">
-          <div class="parilte-showcase-card parilte-showcase-new">
-            <div class="parilte-showcase-copy">
-              <span class="parilte-eyebrow">Yeni Sezon</span>
-              <h2>Yeni Gelenler</h2>
-              <p>Minimal çizgiler, dengeli dokular ve sezona taze bir başlangıç.</p>
-              <div class="parilte-showcase-actions">
-                <a class="parilte-chip-link" href="<?php echo esc_url($shop_url); ?>">Tümünü Gör</a>
-                <a class="parilte-text-link" href="<?php echo esc_url($shop_url); ?>">Mağazaya Git →</a>
-              </div>
-              <div class="parilte-showcase-tags">
-                <span>İnce dokular</span>
-                <span>Günlük şıklık</span>
-                <span>Yeni palet</span>
-              </div>
-            </div>
-            <div class="parilte-showcase-rail">
-              <div class="parilte-carousel-track">
-                <?php parilte_cs_render_products($new_ids); ?>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="parilte-cats">
+      <section class="parilte-mag-cats">
         <div class="parilte-container">
           <div class="parilte-section-head">
             <h2>Koleksiyonlar</h2>
             <a href="<?php echo esc_url($shop_url); ?>">Tümünü Gör</a>
           </div>
-          <div class="parilte-cats-grid">
+          <div class="parilte-mag-cats-grid">
             <?php foreach ($cats as $c){ ?>
-              <a class="parilte-cat-card" href="<?php echo esc_url(home_url($c[1])); ?>">
+              <a class="parilte-mag-cat" href="<?php echo esc_url(home_url($c[1])); ?>">
                 <strong><?php echo esc_html($c[0]); ?></strong>
                 <span>Koleksiyonu keşfet →</span>
               </a>
@@ -1667,41 +1568,37 @@ function parilte_cs_front_markup(){
         </div>
       </section>
 
-      <section class="parilte-lookbook">
-        <div class="parilte-container parilte-lookbook-grid">
-          <div class="parilte-lookbook-copy">
+      <section class="parilte-mag-lookbook">
+        <div class="parilte-container parilte-mag-lookbook-grid">
+          <div class="parilte-mag-lookbook-copy">
             <span class="parilte-eyebrow">Lookbook</span>
             <h2>Günün akışına uyumlu.</h2>
             <p>Minimal, dengeli ve taşınabilir kombinler.</p>
             <a class="parilte-text-link" href="<?php echo esc_url($shop_url); ?>">Koleksiyonlara göz at →</a>
           </div>
-          <div class="parilte-lookbook-tiles" aria-hidden="true">
-            <div class="parilte-lookbook-photo" style="background-image:url('<?php echo esc_url($assets['look']); ?>');"></div>
-            <div class="parilte-lookbook-note">
-              <strong>Parilté Kombin</strong>
-              <span>Gün boyu rahat ve şık.</span>
-            </div>
-          </div>
+          <div class="parilte-mag-lookbook-media" style="background-image:url('<?php echo esc_url($assets['look']); ?>');"></div>
         </div>
       </section>
 
-      <?php if (!empty($best_ids)) { ?>
-      <section class="parilte-carousel parilte-carousel-best">
+      <?php if (!empty($posts)) { ?>
+      <section class="parilte-mag-journal">
         <div class="parilte-container">
-          <div class="parilte-showcase-card parilte-showcase-best">
-            <div class="parilte-showcase-hero" style="background-image:url('<?php echo esc_url($assets['ed3']); ?>');">
-              <div class="parilte-showcase-hero-body">
-                <span class="parilte-eyebrow">Favoriler</span>
-                <h2>En Çok Satanlar</h2>
-                <p>En çok tercih edilen parçalar, gün boyu taşıması kolay.</p>
-                <a class="parilte-chip-link" href="<?php echo esc_url($shop_url); ?>">Tümünü Gör</a>
-              </div>
-            </div>
-            <div class="parilte-showcase-rail">
-              <div class="parilte-carousel-track">
-                <?php parilte_cs_render_products($best_ids); ?>
-              </div>
-            </div>
+          <div class="parilte-section-head">
+            <h2>Parilté Editör</h2>
+            <a href="<?php echo esc_url(home_url('/blog/')); ?>">Tümünü Gör</a>
+          </div>
+          <div class="parilte-mag-journal-grid">
+            <?php foreach ($posts as $post){ setup_postdata($post); ?>
+              <article class="parilte-mag-journal-card">
+                <a href="<?php the_permalink(); ?>">
+                  <?php if (has_post_thumbnail()) { the_post_thumbnail('large'); } ?>
+                  <div class="parilte-mag-journal-body">
+                    <h3><?php the_title(); ?></h3>
+                    <span><?php echo get_the_date(); ?></span>
+                  </div>
+                </a>
+              </article>
+            <?php } wp_reset_postdata(); ?>
           </div>
         </div>
       </section>
@@ -1714,26 +1611,6 @@ function parilte_cs_front_markup(){
           <div><strong>Ücretsiz Kargo</strong><span>1500 ₺ üzeri</span></div>
         </div>
       </section>
-
-      <?php if (!empty($sale_ids)) { ?>
-      <section class="parilte-carousel parilte-carousel-sale">
-        <div class="parilte-container">
-          <div class="parilte-showcase-card parilte-showcase-sale">
-            <div class="parilte-showcase-copy">
-              <span class="parilte-eyebrow">Seçili</span>
-              <h2>İndirimdekiler</h2>
-              <p>Seçili parçalarda sade avantajlar.</p>
-              <a class="parilte-chip-link" href="<?php echo esc_url($shop_url); ?>">Tümünü Gör</a>
-            </div>
-            <div class="parilte-showcase-rail">
-              <div class="parilte-carousel-track">
-                <?php parilte_cs_render_products($sale_ids); ?>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      <?php } ?>
     </main>
     <?php return ob_get_clean();
 }
@@ -2283,6 +2160,40 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-front h1{font-weight:500;letter-spacing:.02em}
     .parilte-front h2{font-weight:500;letter-spacing:.14em;text-transform:uppercase;font-size:clamp(1.05rem,1.5vw,1.4rem)}
     .parilte-front h3{font-weight:500}
+    .parilte-mag-hero{padding:clamp(28px,6vw,64px) 0;background:linear-gradient(180deg,var(--parilte-surface),var(--parilte-cream));border-bottom:1px solid var(--parilte-border)}
+    .parilte-mag-hero-grid{display:grid;gap:clamp(18px,4vw,36px);grid-template-columns:1fr;align-items:center}
+    .parilte-mag-hero-copy h1{font-size:clamp(1.8rem,5.4vw,3rem);line-height:1.12;margin:0 0 12px}
+    .parilte-mag-hero-copy p{max-width:520px;opacity:.86;margin:0 0 16px}
+    .parilte-mag-hero-actions{display:flex;flex-wrap:wrap;gap:12px}
+    .parilte-mag-hero-media{width:100%;aspect-ratio:4/3;background-size:cover;background-position:center;border-radius:clamp(16px,4vw,28px);box-shadow:var(--parilte-shadow)}
+    .parilte-mag-story{padding:clamp(24px,6vw,56px) 0}
+    .parilte-mag-story-grid{display:grid;gap:clamp(14px,3vw,24px);grid-template-columns:1fr}
+    .parilte-mag-card{position:relative;border-radius:clamp(16px,3.6vw,26px);overflow:hidden;min-height:clamp(200px,48vw,360px);background-size:cover;background-position:center}
+    .parilte-mag-card::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.42))}
+    .parilte-mag-card-body{position:absolute;left:0;bottom:0;padding:clamp(16px,3.2vw,24px);color:#fff}
+    .parilte-mag-card-body h2,.parilte-mag-card-body h3{margin:4px 0 6px;font-size:clamp(1.1rem,3.8vw,1.6rem)}
+    .parilte-mag-card-body p{margin:0;opacity:.9}
+    .parilte-mag-stack{display:grid;gap:clamp(12px,2.6vw,18px)}
+    .parilte-mag-cats{padding:clamp(24px,6vw,56px) 0}
+    .parilte-mag-cats-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+    .parilte-mag-cat{display:flex;flex-direction:column;gap:6px;padding:16px 18px;border-radius:16px;border:1px solid var(--parilte-border);background:rgba(255,255,255,.7);text-decoration:none;color:inherit}
+    .parilte-mag-cat strong{font-size:1rem;letter-spacing:.06em;text-transform:uppercase}
+    .parilte-mag-cat span{opacity:.7}
+    .parilte-mag-lookbook{padding:clamp(24px,6vw,56px) 0}
+    .parilte-mag-lookbook-grid{display:grid;gap:clamp(16px,4vw,32px);grid-template-columns:1fr}
+    .parilte-mag-lookbook-media{width:100%;aspect-ratio:5/3;background-size:cover;background-position:center;border-radius:clamp(16px,4vw,26px);box-shadow:var(--parilte-shadow)}
+    .parilte-mag-journal{padding:clamp(20px,5vw,52px) 0}
+    .parilte-mag-journal-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+    .parilte-mag-journal-card{border-radius:16px;overflow:hidden;border:1px solid var(--parilte-border);background:#fff}
+    .parilte-mag-journal-card img{width:100%;height:auto;display:block}
+    .parilte-mag-journal-body{padding:14px 16px}
+    .parilte-mag-journal-body h3{margin:0 0 6px;font-size:1rem}
+    .parilte-mag-journal-body span{font-size:.86rem;opacity:.6}
+    @media (min-width: 900px){
+      .parilte-mag-hero-grid{grid-template-columns:1.05fr .95fr}
+      .parilte-mag-story-grid{grid-template-columns:1.25fr .75fr}
+      .parilte-mag-lookbook-grid{grid-template-columns:.9fr 1.1fr;align-items:center}
+    }
     .parilte-section-head h2{margin:0}
     .parilte-section-head a{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--parilte-ink)}
     .woocommerce .woocommerce-products-header__title,
