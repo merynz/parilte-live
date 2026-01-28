@@ -1040,12 +1040,6 @@ function parilte_cs_header_markup(){
         <span class="parilte-mobile-menu-icon" aria-hidden="true"><span></span></span>
         <span class="parilte-mobile-menu-text">Menü</span>
       </button>
-      <div class="parilte-header-cats">
-        <button type="button" class="parilte-header-cats-toggle" aria-haspopup="true" aria-expanded="false">Kategoriler</button>
-        <div class="parilte-header-cats-panel">
-          <?php echo parilte_cs_category_tree_block(); ?>
-        </div>
-      </div>
       <a class="parilte-account" href="<?php echo $account_url; ?>" aria-label="Hesabım">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
           <span><?php echo esc_html($account_label); ?></span>
@@ -1631,31 +1625,23 @@ function parilte_cs_front_markup(){
         ];
         $assets = [
           'hero'  => plugins_url('assets/hero-1.jpg', __FILE__),
-          'hero2' => plugins_url('assets/hero-2.jpg', __FILE__),
           'ed1'   => plugins_url('assets/ed-1.jpg', __FILE__),
           'ed2'   => plugins_url('assets/ed-2.jpg', __FILE__),
           'ed3'   => plugins_url('assets/ed-3.jpg', __FILE__),
           'look'  => plugins_url('assets/look-1.jpg', __FILE__),
+          'mag1'  => plugins_url('assets/mag-1.jpg', __FILE__),
+          'mag2'  => plugins_url('assets/mag-2.jpg', __FILE__),
+          'cat1'  => plugins_url('assets/cat-1.jpg', __FILE__),
+          'cat2'  => plugins_url('assets/cat-2.jpg', __FILE__),
+          'cat3'  => plugins_url('assets/cat-3.jpg', __FILE__),
+          'cat4'  => plugins_url('assets/cat-4.jpg', __FILE__),
         ];
-        $cat_media = [];
-        foreach ($cats as $idx => $c) {
-            $term = get_term_by('slug', trim($c[1], '/'), 'product_cat');
-            $img = '';
-            if ($term && !is_wp_error($term)) {
-                $thumb_id = (int) get_term_meta($term->term_id, 'thumbnail_id', true);
-                if ($thumb_id) $img = wp_get_attachment_image_url($thumb_id, 'large');
-            }
-            if (!$img) {
-                $fallbacks = [$assets['ed1'], $assets['ed2'], $assets['ed3'], $assets['hero']];
-                $img = $fallbacks[$idx % count($fallbacks)];
-            }
-            $cat_media[] = ['label'=>$c[0], 'url'=>home_url($c[1]), 'image'=>$img];
-        }
-        $posts = get_posts([
-          'post_type'      => 'post',
-          'posts_per_page' => 3,
-          'post_status'    => 'publish',
-        ]);
+        $cat_media = [
+          ['label'=>$cats[0][0], 'url'=>home_url($cats[0][1]), 'image'=>$assets['cat1']],
+          ['label'=>$cats[1][0], 'url'=>home_url($cats[1][1]), 'image'=>$assets['cat2']],
+          ['label'=>$cats[2][0], 'url'=>home_url($cats[2][1]), 'image'=>$assets['cat3']],
+          ['label'=>$cats[3][0], 'url'=>home_url($cats[3][1]), 'image'=>$assets['cat4']],
+        ];
       ?>
       <section class="parilte-mag-hero parilte-bleed" style="background-image:url('<?php echo esc_url($assets['hero']); ?>');">
         <div class="parilte-mag-hero-overlay">
@@ -1679,6 +1665,12 @@ function parilte_cs_front_markup(){
         </div>
       </section>
 
+      <section class="parilte-mag-strip parilte-bleed" style="background-image:url('<?php echo esc_url($assets['mag1']); ?>');">
+        <div class="parilte-mag-strip-overlay">
+          <a class="parilte-hero-cta" href="<?php echo esc_url($shop_url); ?>">Yeni Sezon</a>
+        </div>
+      </section>
+
 
 
       <section class="parilte-mag-cat-media parilte-bleed">
@@ -1697,21 +1689,11 @@ function parilte_cs_front_markup(){
         </div>
       </section>
 
-      <?php if (!empty($posts)) { ?>
-      <section class="parilte-mag-journal">
-        <div class="parilte-container">
-          <div class="parilte-mag-journal-grid">
-            <?php foreach ($posts as $post){ setup_postdata($post); ?>
-              <article class="parilte-mag-journal-card">
-                <a href="<?php the_permalink(); ?>">
-                  <?php if (has_post_thumbnail()) { the_post_thumbnail('large'); } ?>
-                </a>
-              </article>
-            <?php } wp_reset_postdata(); ?>
-          </div>
+      <section class="parilte-mag-strip parilte-bleed" style="background-image:url('<?php echo esc_url($assets['mag2']); ?>');">
+        <div class="parilte-mag-strip-overlay">
+          <a class="parilte-hero-cta" href="<?php echo esc_url($shop_url); ?>">Koleksiyonlar</a>
         </div>
       </section>
-      <?php } ?>
 
       <section class="parilte-strip">
         <div class="parilte-container parilte-strip-grid">
@@ -2356,6 +2338,8 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-mag-stack{display:grid;gap:clamp(8px,2vw,14px)}
     .parilte-mag-lookbook{min-height:clamp(320px,70vw,620px);background-size:cover;background-position:center}
     .parilte-mag-lookbook-overlay{min-height:inherit;display:flex;align-items:flex-end;justify-content:center;padding:24px;background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.45))}
+    .parilte-mag-strip{min-height:clamp(240px,60vw,520px);background-size:cover;background-position:center}
+    .parilte-mag-strip-overlay{min-height:inherit;display:flex;align-items:flex-end;justify-content:center;padding:24px;background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.45))}
     .parilte-mag-journal{padding:clamp(20px,5vw,52px) 0;background:#fff}
     .parilte-mag-journal-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
     .parilte-mag-journal-card{border-radius:16px;overflow:hidden;border:1px solid var(--parilte-border);background:#fff}
@@ -2369,7 +2353,7 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-mag-rail .products li.product .woocommerce-loop-product__title,
     .parilte-mag-rail .products li.product .price{display:none}
     .parilte-mag-cat-media{padding:0;background:#fff}
-    .parilte-mag-cat-media-grid{display:grid;gap:2px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+    .parilte-mag-cat-media-grid{display:grid;gap:2px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
     .parilte-mag-cat-media-card{position:relative;min-height:clamp(200px,45vw,360px);border-radius:0;overflow:hidden;background-size:cover;background-position:center;box-shadow:none;text-decoration:none;color:#fff}
     .parilte-mag-cat-media-card::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.55))}
     .parilte-mag-cat-media-card span{position:absolute;left:14px;bottom:12px;font-size:.9rem;letter-spacing:.12em;text-transform:uppercase}
