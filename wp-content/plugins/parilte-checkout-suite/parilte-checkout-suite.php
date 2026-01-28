@@ -1684,61 +1684,26 @@ function parilte_cs_front_markup(){
       </section>
 
       <?php if (!empty($rail_ids)) { ?>
-      <section class="parilte-mag-mobile-rail">
-        <div class="parilte-container">
-          <div class="parilte-section-head">
-            <h2>Yeni Sezon</h2>
-            <a href="<?php echo esc_url($shop_url); ?>">Tümünü Gör</a>
-          </div>
-          <div class="parilte-mag-rail">
-            <?php parilte_cs_render_products($rail_ids); ?>
-          </div>
+      <section class="parilte-mag-rail parilte-bleed">
+        <div class="parilte-mag-rail-track">
+          <?php parilte_cs_render_products($rail_ids); ?>
         </div>
       </section>
       <?php } ?>
 
-      <section class="parilte-mag-cats">
-        <div class="parilte-container">
-          <div class="parilte-section-head">
-            <h2>Koleksiyonlar</h2>
-            <a href="<?php echo esc_url($shop_url); ?>">Tümünü Gör</a>
-          </div>
-          <div class="parilte-mag-cats-grid">
-            <?php foreach ($cats as $c){ ?>
-              <a class="parilte-mag-cat" href="<?php echo esc_url(home_url($c[1])); ?>">
-                <strong><?php echo esc_html($c[0]); ?></strong>
-                <span>Koleksiyonu keşfet →</span>
-              </a>
-            <?php } ?>
-          </div>
+      <section class="parilte-mag-cat-media parilte-bleed">
+        <div class="parilte-mag-cat-media-grid">
+          <?php foreach ($cat_media as $card){ ?>
+            <a class="parilte-mag-cat-media-card" href="<?php echo esc_url($card['url']); ?>" style="background-image:url('<?php echo esc_url($card['image']); ?>');">
+              <span><?php echo esc_html($card['label']); ?></span>
+            </a>
+          <?php } ?>
         </div>
       </section>
 
-      <section class="parilte-mag-cat-media">
-        <div class="parilte-container">
-          <div class="parilte-section-head">
-            <h2>Keşfet</h2>
-            <a href="<?php echo esc_url($shop_url); ?>">Mağaza</a>
-          </div>
-          <div class="parilte-mag-cat-media-grid">
-            <?php foreach ($cat_media as $card){ ?>
-              <a class="parilte-mag-cat-media-card" href="<?php echo esc_url($card['url']); ?>" style="background-image:url('<?php echo esc_url($card['image']); ?>');">
-                <span><?php echo esc_html($card['label']); ?></span>
-              </a>
-            <?php } ?>
-          </div>
-        </div>
-      </section>
-
-      <section class="parilte-mag-lookbook">
-        <div class="parilte-container parilte-mag-lookbook-grid">
-          <div class="parilte-mag-lookbook-copy">
-            <span class="parilte-eyebrow">Lookbook</span>
-            <h2>Günün akışına uyumlu.</h2>
-            <p>Minimal, dengeli ve taşınabilir kombinler.</p>
-            <a class="parilte-text-link" href="<?php echo esc_url($shop_url); ?>">Koleksiyonlara göz at →</a>
-          </div>
-          <div class="parilte-mag-lookbook-media" style="background-image:url('<?php echo esc_url($assets['look']); ?>');"></div>
+      <section class="parilte-mag-lookbook parilte-bleed" style="background-image:url('<?php echo esc_url($assets['look']); ?>');">
+        <div class="parilte-mag-lookbook-overlay">
+          <a class="parilte-hero-cta" href="<?php echo esc_url($shop_url); ?>">Lookbook</a>
         </div>
       </section>
 
@@ -2391,37 +2356,31 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-mag-hero-copy p{max-width:520px;opacity:.86;margin:0 0 16px}
     .parilte-mag-hero-actions{display:flex;flex-wrap:wrap;gap:12px}
     .parilte-mag-hero-media{width:100%;aspect-ratio:16/10;min-height:clamp(240px,60vw,520px);background-size:cover;background-position:center;border-radius:clamp(16px,4vw,28px);box-shadow:var(--parilte-shadow)}
-    .parilte-mag-story{padding:clamp(24px,6vw,56px) 0;background:#fff}
-    .parilte-mag-story-grid{display:grid;gap:clamp(14px,3vw,24px);grid-template-columns:1fr}
-    .parilte-mag-card{position:relative;border-radius:clamp(16px,3.6vw,26px);overflow:hidden;min-height:clamp(200px,48vw,360px);background-size:cover;background-position:center}
+    .parilte-mag-story{padding:clamp(18px,4vw,42px) 0;background:#fff}
+    .parilte-mag-story-grid{display:grid;gap:clamp(8px,2vw,14px);grid-template-columns:1fr}
+    .parilte-mag-card{position:relative;border-radius:0;overflow:hidden;min-height:clamp(220px,52vw,520px);background-size:cover;background-position:center}
     .parilte-mag-card::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.42))}
-    .parilte-mag-card-body{position:absolute;left:0;bottom:0;padding:clamp(16px,3.2vw,24px);color:#fff}
-    .parilte-mag-card-body h2,.parilte-mag-card-body h3{margin:0;font-size:clamp(1rem,3.4vw,1.4rem);letter-spacing:.2em;text-transform:uppercase}
+    .parilte-mag-card-body{position:absolute;left:0;bottom:0;padding:clamp(18px,3.6vw,28px);color:#fff}
+    .parilte-mag-card-body h2,.parilte-mag-card-body h3{margin:0;font-size:clamp(1.05rem,3.6vw,1.5rem);letter-spacing:.24em;text-transform:uppercase}
     .parilte-mag-card-body p{display:none}
-    .parilte-mag-stack{display:grid;gap:clamp(12px,2.6vw,18px)}
-    .parilte-mag-cats{padding:clamp(24px,6vw,56px) 0;background:#fff}
-    .parilte-mag-cats-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
-    .parilte-mag-cat{display:flex;flex-direction:column;gap:6px;padding:16px 18px;border-radius:16px;border:1px solid var(--parilte-border);background:rgba(255,255,255,.7);text-decoration:none;color:inherit}
-    .parilte-mag-cat strong{font-size:1rem;letter-spacing:.06em;text-transform:uppercase}
-    .parilte-mag-cat span{opacity:.7}
-    .parilte-mag-lookbook{padding:clamp(24px,6vw,56px) 0;background:#fff}
-    .parilte-mag-lookbook-grid{display:grid;gap:clamp(16px,4vw,32px);grid-template-columns:1fr}
-    .parilte-mag-lookbook-media{width:100%;aspect-ratio:5/3;background-size:cover;background-position:center;border-radius:clamp(16px,4vw,26px);box-shadow:var(--parilte-shadow)}
+    .parilte-mag-stack{display:grid;gap:clamp(8px,2vw,14px)}
+    .parilte-mag-lookbook{min-height:clamp(320px,70vw,620px);background-size:cover;background-position:center}
+    .parilte-mag-lookbook-overlay{min-height:inherit;display:flex;align-items:flex-end;justify-content:center;padding:24px;background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.45))}
     .parilte-mag-journal{padding:clamp(20px,5vw,52px) 0;background:#fff}
     .parilte-mag-journal-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
     .parilte-mag-journal-card{border-radius:16px;overflow:hidden;border:1px solid var(--parilte-border);background:#fff}
     .parilte-mag-journal-card img{width:100%;height:auto;display:block}
-    .parilte-mag-mobile-rail{padding:clamp(18px,4vw,36px) 0;background:#fff}
-    .parilte-mag-rail .products{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 12px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+    .parilte-mag-rail{background:#fff;padding:8px 0}
+    .parilte-mag-rail .products{display:flex;gap:10px;overflow-x:auto;padding:6px 10px 14px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
     .parilte-mag-rail .products::-webkit-scrollbar{height:0}
-    .parilte-mag-rail .products li.product{flex:0 0 calc(50% - 8px);scroll-snap-align:start;background:transparent;margin:0}
+    .parilte-mag-rail .products li.product{flex:0 0 100%;scroll-snap-align:start;background:transparent;margin:0}
     .parilte-mag-rail .products li.product a{color:inherit;text-decoration:none}
     .parilte-mag-rail .products li.product img{border-radius:14px}
     .parilte-mag-rail .products li.product .woocommerce-loop-product__title,
     .parilte-mag-rail .products li.product .price{display:none}
-    .parilte-mag-cat-media{padding:clamp(20px,5vw,48px) 0;background:#fff}
-    .parilte-mag-cat-media-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
-    .parilte-mag-cat-media-card{position:relative;min-height:clamp(160px,34vw,260px);border-radius:18px;overflow:hidden;background-size:cover;background-position:center;box-shadow:var(--parilte-shadow);text-decoration:none;color:#fff}
+    .parilte-mag-cat-media{padding:0;background:#fff}
+    .parilte-mag-cat-media-grid{display:grid;gap:2px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+    .parilte-mag-cat-media-card{position:relative;min-height:clamp(200px,45vw,360px);border-radius:0;overflow:hidden;background-size:cover;background-position:center;box-shadow:none;text-decoration:none;color:#fff}
     .parilte-mag-cat-media-card::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.55))}
     .parilte-mag-cat-media-card span{position:absolute;left:14px;bottom:12px;font-size:.9rem;letter-spacing:.12em;text-transform:uppercase}
     @media (min-width: 900px){
@@ -2429,7 +2388,8 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-mag-story-grid{grid-template-columns:1.25fr .75fr}
       .parilte-mag-lookbook-grid{grid-template-columns:.9fr 1.1fr;align-items:center}
       .parilte-mag-hero-media{min-height:460px}
-      .parilte-mag-mobile-rail{display:none}
+      .parilte-mag-rail .products li.product{flex:0 0 calc(50% - 6px)}
+      .parilte-mag-cat-media-grid{grid-template-columns:repeat(4,1fr)}
     }
     .parilte-section-head h2{margin:0}
     .parilte-section-head a{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--parilte-ink)}
