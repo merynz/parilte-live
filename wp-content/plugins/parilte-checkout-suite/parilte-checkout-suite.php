@@ -224,6 +224,21 @@ function parilte_cs_setup_widgets(){
             'title'=>'Kategoriler','orderby'=>'name','hierarchical'=>1,'count'=>0,'dropdown'=>0
         ]);
     }
+    if (class_exists('WC_Widget_Price_Filter')) {
+        parilte_cs_add_widget_to_sidebar($sidebar_id, 'woocommerce_price_filter', ['title'=>'Fiyata Göre Filtrele']);
+    }
+    if (class_exists('WC_Widget_Layered_Nav')) {
+        if (taxonomy_exists('pa_beden')) {
+            parilte_cs_add_widget_to_sidebar($sidebar_id, 'woocommerce_layered_nav', [
+                'title'=>'Beden','attribute'=>'beden','display_type'=>'list','query_type'=>'and'
+            ]);
+        }
+        if (taxonomy_exists('pa_renk')) {
+            parilte_cs_add_widget_to_sidebar($sidebar_id, 'woocommerce_layered_nav', [
+                'title'=>'Renk','attribute'=>'renk','display_type'=>'list','query_type'=>'and'
+            ]);
+        }
+    }
 }
 
 add_filter('woocommerce_product_categories_widget_args', function ($args) {
@@ -1080,6 +1095,15 @@ function parilte_cs_mobile_drawer_markup() {
           if (drawer) drawer.setAttribute('aria-hidden','false');
           var btn = document.querySelector('.parilte-mobile-menu-toggle');
           if (btn) btn.setAttribute('aria-expanded','true');
+          // Default open all categories in the drawer
+          var toggles = drawer ? drawer.querySelectorAll('.parilte-cat-toggle') : [];
+          toggles.forEach(function(t){
+            t.setAttribute('aria-expanded','true');
+            var wrap = t.closest('.parilte-cat-tree-item');
+            if (!wrap) return;
+            var children = wrap.querySelector('.parilte-cat-tree-children');
+            if (children) children.style.display = 'block';
+          });
         }
         function closeMenu(){
           document.body.classList.remove('parilte-mobile-open');
@@ -1177,7 +1201,17 @@ function parilte_cs_filter_drawer_markup() {
                 }
                 if (function_exists('the_widget')) {
                     the_widget('WC_Widget_Product_Categories', ['title'=>'Kategoriler','hierarchical'=>1,'count'=>0,'dropdown'=>0]);
-                    the_widget('WC_Widget_Price_Filter', ['title'=>'Fiyata Göre Filtrele']);
+                    if (class_exists('WC_Widget_Price_Filter')) {
+                        the_widget('WC_Widget_Price_Filter', ['title'=>'Fiyata Göre Filtrele']);
+                    }
+                    if (class_exists('WC_Widget_Layered_Nav')) {
+                        if (taxonomy_exists('pa_beden')) {
+                            the_widget('WC_Widget_Layered_Nav', ['title'=>'Beden','attribute'=>'beden','display_type'=>'list','query_type'=>'and']);
+                        }
+                        if (taxonomy_exists('pa_renk')) {
+                            the_widget('WC_Widget_Layered_Nav', ['title'=>'Renk','attribute'=>'renk','display_type'=>'list','query_type'=>'and']);
+                        }
+                    }
                 }
             }
           ?>
@@ -1602,6 +1636,25 @@ function parilte_cs_front_markup(){
           'ed3'   => plugins_url('assets/editorial-3.jpg', __FILE__),
           'look'  => plugins_url('assets/lookbook.jpg', __FILE__),
         ];
+        $rail_ids = parilte_cs_get_product_ids([
+          'limit'   => 10,
+          'orderby' => 'date',
+          'order'   => 'DESC',
+        ]);
+        $cat_media = [];
+        foreach ($cats as $idx => $c) {
+            $term = get_term_by('slug', trim($c[1], '/'), 'product_cat');
+            $img = '';
+            if ($term && !is_wp_error($term)) {
+                $thumb_id = (int) get_term_meta($term->term_id, 'thumbnail_id', true);
+                if ($thumb_id) $img = wp_get_attachment_image_url($thumb_id, 'large');
+            }
+            if (!$img) {
+                $fallbacks = [$assets['ed1'], $assets['ed2'], $assets['ed3'], $assets['hero']];
+                $img = $fallbacks[$idx % count($fallbacks)];
+            }
+            $cat_media[] = ['label'=>$c[0], 'url'=>home_url($c[1]), 'image'=>$img];
+        }
         $posts = get_posts([
           'post_type'      => 'post',
           'posts_per_page' => 3,
@@ -1651,6 +1704,20 @@ function parilte_cs_front_markup(){
         </div>
       </section>
 
+      <?php if (!empty($rail_ids)) { ?>
+      <section class="parilte-mag-mobile-rail">
+        <div class="parilte-container">
+          <div class="parilte-section-head">
+            <h2>Yeni Sezon</h2>
+            <a href="<?php echo esc_url($shop_url); ?>">Tümünü Gör</a>
+          </div>
+          <div class="parilte-mag-rail">
+            <?php parilte_cs_render_products($rail_ids); ?>
+          </div>
+        </div>
+      </section>
+      <?php } ?>
+
       <section class="parilte-mag-cats">
         <div class="parilte-container">
           <div class="parilte-section-head">
@@ -1662,6 +1729,22 @@ function parilte_cs_front_markup(){
               <a class="parilte-mag-cat" href="<?php echo esc_url(home_url($c[1])); ?>">
                 <strong><?php echo esc_html($c[0]); ?></strong>
                 <span>Koleksiyonu keşfet →</span>
+              </a>
+            <?php } ?>
+          </div>
+        </div>
+      </section>
+
+      <section class="parilte-mag-cat-media">
+        <div class="parilte-container">
+          <div class="parilte-section-head">
+            <h2>Keşfet</h2>
+            <a href="<?php echo esc_url($shop_url); ?>">Mağaza</a>
+          </div>
+          <div class="parilte-mag-cat-media-grid">
+            <?php foreach ($cat_media as $card){ ?>
+              <a class="parilte-mag-cat-media-card" href="<?php echo esc_url($card['url']); ?>" style="background-image:url('<?php echo esc_url($card['image']); ?>');">
+                <span><?php echo esc_html($card['label']); ?></span>
               </a>
             <?php } ?>
           </div>
@@ -2356,11 +2439,23 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-mag-journal-body{padding:14px 16px}
     .parilte-mag-journal-body h3{margin:0 0 6px;font-size:1rem}
     .parilte-mag-journal-body span{font-size:.86rem;opacity:.6}
+    .parilte-mag-mobile-rail{padding:clamp(18px,4vw,36px) 0;background:#fff}
+    .parilte-mag-rail .products{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 12px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+    .parilte-mag-rail .products::-webkit-scrollbar{height:0}
+    .parilte-mag-rail .products li.product{flex:0 0 calc(50% - 8px);scroll-snap-align:start;background:transparent;margin:0}
+    .parilte-mag-rail .products li.product a{color:inherit;text-decoration:none}
+    .parilte-mag-rail .products li.product img{border-radius:14px}
+    .parilte-mag-cat-media{padding:clamp(20px,5vw,48px) 0;background:#fff}
+    .parilte-mag-cat-media-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+    .parilte-mag-cat-media-card{position:relative;min-height:clamp(160px,34vw,260px);border-radius:18px;overflow:hidden;background-size:cover;background-position:center;box-shadow:var(--parilte-shadow);text-decoration:none;color:#fff}
+    .parilte-mag-cat-media-card::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05),rgba(0,0,0,.55))}
+    .parilte-mag-cat-media-card span{position:absolute;left:14px;bottom:12px;font-size:.9rem;letter-spacing:.12em;text-transform:uppercase}
     @media (min-width: 900px){
       .parilte-mag-hero-grid{grid-template-columns:1.05fr .95fr}
       .parilte-mag-story-grid{grid-template-columns:1.25fr .75fr}
       .parilte-mag-lookbook-grid{grid-template-columns:.9fr 1.1fr;align-items:center}
       .parilte-mag-hero-media{min-height:460px}
+      .parilte-mag-mobile-rail{display:none}
     }
     .parilte-section-head h2{margin:0}
     .parilte-section-head a{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--parilte-ink)}
