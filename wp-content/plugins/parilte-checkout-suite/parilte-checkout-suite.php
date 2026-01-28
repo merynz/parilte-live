@@ -1630,11 +1630,12 @@ function parilte_cs_front_markup(){
           ['Dış Giyim','/kategori/dis-giyim/'],
         ];
         $assets = [
-          'hero'  => plugins_url('assets/hero.jpg', __FILE__),
-          'ed1'   => plugins_url('assets/editorial-1.jpg', __FILE__),
-          'ed2'   => plugins_url('assets/editorial-2.jpg', __FILE__),
-          'ed3'   => plugins_url('assets/editorial-3.jpg', __FILE__),
-          'look'  => plugins_url('assets/lookbook.jpg', __FILE__),
+          'hero'  => plugins_url('assets/hero-1.jpg', __FILE__),
+          'hero2' => plugins_url('assets/hero-2.jpg', __FILE__),
+          'ed1'   => plugins_url('assets/hero-2.jpg', __FILE__),
+          'ed2'   => plugins_url('assets/hero-1.jpg', __FILE__),
+          'ed3'   => plugins_url('assets/hero-2.jpg', __FILE__),
+          'look'  => plugins_url('assets/hero-1.jpg', __FILE__),
         ];
         $rail_ids = parilte_cs_get_product_ids([
           'limit'   => 10,
