@@ -2559,12 +2559,15 @@ add_action('wp_enqueue_scripts', function () {
       .ct-offcanvas-container,
       .ct-panel{height:100vh}
       .ct-panel{max-width:100vw;width:100vw;overflow:hidden}
-      .ct-panel-content,
-      .ct-panel-content-inner{
+      #offcanvas.ct-panel{height:100vh}
+      #offcanvas .ct-panel-inner{height:100%}
+      #offcanvas .ct-panel-content,
+      #offcanvas .ct-panel-content[data-device="mobile"],
+      #offcanvas .ct-panel-content-inner{
         padding:16px;
-        overflow-y:auto;
-        max-height:100vh;
         height:100%;
+        max-height:100vh;
+        overflow-y:auto;
         -webkit-overflow-scrolling:touch;
         overscroll-behavior:contain;
       }
