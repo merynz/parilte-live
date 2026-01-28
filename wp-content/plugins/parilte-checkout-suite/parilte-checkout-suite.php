@@ -1026,7 +1026,8 @@ function parilte_cs_header_markup(){
     $account_label = is_user_logged_in() ? 'Hesabım' : 'Giriş';
     ob_start(); ?>
     <div class="parilte-header-icons">
-      <button type="button" class="parilte-mobile-menu-toggle" aria-controls="parilte-mobile-drawer" aria-expanded="false">
+      <button type="button" class="parilte-mobile-menu-toggle" aria-controls="parilte-mobile-drawer" aria-expanded="false"
+        onclick="document.body.classList.add('parilte-mobile-open');document.getElementById('parilte-mobile-drawer')?.setAttribute('aria-hidden','false');this.setAttribute('aria-expanded','true');">
         <span class="parilte-mobile-menu-icon" aria-hidden="true"><span></span></span>
         <span class="parilte-mobile-menu-text">Menü</span>
       </button>
@@ -1066,11 +1067,13 @@ function parilte_cs_mobile_drawer_markup() {
     $shop_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('shop') : home_url('/magaza/');
     ?>
     <div id="parilte-mobile-drawer" class="parilte-mobile-drawer" aria-hidden="true">
-      <div class="parilte-mobile-backdrop" role="presentation"></div>
+      <div class="parilte-mobile-backdrop" role="presentation"
+        onclick="document.body.classList.remove('parilte-mobile-open');document.getElementById('parilte-mobile-drawer')?.setAttribute('aria-hidden','true');document.querySelector('.parilte-mobile-menu-toggle')?.setAttribute('aria-expanded','false');"></div>
       <aside class="parilte-mobile-panel" role="dialog" aria-modal="true" aria-label="Mobil Menü">
         <div class="parilte-mobile-header">
           <strong>Menü</strong>
-          <button type="button" class="parilte-mobile-close" aria-label="Kapat">×</button>
+          <button type="button" class="parilte-mobile-close" aria-label="Kapat"
+            onclick="document.body.classList.remove('parilte-mobile-open');document.getElementById('parilte-mobile-drawer')?.setAttribute('aria-hidden','true');document.querySelector('.parilte-mobile-menu-toggle')?.setAttribute('aria-expanded','false');">×</button>
         </div>
         <nav class="parilte-mobile-links">
           <a href="<?php echo esc_url($home_url); ?>">Anasayfa</a>
