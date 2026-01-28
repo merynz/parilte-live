@@ -1632,16 +1632,11 @@ function parilte_cs_front_markup(){
         $assets = [
           'hero'  => plugins_url('assets/hero-1.jpg', __FILE__),
           'hero2' => plugins_url('assets/hero-2.jpg', __FILE__),
-          'ed1'   => plugins_url('assets/hero-2.jpg', __FILE__),
-          'ed2'   => plugins_url('assets/hero-1.jpg', __FILE__),
-          'ed3'   => plugins_url('assets/hero-2.jpg', __FILE__),
-          'look'  => plugins_url('assets/hero-1.jpg', __FILE__),
+          'ed1'   => plugins_url('assets/ed-1.jpg', __FILE__),
+          'ed2'   => plugins_url('assets/ed-2.jpg', __FILE__),
+          'ed3'   => plugins_url('assets/ed-3.jpg', __FILE__),
+          'look'  => plugins_url('assets/look-1.jpg', __FILE__),
         ];
-        $rail_ids = parilte_cs_get_product_ids([
-          'limit'   => 10,
-          'orderby' => 'date',
-          'order'   => 'DESC',
-        ]);
         $cat_media = [];
         foreach ($cats as $idx => $c) {
             $term = get_term_by('slug', trim($c[1], '/'), 'product_cat');
@@ -1684,13 +1679,7 @@ function parilte_cs_front_markup(){
         </div>
       </section>
 
-      <?php if (!empty($rail_ids)) { ?>
-      <section class="parilte-mag-rail parilte-bleed">
-        <div class="parilte-mag-rail-track">
-          <?php parilte_cs_render_products($rail_ids); ?>
-        </div>
-      </section>
-      <?php } ?>
+
 
       <section class="parilte-mag-cat-media parilte-bleed">
         <div class="parilte-mag-cat-media-grid">
