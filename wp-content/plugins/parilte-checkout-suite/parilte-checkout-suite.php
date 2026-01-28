@@ -1026,6 +1026,10 @@ function parilte_cs_header_markup(){
     $account_label = is_user_logged_in() ? 'Hesabım' : 'Giriş';
     ob_start(); ?>
     <div class="parilte-header-icons">
+      <button type="button" class="parilte-mobile-menu-toggle" aria-controls="parilte-mobile-drawer" aria-expanded="false">
+        <span class="parilte-mobile-menu-icon" aria-hidden="true"><span></span></span>
+        <span class="parilte-mobile-menu-text">Menü</span>
+      </button>
       <div class="parilte-header-cats">
         <button type="button" class="parilte-header-cats-toggle" aria-haspopup="true" aria-expanded="false">Kategoriler</button>
         <div class="parilte-header-cats-panel">
@@ -1055,6 +1059,31 @@ function parilte_cs_header_markup(){
     <?php return ob_get_clean();
 }
 add_shortcode('parilte_header', 'parilte_cs_header_markup');
+
+function parilte_cs_mobile_drawer_markup() {
+    if (is_admin()) return;
+    $home_url = home_url('/');
+    $shop_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('shop') : home_url('/magaza/');
+    ?>
+    <div id="parilte-mobile-drawer" class="parilte-mobile-drawer" aria-hidden="true">
+      <div class="parilte-mobile-backdrop" role="presentation"></div>
+      <aside class="parilte-mobile-panel" role="dialog" aria-modal="true" aria-label="Mobil Menü">
+        <div class="parilte-mobile-header">
+          <strong>Menü</strong>
+          <button type="button" class="parilte-mobile-close" aria-label="Kapat">×</button>
+        </div>
+        <nav class="parilte-mobile-links">
+          <a href="<?php echo esc_url($home_url); ?>">Anasayfa</a>
+          <a href="<?php echo esc_url($shop_url); ?>">Mağaza</a>
+        </nav>
+        <div class="parilte-mobile-cats">
+          <?php echo parilte_cs_category_tree_block(); ?>
+        </div>
+      </aside>
+    </div>
+    <?php
+}
+add_action('wp_footer', 'parilte_cs_mobile_drawer_markup', 25);
 
 function parilte_cs_header_placed($set = null){
     static $placed = false;
@@ -1357,6 +1386,23 @@ add_action('wp_enqueue_scripts', function () {
       $(document).on('click', function(e){
         if (!$(e.target).closest('.parilte-header-cats').length) {
           $('.parilte-header-cats').removeClass('is-open');
+        }
+      });
+
+      // Custom mobile drawer (disable Blocksy offcanvas usage)
+      $(document).on('click', '.parilte-mobile-menu-toggle', function(e){
+        e.preventDefault();
+        $('body').addClass('parilte-mobile-open');
+        $('#parilte-mobile-drawer').attr('aria-hidden','false');
+      });
+      $(document).on('click', '.parilte-mobile-close, .parilte-mobile-backdrop', function(){
+        $('body').removeClass('parilte-mobile-open');
+        $('#parilte-mobile-drawer').attr('aria-hidden','true');
+      });
+      $(document).on('keydown', function(e){
+        if (e.key === 'Escape') {
+          $('body').removeClass('parilte-mobile-open');
+          $('#parilte-mobile-drawer').attr('aria-hidden','true');
         }
       });
     });");
@@ -2167,6 +2213,25 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-header-cats .parilte-cat-tree-head{display:none}
     .parilte-header-cats .parilte-cat-tree-list{gap:4px}
     .parilte-header-cats .parilte-cat-tree-children{margin-left:8px}
+    .parilte-mobile-menu-toggle{display:none;border:0;background:transparent;cursor:pointer;align-items:center;gap:8px;font:inherit;letter-spacing:.14em;text-transform:uppercase}
+    .parilte-mobile-menu-icon{width:18px;height:12px;position:relative;display:inline-block}
+    .parilte-mobile-menu-icon::before,
+    .parilte-mobile-menu-icon::after{content:"";position:absolute;left:0;right:0;height:2px;background:currentColor;border-radius:2px}
+    .parilte-mobile-menu-icon::before{top:0}
+    .parilte-mobile-menu-icon::after{bottom:0}
+    .parilte-mobile-menu-text{font-size:.72rem}
+
+    .parilte-mobile-drawer{position:fixed;inset:0;display:none;z-index:9999}
+    body.parilte-mobile-open .parilte-mobile-drawer{display:block}
+    .parilte-mobile-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+    .parilte-mobile-panel{position:absolute;left:0;top:0;bottom:0;width:min(86vw,360px);background:#f7f4ef;
+      padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+    .parilte-mobile-header{display:flex;align-items:center;justify-content:space-between;font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:.78rem}
+    .parilte-mobile-close{border:0;background:transparent;font-size:22px;line-height:1;cursor:pointer}
+    .parilte-mobile-links{display:flex;flex-direction:column;gap:8px}
+    .parilte-mobile-links a{text-decoration:none;color:var(--parilte-ink);font-weight:600;letter-spacing:.08em}
+    .parilte-mobile-cats .parilte-cat-tree{margin:0;padding:0;border:0;background:transparent}
+    .parilte-mobile-cats .parilte-cat-tree-head{display:none}
     .parilte-cart-count{min-width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;
       font-size:.62rem;border-radius:999px;background:currentColor;color:#fff;padding:0 5px;line-height:1}
     .parilte-search-form{display:flex;align-items:center;gap:6px}
@@ -2515,6 +2580,9 @@ add_action('wp_enqueue_scripts', function () {
         .parilte-sidebar-quick{gap:6px}
         .parilte-cat-tree{padding:10px}
         .parilte-header-cats{display:none}
+        .parilte-mobile-menu-toggle{display:inline-flex}
+        /* hide Blocksy mobile offcanvas */
+        #offcanvas, .ct-drawer-canvas, .ct-panel.ct-header{display:none !important}
         .parilte-showcase-tags{display:none}
         .woocommerce ul.products li.product .product-category,
         .woocommerce ul.products li.product .product-categories,
