@@ -1528,13 +1528,13 @@ function parilte_cs_front_markup(){
         $new_page  = get_page_by_path('yeni-gelenler');
         $sale_url = ($sale_page && !is_wp_error($sale_page)) ? get_permalink($sale_page) : $shop_url;
         $new_url  = ($new_page && !is_wp_error($new_page)) ? get_permalink($new_page) : $shop_url;
+        $account_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('myaccount') : home_url('/hesabim/');
+        $contact_email = get_option('admin_email');
       ?>
       <section class="parilte-home-hero parilte-bleed">
         <img class="parilte-home-img" src="<?php echo esc_url($assets['h1']); ?>" alt="Parilte" loading="eager" decoding="async" />
         <div class="parilte-home-hero-cta">
           <a class="parilte-home-cta-btn" href="<?php echo esc_url($shop_url); ?>">Mağaza</a>
-          <a class="parilte-home-cta-btn" href="<?php echo esc_url($sale_url); ?>">İndirimler</a>
-          <a class="parilte-home-cta-btn" href="<?php echo esc_url($new_url); ?>">Yeni Gelenler</a>
         </div>
       </section>
 
@@ -1559,9 +1559,42 @@ function parilte_cs_front_markup(){
         </div>
       </section>
 
-      <section class="parilte-home-strip parilte-bleed">
-        <img class="parilte-home-img" src="<?php echo esc_url($assets['h6']); ?>" alt="" loading="lazy" decoding="async" />
-        <img class="parilte-home-img" src="<?php echo esc_url($assets['h7']); ?>" alt="" loading="lazy" decoding="async" />
+      <section class="parilte-home-promo parilte-bleed">
+        <div class="parilte-home-promo-row">
+          <div class="parilte-home-promo-media">
+            <img class="parilte-home-img" src="<?php echo esc_url($assets['h6']); ?>" alt="" loading="lazy" decoding="async" />
+          </div>
+          <div class="parilte-home-promo-copy">
+            <small>İndirimler</small>
+            <h2>Seçili ürünlerde fırsatlar</h2>
+            <p>Sezona özel indirimleri keşfet, favorilerini kaçırma.</p>
+            <a class="parilte-home-cta-btn" href="<?php echo esc_url($sale_url); ?>">İndirimlere Git</a>
+          </div>
+        </div>
+        <div class="parilte-home-promo-row reverse">
+          <div class="parilte-home-promo-media">
+            <img class="parilte-home-img" src="<?php echo esc_url($assets['h7']); ?>" alt="" loading="lazy" decoding="async" />
+          </div>
+          <div class="parilte-home-promo-copy">
+            <small>Yeni Gelenler</small>
+            <h2>Son eklenen seçkiler</h2>
+            <p>Yeni sezon parçalarıyla görünümünü yenile.</p>
+            <a class="parilte-home-cta-btn" href="<?php echo esc_url($new_url); ?>">Yeni Gelenler</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="parilte-home-actions parilte-bleed">
+        <div class="parilte-home-action-card">
+          <h3>Hesabın var mı?</h3>
+          <p>Giriş yap veya hızlıca hesap oluştur.</p>
+          <a class="parilte-home-cta-btn" href="<?php echo esc_url($account_url); ?>">Oturum Aç / Hesap Oluştur</a>
+        </div>
+        <div class="parilte-home-action-card">
+          <h3>Bize Ulaşın</h3>
+          <p>Soru ve destek için e‑posta gönder.</p>
+          <a class="parilte-home-cta-btn" href="<?php echo esc_url('mailto:' . $contact_email); ?>">Bize Ulaşın</a>
+        </div>
       </section>
 
     </main>
@@ -2253,6 +2286,51 @@ add_action('wp_enqueue_scripts', function () {
       box-shadow:0 10px 22px rgba(0,0,0,.18);
       white-space:nowrap;
     }
+    .parilte-home-promo{
+      display:flex;
+      flex-direction:column;
+      gap:0;
+      background:#fff;
+    }
+    .parilte-home-promo-row{
+      display:grid;
+      grid-template-columns:1.2fr 1fr;
+      gap:0;
+      border-top:1px solid rgba(0,0,0,.08);
+    }
+    .parilte-home-promo-row.reverse{grid-template-columns:1fr 1.2fr}
+    .parilte-home-promo-copy{
+      padding:clamp(18px,4.2vw,36px);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      justify-content:center;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+    .parilte-home-promo-copy small{opacity:.6;font-size:.72rem}
+    .parilte-home-promo-copy h2{margin:0;font-size:clamp(1.1rem,2.6vw,1.6rem);letter-spacing:.12em}
+    .parilte-home-promo-copy p{margin:0;opacity:.7;font-size:.9rem;text-transform:none;letter-spacing:.02em}
+    .parilte-home-actions{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:0;
+      border-top:1px solid rgba(0,0,0,.08);
+      border-bottom:1px solid rgba(0,0,0,.08);
+      background:#fff;
+    }
+    .parilte-home-action-card{
+      padding:clamp(18px,4.2vw,32px);
+      border-right:1px solid rgba(0,0,0,.08);
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+    .parilte-home-action-card:last-child{border-right:0}
+    .parilte-home-action-card h3{margin:0;font-size:clamp(1rem,2.2vw,1.3rem)}
+    .parilte-home-action-card p{margin:0;opacity:.7;font-size:.9rem;text-transform:none;letter-spacing:.02em}
     .parilte-home-cats-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
@@ -2374,6 +2452,10 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-home-cta-card{border-right:0;border-top:1px solid rgba(0,0,0,.08)}
       .parilte-home-cta-btn{font-size:.68rem;padding:9px 14px}
       .parilte-home-cats-grid{grid-template-columns:1fr}
+      .parilte-home-promo-row,
+      .parilte-home-promo-row.reverse{grid-template-columns:1fr}
+      .parilte-home-actions{grid-template-columns:1fr}
+      .parilte-home-action-card{border-right:0;border-top:1px solid rgba(0,0,0,.08)}
     }
     @media (prefers-reduced-motion: reduce){
       .parilte-home-cat{animation:none}
