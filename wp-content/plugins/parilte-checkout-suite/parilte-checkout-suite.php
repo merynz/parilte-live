@@ -1538,9 +1538,8 @@ function parilte_cs_front_markup(){
         </div>
       </section>
 
-      <section class="parilte-home-cats">
-        <div class="parilte-container">
-          <div class="parilte-home-cats-grid">
+      <section class="parilte-home-cats parilte-bleed">
+        <div class="parilte-home-cats-grid">
           <?php
             $cats = [
               ['slug'=>'dis-giyim','label'=>'Dış Giyim','img'=>$assets['h2']],
@@ -1557,40 +1556,37 @@ function parilte_cs_front_markup(){
               <span class="parilte-home-cat-label"><?php echo esc_html($card['label']); ?></span>
             </a>
           <?php endforeach; ?>
-          </div>
         </div>
       </section>
 
-      <section class="parilte-home-modules">
-        <div class="parilte-container">
-          <div class="parilte-home-modules-grid">
-            <article class="parilte-home-module">
+      <section class="parilte-home-modules parilte-bleed">
+        <div class="parilte-home-modules-grid">
+            <article class="parilte-home-module module-sale">
               <img class="parilte-home-img" src="<?php echo esc_url($assets['h6']); ?>" alt="" loading="lazy" decoding="async" />
               <small>İndirimler</small>
               <h3>Seçili ürünlerde fırsatlar</h3>
               <p>Sezona özel indirimleri keşfet, favorilerini kaçırma.</p>
               <a class="parilte-home-cta-btn" href="<?php echo esc_url($sale_url); ?>">İndirimlere Git</a>
             </article>
-            <article class="parilte-home-module">
+            <article class="parilte-home-module module-new">
               <img class="parilte-home-img" src="<?php echo esc_url($assets['h7']); ?>" alt="" loading="lazy" decoding="async" />
               <small>Yeni Gelenler</small>
               <h3>Son eklenen seçkiler</h3>
               <p>Yeni sezon parçalarıyla görünümünü yenile.</p>
               <a class="parilte-home-cta-btn" href="<?php echo esc_url($new_url); ?>">Yeni Gelenler</a>
             </article>
-            <article class="parilte-home-module">
+            <article class="parilte-home-module module-account">
               <small>Hesabın var mı?</small>
               <h3>Oturum aç veya hesap oluştur</h3>
               <p>Favorilerini ve siparişlerini takip et.</p>
               <a class="parilte-home-cta-btn" href="<?php echo esc_url($account_url); ?>">Oturum Aç / Hesap Oluştur</a>
             </article>
-            <article class="parilte-home-module">
+            <article class="parilte-home-module module-contact">
               <small>Bize Ulaşın</small>
               <h3>Soru ve destek için yaz</h3>
               <p><?php echo esc_html($contact_email); ?></p>
               <a class="parilte-home-cta-btn" href="<?php echo esc_url('mailto:' . $contact_email); ?>">Bize Ulaşın</a>
             </article>
-          </div>
         </div>
       </section>
 
@@ -2288,6 +2284,8 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-home-cats .parilte-home-cats-grid{
       gap:14px;
       border:0;
+      width:min(1200px, 100% - 2 * clamp(12px,4vw,24px));
+      margin:0 auto;
     }
     .parilte-home-cats .parilte-home-cat{
       border:0;
@@ -2301,6 +2299,8 @@ add_action('wp_enqueue_scripts', function () {
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:16px;
+      width:min(1200px, 100% - 2 * clamp(12px,4vw,24px));
+      margin:0 auto;
     }
     .parilte-home-module{
       background:#fff;
@@ -2315,6 +2315,11 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-home-module small{opacity:.6;font-size:.72rem;text-transform:uppercase;letter-spacing:.12em}
     .parilte-home-module h3{margin:0;font-size:clamp(1rem,2.2vw,1.25rem);letter-spacing:.06em;text-transform:uppercase}
     .parilte-home-module p{margin:0;opacity:.7;font-size:.9rem}
+    .parilte-home-module .parilte-home-cta-btn{align-self:flex-start}
+    .parilte-home-module.module-sale .parilte-home-cta-btn{align-self:flex-end}
+    .parilte-home-module.module-new .parilte-home-cta-btn{align-self:flex-start}
+    .parilte-home-module.module-account .parilte-home-cta-btn{align-self:center}
+    .parilte-home-module.module-contact .parilte-home-cta-btn{align-self:flex-end}
     .parilte-home-promo{
       display:flex;
       flex-direction:column;
