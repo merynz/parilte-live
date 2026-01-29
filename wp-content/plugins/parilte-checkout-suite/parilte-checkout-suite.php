@@ -1717,25 +1717,80 @@ function parilte_cs_fix_category_hierarchy_once() {
 }
 add_action('admin_init', 'parilte_cs_fix_category_hierarchy_once', 30);
 
+function parilte_cs_guess_primary_category_id($product) {
+    if (!$product instanceof WC_Product) return 0;
+    $name = $product->get_name();
+    $hay = function_exists('mb_strtolower') ? mb_strtolower($name, 'UTF-8') : strtolower($name);
+    $map = [
+        'taki' => ['takı','taki','kolye','küpe','kupe','bileklik','bilezik','bel zinciri'],
+        'canta' => ['çanta','canta','bag'],
+        'ayakkabi' => ['ayakkabı','ayakkabi','bot','çizme','cizme','sandalet','terlik','topuklu'],
+        'dis-giyim' => ['kaban','mont','trenç','trench','ceket','yelek','palt','parka','kürk','kurk'],
+        'elbise' => ['elbise','abiye','dress'],
+        'alt-giyim' => ['pantolon','jean','etek','şort','sort','tayt','eşofman','esofman','tulum'],
+        'ust-giyim' => ['bluz','gömlek','gomlek','tişört','tisort','t-shirt','tshirt','sweatshirt','kazak','triko','bodysuit','crop','atlet','badi'],
+        'aksesuar' => ['aksesuar','kemer','şal','sal','atkı','atki','bere','eldiven','fular','şapka','sapka','şemsiye','semsiye','anahtarlik','anahtarlık'],
+    ];
+    foreach ($map as $slug => $keywords) {
+        foreach ($keywords as $kw) {
+            if (strpos($hay, $kw) !== false) {
+                $term = get_term_by('slug', $slug, 'product_cat');
+                if (!$term || is_wp_error($term)) $term = get_term_by('name', $slug, 'product_cat');
+                if ($term && !is_wp_error($term)) return (int) $term->term_id;
+            }
+        }
+    }
+    return 0;
+}
+
 function parilte_cs_cleanup_categories_once() {
     if (!current_user_can('manage_options')) return;
-    if (get_option('parilte_cat_cleanup_done')) return;
+    if (get_option('parilte_cat_cleanup_done_v2')) return;
 
-    // Remove seasonal categories
-    $remove_slugs = ['ilkbahar-yaz-sezonu','sonbahar-kis-sezonu'];
     $fallback_parent = get_term_by('slug', 'genel', 'product_cat');
-    foreach ($remove_slugs as $slug) {
-        $term = get_term_by('slug', $slug, 'product_cat');
+    $fallback_alt = get_term_by('slug', 'yeni-sezon', 'product_cat');
+    $fallback_id = 0;
+    if ($fallback_alt && !is_wp_error($fallback_alt)) $fallback_id = (int) $fallback_alt->term_id;
+    if (!$fallback_id && $fallback_parent && !is_wp_error($fallback_parent)) $fallback_id = (int) $fallback_parent->term_id;
+
+    $terms = get_terms([
+        'taxonomy' => 'product_cat',
+        'hide_empty' => false,
+    ]);
+    $season_terms = [];
+    foreach ((array) $terms as $term) {
         if (!$term || is_wp_error($term)) continue;
+        $slug = strtolower($term->slug);
+        $name = function_exists('mb_strtolower') ? mb_strtolower($term->name, 'UTF-8') : strtolower($term->name);
+        $is_season = (strpos($slug, 'ilkbahar') !== false) || (strpos($slug, 'sonbahar') !== false)
+            || (strpos($name, 'ilkbahar') !== false) || (strpos($name, 'sonbahar') !== false);
+        if (!$is_season) continue;
+        if ($fallback_parent && !is_wp_error($fallback_parent)) {
+            if ((int) $term->parent !== (int) $fallback_parent->term_id && strpos($name, 'sezon') === false) {
+                continue;
+            }
+        }
+        $season_terms[] = $term;
+    }
+
+    foreach ($season_terms as $term) {
         $posts = get_posts([
             'post_type' => 'product',
             'posts_per_page' => -1,
             'fields' => 'ids',
             'tax_query' => [[ 'taxonomy'=>'product_cat', 'field'=>'term_id', 'terms'=>$term->term_id ]]
         ]);
-        if ($posts && $fallback_parent && !is_wp_error($fallback_parent)) {
-            foreach ($posts as $pid) {
-                wp_set_object_terms($pid, [(int)$fallback_parent->term_id], 'product_cat', true);
+        foreach ((array) $posts as $pid) {
+            $current = wp_get_object_terms($pid, 'product_cat', ['fields' => 'ids']);
+            $remaining = array_values(array_diff((array) $current, [(int) $term->term_id]));
+            if (!$remaining) {
+                $product = function_exists('wc_get_product') ? wc_get_product($pid) : null;
+                $guess = $product ? parilte_cs_guess_primary_category_id($product) : 0;
+                if ($guess) $remaining = [$guess];
+                elseif ($fallback_id) $remaining = [$fallback_id];
+            }
+            if ($remaining) {
+                wp_set_object_terms($pid, array_values(array_unique($remaining)), 'product_cat', false);
             }
         }
         wp_delete_term($term->term_id, 'product_cat');
@@ -1753,7 +1808,7 @@ function parilte_cs_cleanup_categories_once() {
         }
     }
 
-    update_option('parilte_cat_cleanup_done', 1);
+    update_option('parilte_cat_cleanup_done_v2', 1);
 }
 add_action('admin_init', 'parilte_cs_cleanup_categories_once', 31);
 
