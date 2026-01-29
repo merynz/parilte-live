@@ -2633,16 +2633,27 @@ add_action('wp_enqueue_scripts', function () {
       background-size:24px 24px, 36px 36px;
       background-position:0 0, 12px 12px;
     }
+    .ct-header .ct-container{position:relative;overflow:visible}
     .ct-header .menu .parilte-menu-tools{width:100%;justify-content:center;margin-left:0}
     .ct-header .menu .parilte-menu-tools .parilte-header-icons{
       width:100%;
-      display:grid;
-      grid-template-columns:1fr minmax(240px,560px) 1fr;
+      display:flex;
       align-items:center;
-      gap:12px;
+      justify-content:flex-end;
+      gap:14px;
     }
-    .ct-header .menu .parilte-menu-tools .parilte-header-spacer{grid-column:1}
-    .ct-header .menu .parilte-menu-tools .parilte-header-search{grid-column:2;display:flex;justify-content:center;width:100%}
+    .ct-header .menu .parilte-menu-tools .parilte-header-spacer{display:none}
+    .ct-header .menu .parilte-menu-tools .parilte-header-search{
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:clamp(260px,42vw,560px);
+      max-width:92vw;
+      z-index:1;
+      display:flex;
+      justify-content:center;
+    }
     .ct-header .menu .parilte-menu-tools .parilte-search-form{
       width:100%;
       max-width:560px;
@@ -2666,22 +2677,27 @@ add_action('wp_enqueue_scripts', function () {
     }
     .ct-header .menu .parilte-menu-tools .parilte-search-button{padding:.2rem .4rem}
     .ct-header .menu .parilte-menu-tools .parilte-header-tools{
-      grid-column:3;
-      justify-self:end;
       display:flex;
       align-items:center;
       gap:14px;
+      position:relative;
+      z-index:2;
     }
     @media (max-width: 900px){
+      .ct-header .ct-container{position:static}
       .ct-header .menu .parilte-menu-tools .parilte-header-icons{
         display:flex;
         flex-direction:column;
         align-items:stretch;
         gap:10px;
       }
-      .ct-header .menu .parilte-menu-tools .parilte-header-spacer{display:none}
-      .ct-header .menu .parilte-menu-tools .parilte-header-search{order:1}
-      .ct-header .menu .parilte-menu-tools .parilte-header-tools{order:2;justify-content:center}
+      .ct-header .menu .parilte-menu-tools .parilte-header-search{
+        position:static;
+        transform:none;
+        width:100%;
+        max-width:100%;
+      }
+      .ct-header .menu .parilte-menu-tools .parilte-header-tools{justify-content:center}
       .ct-header .menu .parilte-menu-tools .parilte-search-form{max-width:100%}
       .parilte-label{display:none}
     }
@@ -2699,8 +2715,9 @@ add_action('wp_enqueue_scripts', function () {
 
     .woocommerce.archive .ct-container,
     .woocommerce.archive .ct-content,
-    .woocommerce.archive .site-main{max-width:100%;width:100%}
-    .woocommerce.archive .ct-container{padding-left:clamp(12px,2.5vw,24px);padding-right:clamp(12px,2.5vw,24px)}
+    .woocommerce.archive .ct-row,
+    .woocommerce.archive .site-main{max-width:none !important;width:100% !important}
+    .woocommerce.archive .ct-container{padding-left:clamp(12px,2.5vw,24px) !important;padding-right:clamp(12px,2.5vw,24px) !important}
     .woocommerce.archive .ct-hero-section,
     .woocommerce.archive .ct-hero,
     .woocommerce.archive .ct-page-title,
