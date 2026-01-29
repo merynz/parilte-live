@@ -2764,7 +2764,7 @@ add_action('wp_enqueue_scripts', function () {
     }
     .parilte-custom-inner{
       display:grid;
-      grid-template-columns:auto minmax(200px,380px) auto;
+      grid-template-columns:auto minmax(160px,320px) auto;
       grid-template-areas:"brand search tools";
       align-items:center;
       gap:12px;
@@ -2779,11 +2779,13 @@ add_action('wp_enqueue_scripts', function () {
       color:inherit;
       font-family:var(--ct-heading-font-family, inherit);
       letter-spacing:.22em;
-      font-size:clamp(3.4rem,5.2vw,5.6rem);
+      font-size:clamp(3.8rem,5.8vw,6.4rem);
+      font-weight:600;
       white-space:nowrap;
     }
-    .parilte-custom-header a,
-    .parilte-custom-header button{
+    .parilte-custom-header button,
+    .parilte-custom-right a,
+    .parilte-custom-right button{
       display:inline-flex;
       align-items:center;
       gap:6px;
@@ -2801,7 +2803,7 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-custom-right svg{width:18px;height:18px;opacity:.85}
     .parilte-custom-right .parilte-label{display:inline}
     .parilte-custom-header .parilte-search-form{
-      width:min(340px, 100%);
+      width:min(280px, 100%);
       padding:.35rem .6rem;
       background:rgba(255,255,255,.92);
       border:1px solid rgba(0,0,0,.12);
@@ -2827,8 +2829,8 @@ add_action('wp_enqueue_scripts', function () {
     @media (max-width: 1200px){
       .parilte-custom-right{gap:12px}
       .parilte-custom-right .parilte-label{display:inline}
-      .parilte-custom-inner{grid-template-columns:auto minmax(180px,340px) auto}
-      .parilte-custom-header .parilte-search-form{width:min(300px, 100%)}
+      .parilte-custom-inner{grid-template-columns:auto minmax(160px,300px) auto}
+      .parilte-custom-header .parilte-search-form{width:min(260px, 100%)}
     }
     @media (max-width: 900px){
       .parilte-custom-inner{
@@ -2846,7 +2848,7 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-label{display:none}
     }
     @media (max-width: 600px){
-      .parilte-brand{font-size:clamp(2.5rem,9.2vw,3.3rem)}
+      .parilte-brand{font-size:clamp(2.9rem,10.2vw,3.8rem)}
       .parilte-custom-header .parilte-search-form{width:100%}
     }
     .parilte-mobile-drawer{z-index:10050}
