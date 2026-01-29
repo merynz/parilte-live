@@ -989,9 +989,9 @@ function parilte_cs_bootstrap(){
     if (!empty($mobile)  && empty($loc[$mobile[0]]))  $loc[$mobile[0]]  = $menu_id;
     set_theme_mod('nav_menu_locations',$loc);
 
-    // 8.1) Woo sidebar (Blocksy)
-    set_theme_mod('woo_categories_has_sidebar', 'yes');
-    set_theme_mod('woo_categories_sidebar_position', 'left');
+    // 8.1) Woo sidebar (Blocksy) — full-width shop (filters are drawer-based)
+    set_theme_mod('woo_categories_has_sidebar', 'no');
+    set_theme_mod('woo_categories_sidebar_position', 'no');
 
     // 9) Anasayfa icerigi
     if (PARILTE_AUTO_FRONT && !empty($p['home'])) {
@@ -1176,6 +1176,12 @@ add_action('wp_footer', 'parilte_cs_search_drawer_markup', 28);
 // Woo sidebar: hide default sidebar and render our own filter drawer
 add_action('init', function () {
     remove_action('woocommerce_sidebar', 'woocommerce_get_sidebar', 10);
+});
+
+// Blocksy: force full-width shop layout (avoid empty sidebar column)
+add_action('after_setup_theme', function () {
+    set_theme_mod('woo_categories_has_sidebar', 'no');
+    set_theme_mod('woo_categories_sidebar_position', 'no');
 });
 
 function parilte_cs_filter_toggle_button() {
@@ -2640,23 +2646,30 @@ add_action('wp_enqueue_scripts', function () {
       width:100%;
       max-width:none;
     }
-    .ct-header .menu .parilte-menu-tools{width:100%;justify-content:center;margin-left:0;position:static;flex:1}
-    .ct-header .menu .parilte-menu-tools .parilte-header-icons{
-      position:relative;
-      width:100%;
-      min-height:48px;
+    /* Make tools span full viewport so search can be truly centered */
+    .ct-header .menu .parilte-menu-tools{
+      width:100vw;
+      margin-left:calc(50% - 50vw);
+      margin-right:calc(50% - 50vw);
+      padding-left:clamp(12px,2.5vw,24px);
+      padding-right:clamp(12px,2.5vw,24px);
+      justify-content:center;
+      position:static;
+      flex:1;
     }
-    .ct-header .menu .parilte-menu-tools .parilte-header-spacer{display:none}
+    .ct-header .menu .parilte-menu-tools .parilte-header-icons{
+      width:100%;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) minmax(240px,560px) minmax(0,1fr);
+      align-items:center;
+      gap:12px;
+    }
+    .ct-header .menu .parilte-menu-tools .parilte-header-spacer{grid-column:1}
     .ct-header .menu .parilte-menu-tools .parilte-header-search{
-      position:absolute;
-      left:50%;
-      top:50%;
-      transform:translate(-50%,-50%);
-      width:clamp(260px,42vw,560px);
-      max-width:92vw;
-      z-index:2;
+      grid-column:2;
       display:flex;
       justify-content:center;
+      width:100%;
     }
     .ct-header .menu .parilte-menu-tools .parilte-search-form{
       width:100%;
@@ -2681,14 +2694,11 @@ add_action('wp_enqueue_scripts', function () {
     }
     .ct-header .menu .parilte-menu-tools .parilte-search-button{padding:.2rem .4rem}
     .ct-header .menu .parilte-menu-tools .parilte-header-tools{
-      position:absolute;
-      right:0;
-      top:50%;
-      transform:translateY(-50%);
+      grid-column:3;
+      justify-self:end;
       display:flex;
       align-items:center;
       gap:14px;
-      z-index:3;
     }
     @media (max-width: 900px){
       .ct-header .ct-container{position:static}
@@ -2699,16 +2709,10 @@ add_action('wp_enqueue_scripts', function () {
         gap:10px;
       }
       .ct-header .menu .parilte-menu-tools .parilte-header-search{
-        position:static;
-        transform:none;
         width:100%;
         max-width:100%;
       }
-      .ct-header .menu .parilte-menu-tools .parilte-header-tools{
-        position:static;
-        transform:none;
-        justify-content:center;
-      }
+      .ct-header .menu .parilte-menu-tools .parilte-header-tools{justify-content:center}
       .ct-header .menu .parilte-menu-tools .parilte-search-form{max-width:100%}
       .parilte-label{display:none}
     }
@@ -2738,6 +2742,10 @@ add_action('wp_enqueue_scripts', function () {
     }
     .woocommerce.archive .ct-content{padding-top:0 !important;margin:0 !important}
     .woocommerce.archive .content-area{margin:0 !important}
+    .woocommerce.archive .ct-content,
+    .woocommerce.archive .ct-row{
+      grid-template-columns:minmax(0,1fr) !important;
+    }
     .woocommerce.archive .ct-hero-section,
     .woocommerce.archive .ct-hero,
     .woocommerce.archive .ct-page-title,
@@ -2749,7 +2757,7 @@ add_action('wp_enqueue_scripts', function () {
     .woocommerce ul.products{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:clamp(10px,1.8vw,20px);
+      gap:clamp(10px,1.4vw,18px);
       margin:0;
       padding:0;
       width:100%;
