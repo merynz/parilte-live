@@ -820,6 +820,8 @@ function parilte_cs_bootstrap(){
     $p['privacy']  = $get_or_create_page('KVKK & Gizlilik','kvkk-gizlilik');
     $p['blog']     = $get_or_create_page('Blog','blog');
     $p['size']     = $get_or_create_page('Beden Rehberi','beden-rehberi');
+    $p['sale']     = $get_or_create_page('İndirimler','indirimler');
+    $p['new']      = $get_or_create_page('Yeni Gelenler','yeni-gelenler');
 
     $site_name = get_bloginfo('name');
     $contact_email = get_option('admin_email');
@@ -856,6 +858,8 @@ function parilte_cs_bootstrap(){
     parilte_cs_set_page_content_if_empty($p['cart'], '[woocommerce_cart]');
     parilte_cs_set_page_content_if_empty($p['checkout'], '[woocommerce_checkout]');
     parilte_cs_set_page_content_if_empty($p['account'], '[woocommerce_my_account]');
+    parilte_cs_set_page_content_if_empty($p['sale'], '[products on_sale="true" columns="4" paginate="true"]');
+    parilte_cs_set_page_content_if_empty($p['new'], '[products orderby="date" order="DESC" columns="4" paginate="true"]');
 
     // 4.2) Woo temel ayarlar
     update_option('woocommerce_currency', 'TRY');
@@ -1513,11 +1517,15 @@ function parilte_cs_front_markup(){
           'cat_acc'   => plugins_url('assets/home-cat-accessory.png', __FILE__),
         ];
         $cat_cards = [
-          ['slug'=>'dis-giyim', 'label'=>'Dış Giyim', 'img'=>$assets['cat_outer'], 'class'=>'is-tall', 'cta'=>'%30 İndirim'],
+          ['slug'=>'dis-giyim', 'label'=>'Dış Giyim', 'img'=>$assets['cat_outer'], 'class'=>'is-tall'],
           ['slug'=>'ust-giyim', 'label'=>'Üst Giyim', 'img'=>$assets['cat_top'], 'class'=>'is-shift'],
           ['slug'=>'alt-giyim', 'label'=>'Alt Giyim', 'img'=>$assets['cat_bottom'], 'class'=>''],
           ['slug'=>'aksesuar', 'label'=>'Aksesuar', 'img'=>$assets['cat_acc'], 'class'=>'is-wide'],
         ];
+        $sale_page = get_page_by_path('indirimler');
+        $new_page  = get_page_by_path('yeni-gelenler');
+        $sale_url = ($sale_page && !is_wp_error($sale_page)) ? get_permalink($sale_page) : $shop_url;
+        $new_url  = ($new_page && !is_wp_error($new_page)) ? get_permalink($new_page) : $shop_url;
       ?>
       <section class="parilte-mag-hero parilte-bleed" style="background-image:url('<?php echo esc_url($assets['hero']); ?>');">
         <a class="parilte-mag-link" href="<?php echo esc_url($shop_url); ?>" aria-label="Mağazaya git"></a>
@@ -1536,11 +1544,21 @@ function parilte_cs_front_markup(){
             <a class="<?php echo esc_attr($cls); ?>" href="<?php echo esc_url($link); ?>">
               <img src="<?php echo esc_url($card['img']); ?>" alt="<?php echo esc_attr($card['label']); ?>" loading="lazy" decoding="async" />
               <span class="parilte-home-cat-label"><?php echo esc_html($card['label']); ?></span>
-              <?php if (!empty($card['cta'])): ?>
-                <span class="parilte-home-cat-cta"><?php echo esc_html($card['cta']); ?></span>
-              <?php endif; ?>
             </a>
           <?php endforeach; ?>
+        </div>
+      </section>
+
+      <section class="parilte-home-cta parilte-bleed">
+        <div class="parilte-home-cta-inner">
+          <div class="parilte-home-cta-card">
+            <span>İndirimlere göz atmak ister misin?</span>
+            <a class="parilte-home-cta-btn" href="<?php echo esc_url($sale_url); ?>">İndirimlere git</a>
+          </div>
+          <div class="parilte-home-cta-card">
+            <span>Yeni eklenenler</span>
+            <a class="parilte-home-cta-btn" href="<?php echo esc_url($new_url); ?>">Yeni gelenler</a>
+          </div>
         </div>
       </section>
 
@@ -2262,23 +2280,43 @@ add_action('wp_enqueue_scripts', function () {
       color:#fff;
       z-index:1;
     }
-    .parilte-home-cat-cta{
-      position:absolute;
-      right:16px;
-      bottom:12px;
-      background:#c51d24;
-      color:#fff;
-      border-radius:999px;
-      padding:8px 14px;
-      font-size:.7rem;
-      letter-spacing:.16em;
-      text-transform:uppercase;
-      box-shadow:0 10px 22px rgba(0,0,0,.18);
-      z-index:1;
-    }
     .parilte-home-cat.is-tall{transform:translateY(-10px)}
     .parilte-home-cat.is-shift{transform:translateY(12px)}
     .parilte-home-cat.is-wide{transform:translateY(-6px)}
+    .parilte-home-cta{padding:0;background:#fff}
+    .parilte-home-cta-inner{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:0;
+      border-bottom:1px solid rgba(0,0,0,.08);
+    }
+    .parilte-home-cta-card{
+      padding:18px clamp(16px,4vw,32px);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      border-right:1px solid rgba(0,0,0,.08);
+      font-size:.9rem;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .parilte-home-cta-card:last-child{border-right:0}
+    .parilte-home-cta-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:#c51d24;
+      color:#fff;
+      border-radius:999px;
+      padding:10px 16px;
+      font-size:.72rem;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      text-decoration:none;
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+      white-space:nowrap;
+    }
     @media (max-width: 900px){
       .parilte-home-cats-grid{grid-template-columns:1fr}
       .parilte-home-cat{border-right:0}
@@ -2286,7 +2324,9 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-home-cat.is-shift,
       .parilte-home-cat.is-wide{transform:none}
       .parilte-home-cat-label{font-size:.8rem}
-      .parilte-home-cat-cta{font-size:.68rem;padding:7px 12px}
+      .parilte-home-cta-inner{grid-template-columns:1fr}
+      .parilte-home-cta-card{border-right:0;border-top:1px solid rgba(0,0,0,.08)}
+      .parilte-home-cta-btn{font-size:.68rem;padding:9px 14px}
     }
     @media (prefers-reduced-motion: reduce){
       .parilte-home-cat{animation:none}
