@@ -20,6 +20,7 @@ if (!defined('PARILTE_CS_MINI_SUMMARY'))    define('PARILTE_CS_MINI_SUMMARY', tr
 if (!defined('PARILTE_CS_VALIDATION'))      define('PARILTE_CS_VALIDATION', true);
 if (!defined('PARILTE_BOOTSTRAP_ON'))       define('PARILTE_BOOTSTRAP_ON', true);
 if (!defined('PARILTE_AUTO_HEADER'))        define('PARILTE_AUTO_HEADER', true);
+if (!defined('PARILTE_CUSTOM_HEADER'))      define('PARILTE_CUSTOM_HEADER', true);
 if (!defined('PARILTE_AUTO_FRONT'))         define('PARILTE_AUTO_FRONT', true);
 if (!defined('PARILTE_DEMO_CONTENT'))       define('PARILTE_DEMO_CONTENT', true);
 if (!defined('PARILTE_DEMO_IMAGES'))        define('PARILTE_DEMO_IMAGES', true);
@@ -1067,6 +1068,55 @@ function parilte_cs_header_markup(){
 }
 add_shortcode('parilte_header', 'parilte_cs_header_markup');
 
+function parilte_cs_custom_header_markup() {
+    if (is_admin()) return '';
+    $home_url = home_url('/');
+    $site_name = get_bloginfo('name');
+    $account_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('myaccount') : home_url('/hesabim/');
+    $cart_url = function_exists('wc_get_cart_url') ? wc_get_cart_url() : home_url('/sepet/');
+    $cart_count = (function_exists('WC') && WC()->cart) ? (int) WC()->cart->get_cart_contents_count() : 0;
+    $account_label = is_user_logged_in() ? 'Hesabım' : 'Giriş';
+    ob_start(); ?>
+    <header class="parilte-custom-header" role="banner">
+      <div class="parilte-custom-inner">
+        <div class="parilte-custom-left">
+          <a class="parilte-brand" href="<?php echo esc_url($home_url); ?>"><?php echo esc_html($site_name); ?></a>
+        </div>
+        <div class="parilte-custom-center">
+          <form role="search" method="get" class="parilte-search-form" action="<?php echo esc_url(home_url('/')); ?>">
+            <label class="screen-reader-text" for="parilte-search-custom">Ara</label>
+            <input type="search" id="parilte-search-custom" class="parilte-search-input" placeholder="Burada ara" value="<?php echo esc_attr(get_search_query()); ?>" name="s" />
+            <button type="submit" class="parilte-search-button" aria-label="Ara">
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 015.9 12.1l3.7 3.7-1.4 1.4-3.7-3.7A7.5 7.5 0 1110.5 3zm0 2a5.5 5.5 0 100 11 5.5 5.5 0 000-11z"/></svg>
+            </button>
+          </form>
+        </div>
+        <div class="parilte-custom-right">
+          <button type="button" class="parilte-mobile-menu-toggle" aria-controls="parilte-mobile-drawer" aria-expanded="false"
+            onclick="document.body.classList.add('parilte-mobile-open');document.getElementById('parilte-mobile-drawer')?.setAttribute('aria-hidden','false');this.setAttribute('aria-expanded','true');">
+            <span class="parilte-mobile-menu-icon" aria-hidden="true"><span></span></span>
+            <span class="parilte-label">Menü</span>
+          </button>
+          <a class="parilte-account" href="<?php echo esc_url($account_url); ?>" aria-label="Hesabım">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+            <span class="parilte-label"><?php echo esc_html($account_label); ?></span>
+          </a>
+          <a class="parilte-cart" href="<?php echo esc_url($cart_url); ?>" aria-label="Sepet">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 6h13l-2 9H9L7 6z"/><circle cx="10" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/></svg>
+            <span class="parilte-label">Sepet</span>
+            <span class="parilte-cart-count"><?php echo (int) $cart_count; ?></span>
+          </a>
+        </div>
+      </div>
+    </header>
+    <?php return ob_get_clean();
+}
+
+add_action('wp_body_open', function () {
+    if (!PARILTE_CUSTOM_HEADER) return;
+    echo parilte_cs_custom_header_markup();
+}, 5);
+
 function parilte_cs_mobile_drawer_markup() {
     if (is_admin()) return;
     $home_url = home_url('/');
@@ -1323,6 +1373,7 @@ function parilte_cs_is_target_menu($args){
 }
 
 add_filter('wp_nav_menu_items', function ($items, $args) {
+    if (PARILTE_CUSTOM_HEADER) return $items;
     if (!PARILTE_AUTO_HEADER) return $items;
     if (!parilte_cs_is_target_menu($args)) return $items;
     $tools = '<li class="menu-item parilte-menu-tools">' . parilte_cs_header_markup() . '</li>';
@@ -1331,6 +1382,7 @@ add_filter('wp_nav_menu_items', function ($items, $args) {
 }, 20, 2);
 
 add_filter('wp_nav_menu_objects', function ($items, $args) {
+    if (PARILTE_CUSTOM_HEADER) return $items;
     if (!parilte_cs_is_target_menu($args)) return $items;
     $cart_id = (int) get_option('woocommerce_cart_page_id');
     $account_id = (int) get_option('woocommerce_myaccount_page_id');
@@ -2637,6 +2689,96 @@ add_action('wp_enqueue_scripts', function () {
       background-size:24px 24px, 36px 36px;
       background-position:0 0, 12px 12px;
     }
+    .ct-header{display:none !important}
+    .parilte-custom-header{
+      position:sticky;
+      top:0;
+      z-index:10000;
+      background:#fff;
+      border-bottom:1px solid rgba(0,0,0,.08);
+    }
+    body.admin-bar .parilte-custom-header{top:32px}
+    @media (max-width: 782px){
+      body.admin-bar .parilte-custom-header{top:46px}
+    }
+    .parilte-custom-inner{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) minmax(240px,520px) minmax(0,1fr);
+      align-items:center;
+      gap:12px;
+      padding:12px clamp(12px,2.5vw,24px);
+    }
+    .parilte-custom-left{justify-self:start}
+    .parilte-custom-center{justify-self:center;width:100%;display:flex;justify-content:center}
+    .parilte-custom-right{justify-self:end;display:flex;align-items:center;gap:16px;white-space:nowrap}
+    .parilte-brand{
+      text-decoration:none;
+      color:inherit;
+      font-family:var(--ct-heading-font-family, inherit);
+      letter-spacing:.22em;
+      font-size:clamp(1.6rem,2.4vw,2.3rem);
+      white-space:nowrap;
+    }
+    .parilte-custom-header a,
+    .parilte-custom-header button{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      text-decoration:none;
+      color:inherit;
+      font:inherit;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      font-size:.72rem;
+      background:transparent;
+      border:0;
+      cursor:pointer;
+    }
+    .parilte-custom-header svg{fill:currentColor;opacity:.7;width:14px;height:14px}
+    .parilte-custom-header .parilte-search-form{
+      width:100%;
+      max-width:520px;
+      padding:.35rem .6rem;
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(0,0,0,.12);
+      border-radius:999px;
+      box-shadow:0 1px 3px rgba(0,0,0,.04);
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .parilte-custom-header .parilte-search-input{
+      width:100%;
+      padding:.4rem .5rem;
+      border:0;
+      background:transparent;
+      font:inherit;
+      text-align:left;
+    }
+    .parilte-custom-header .parilte-search-button{padding:.2rem .4rem}
+    .parilte-custom-header .parilte-mobile-menu-toggle{display:inline-flex}
+    body.parilte-mobile-open .parilte-mobile-drawer{display:block !important}
+    @media (max-width: 1200px){
+      .parilte-custom-right{gap:10px}
+      .parilte-label{display:none}
+      .parilte-custom-inner{grid-template-columns:minmax(0,1fr) minmax(220px,460px) minmax(0,1fr)}
+      .parilte-custom-header .parilte-search-form{max-width:460px}
+    }
+    @media (max-width: 900px){
+      .parilte-custom-inner{
+        grid-template-columns:1fr;
+        align-items:stretch;
+      }
+      .parilte-custom-left{justify-self:center}
+      .parilte-custom-center{order:2}
+      .parilte-custom-right{
+        order:3;
+        justify-content:center;
+        flex-wrap:wrap;
+      }
+      .parilte-custom-header .parilte-search-form{max-width:100%}
+      .parilte-label{display:none}
+    }
     .ct-header .ct-container{position:relative;overflow:visible}
     /* Hero CTA placement (avoid face overlap) */
     .parilte-mag-hero-overlay{
@@ -2824,67 +2966,6 @@ add_action('wp_enqueue_scripts', function () {
     ';
     wp_add_inline_style('parilte-checkout-suite', $css);
 }, 23);
-
-// Final header/mobile overrides to avoid Blocksy collisions
-add_action('wp_enqueue_scripts', function () {
-    $css = '
-    .ct-header .menu{display:flex !important}
-    .ct-header .parilte-menu-tools{
-      width:100vw !important;
-      margin-left:calc(50% - 50vw) !important;
-      margin-right:calc(50% - 50vw) !important;
-      padding-left:clamp(12px,2.5vw,24px) !important;
-      padding-right:clamp(12px,2.5vw,24px) !important;
-      display:flex !important;
-    }
-    .ct-header .parilte-header-icons{
-      display:grid !important;
-      grid-template-columns:minmax(0,1fr) minmax(220px,520px) minmax(0,1fr) !important;
-      align-items:center !important;
-      width:100% !important;
-    }
-    .ct-header .parilte-header-search{
-      justify-self:center !important;
-      display:flex !important;
-      width:100% !important;
-      max-width:520px !important;
-    }
-    .ct-header .parilte-search-form{max-width:520px !important}
-    .ct-header .parilte-header-tools{
-      display:flex !important;
-      justify-self:end !important;
-      align-items:center !important;
-      gap:12px !important;
-      white-space:nowrap !important;
-    }
-    .ct-header .parilte-header-tools,
-    .ct-header .parilte-header-tools *{
-      visibility:visible !important;
-      opacity:1 !important;
-    }
-    body.parilte-mobile-open .parilte-mobile-drawer{display:block !important}
-
-    @media (max-width: 1200px){
-      .ct-header .parilte-header-tools{gap:8px !important}
-      .parilte-label{display:none !important}
-      .ct-header .parilte-header-icons{grid-template-columns:minmax(0,1fr) minmax(220px,460px) minmax(0,1fr) !important}
-      .ct-header .parilte-search-form{max-width:460px !important}
-    }
-
-    @media (max-width: 900px){
-      .ct-header .parilte-header-icons{
-        display:flex !important;
-        flex-direction:column !important;
-        align-items:stretch !important;
-        gap:10px !important;
-      }
-      .ct-header .parilte-header-search{max-width:100% !important}
-      .ct-header .parilte-header-tools{justify-content:center !important; flex-wrap:wrap !important}
-      .parilte-mobile-menu-toggle{display:inline-flex !important}
-    }
-    ';
-    wp_add_inline_style('parilte-checkout-suite', $css);
-}, 99);
 
 add_action('wp_enqueue_scripts', function () {
     if (!is_shop() && !is_product_taxonomy() && !is_product_category() && !is_product_tag()) return;
