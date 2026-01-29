@@ -2279,13 +2279,12 @@ add_action('wp_enqueue_scripts', function () {
       box-shadow:0 10px 22px rgba(0,0,0,.18);
       white-space:nowrap;
     }
-    /* Home layout overrides: non-bleed categories + mixed modules */
-    .parilte-home-cats{padding:32px 0;background:#fff}
+    /* Home layout overrides: full-bleed sections, smaller cards */
+    .parilte-home-cats{padding:24px 0;background:#fff}
     .parilte-home-cats .parilte-home-cats-grid{
-      gap:14px;
+      gap:16px;
       border:0;
-      width:min(1200px, 100% - 2 * clamp(12px,4vw,24px));
-      margin:0 auto;
+      padding:0 clamp(12px,4vw,24px);
     }
     .parilte-home-cats .parilte-home-cat{
       border:0;
@@ -2293,14 +2292,17 @@ add_action('wp_enqueue_scripts', function () {
       animation:none;
       transform:none;
     }
-    .parilte-home-cats .parilte-home-cat::after{height:36%}
-    .parilte-home-modules{padding:32px 0;background:#fff}
+    .parilte-home-cats .parilte-home-cat img{
+      height:clamp(200px,28vw,320px);
+      object-fit:cover;
+    }
+    .parilte-home-cats .parilte-home-cat::after{height:38%}
+    .parilte-home-modules{padding:24px 0;background:#fff}
     .parilte-home-modules-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:16px;
-      width:min(1200px, 100% - 2 * clamp(12px,4vw,24px));
-      margin:0 auto;
+      padding:0 clamp(12px,4vw,24px);
     }
     .parilte-home-module{
       background:#fff;
@@ -2310,16 +2312,17 @@ add_action('wp_enqueue_scripts', function () {
       display:flex;
       flex-direction:column;
       gap:10px;
+      min-height:clamp(220px,28vw,340px);
     }
     .parilte-home-module img{border-radius:14px}
     .parilte-home-module small{opacity:.6;font-size:.72rem;text-transform:uppercase;letter-spacing:.12em}
     .parilte-home-module h3{margin:0;font-size:clamp(1rem,2.2vw,1.25rem);letter-spacing:.06em;text-transform:uppercase}
     .parilte-home-module p{margin:0;opacity:.7;font-size:.9rem}
-    .parilte-home-module .parilte-home-cta-btn{align-self:flex-start}
-    .parilte-home-module.module-sale .parilte-home-cta-btn{align-self:flex-end}
-    .parilte-home-module.module-new .parilte-home-cta-btn{align-self:flex-start}
-    .parilte-home-module.module-account .parilte-home-cta-btn{align-self:center}
-    .parilte-home-module.module-contact .parilte-home-cta-btn{align-self:flex-end}
+    .parilte-home-module .parilte-home-cta-btn{margin-top:6px}
+    .parilte-home-module.module-sale .parilte-home-cta-btn{align-self:flex-end;margin-top:8px}
+    .parilte-home-module.module-new .parilte-home-cta-btn{align-self:flex-start;margin-top:22px}
+    .parilte-home-module.module-account .parilte-home-cta-btn{align-self:center;margin-top:14px}
+    .parilte-home-module.module-contact .parilte-home-cta-btn{align-self:flex-end;margin-top:30px}
     .parilte-home-promo{
       display:flex;
       flex-direction:column;
