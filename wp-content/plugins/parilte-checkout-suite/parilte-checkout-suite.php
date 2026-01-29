@@ -2634,8 +2634,18 @@ add_action('wp_enqueue_scripts', function () {
       background-position:0 0, 12px 12px;
     }
     .ct-header .ct-container{position:relative;overflow:visible}
-    .ct-header .menu .parilte-menu-tools{width:100%;justify-content:center;margin-left:0;position:static}
-    .ct-header .menu .parilte-menu-tools .parilte-header-icons{position:static}
+    .ct-header .ct-row,
+    .ct-header .ct-container,
+    .ct-header .ct-row > div{
+      width:100%;
+      max-width:none;
+    }
+    .ct-header .menu .parilte-menu-tools{width:100%;justify-content:center;margin-left:0;position:static;flex:1}
+    .ct-header .menu .parilte-menu-tools .parilte-header-icons{
+      position:relative;
+      width:100%;
+      min-height:48px;
+    }
     .ct-header .menu .parilte-menu-tools .parilte-header-spacer{display:none}
     .ct-header .menu .parilte-menu-tools .parilte-header-search{
       position:absolute;
@@ -2736,7 +2746,14 @@ add_action('wp_enqueue_scripts', function () {
     .woocommerce.archive .woocommerce-products-header{display:none}
     .woocommerce.archive .ct-content{padding-top:0}
 
-    .woocommerce ul.products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(10px,2vw,22px);margin:0;padding:0;width:100%}
+    .woocommerce ul.products{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:clamp(10px,1.8vw,20px);
+      margin:0;
+      padding:0;
+      width:100%;
+    }
     .woocommerce ul.products li.product{float:none;width:100% !important;margin:0 !important;position:relative;background:transparent;box-shadow:none}
     .woocommerce ul.products li.product img{width:100%;height:auto;aspect-ratio:4/5;object-fit:cover}
     .woocommerce ul.products li.product .button,
@@ -2761,7 +2778,7 @@ add_action('wp_enqueue_scripts', function () {
       .woocommerce ul.products{grid-template-columns:repeat(4,minmax(0,1fr))}
     }
     @media (min-width: 1400px){
-      .woocommerce ul.products{grid-template-columns:repeat(5,minmax(0,1fr))}
+      .woocommerce ul.products{grid-template-columns:repeat(4,minmax(0,1fr))}
     }
     @media (max-width: 600px){
       .woocommerce ul.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
