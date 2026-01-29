@@ -1500,21 +1500,31 @@ function parilte_cs_render_products($ids) {
     echo '</ul>';
 }
 
+function parilte_cs_asset_url($file) {
+    $file = ltrim($file, '/');
+    $path = plugin_dir_path(__FILE__) . 'assets/' . $file;
+    $url = plugins_url('assets/' . $file, __FILE__);
+    if (file_exists($path)) {
+        $url = add_query_arg('v', (string) filemtime($path), $url);
+    }
+    return $url;
+}
+
 function parilte_cs_front_markup(){
     ob_start(); ?>
     <main id="primary" class="site-main parilte-front">
       <?php
         $shop_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('shop') : home_url('/magaza/');
         $assets = [
-          'hero'  => plugins_url('assets/home-hero.png', __FILE__),
-          'ed1'   => plugins_url('assets/home-ed-1.png', __FILE__),
-          'ed2'   => plugins_url('assets/home-ed-2.png', __FILE__),
-          'ed3'   => plugins_url('assets/home-ed-3.png', __FILE__),
-          'look'  => plugins_url('assets/home-lookbook.png', __FILE__),
-          'cat_outer' => plugins_url('assets/home-cat-outer.jpg', __FILE__),
-          'cat_top'   => plugins_url('assets/home-cat-top.jpg', __FILE__),
-          'cat_bottom'=> plugins_url('assets/home-cat-bottom.jpg', __FILE__),
-          'cat_acc'   => plugins_url('assets/home-cat-accessory.jpg', __FILE__),
+          'hero'  => parilte_cs_asset_url('home-hero.png'),
+          'ed1'   => parilte_cs_asset_url('home-ed-1.png'),
+          'ed2'   => parilte_cs_asset_url('home-ed-2.png'),
+          'ed3'   => parilte_cs_asset_url('home-ed-3.png'),
+          'look'  => parilte_cs_asset_url('home-lookbook.png'),
+          'cat_outer' => parilte_cs_asset_url('home-cat-outer.jpg'),
+          'cat_top'   => parilte_cs_asset_url('home-cat-top.jpg'),
+          'cat_bottom'=> parilte_cs_asset_url('home-cat-bottom.jpg'),
+          'cat_acc'   => parilte_cs_asset_url('home-cat-accessory.jpg'),
         ];
         $cat_cards = [
           ['slug'=>'dis-giyim', 'label'=>'Dış Giyim', 'img'=>$assets['cat_outer'], 'class'=>'is-tall'],
