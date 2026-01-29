@@ -1516,61 +1516,45 @@ function parilte_cs_front_markup(){
       <?php
         $shop_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('shop') : home_url('/magaza/');
         $assets = [
-          'hero'  => plugins_url('assets/home-hero.png', __FILE__),
-          'ed1'   => plugins_url('assets/home-ed-1.png', __FILE__),
-          'ed2'   => plugins_url('assets/home-ed-2.png', __FILE__),
-          'ed3'   => plugins_url('assets/home-ed-3.png', __FILE__),
-          'look'  => plugins_url('assets/home-lookbook.png', __FILE__),
-          'cat_outer' => plugins_url('assets/home-cat-outer.jpg', __FILE__),
-          'cat_top'   => plugins_url('assets/home-cat-top.jpg', __FILE__),
-          'cat_bottom'=> plugins_url('assets/home-cat-bottom.jpg', __FILE__),
-          'cat_acc'   => plugins_url('assets/home-cat-accessory.jpg', __FILE__),
-        ];
-        $cat_cards = [
-          ['slug'=>'dis-giyim', 'label'=>'Dış Giyim', 'img'=>$assets['cat_outer'], 'class'=>'is-tall'],
+          'h1' => parilte_cs_asset_url('home-01.png'),
+          'h2' => parilte_cs_asset_url('home-02.png'),
+          'h3' => parilte_cs_asset_url('home-03.png'),
+          'h4' => parilte_cs_asset_url('home-04.png'),
+          'h5' => parilte_cs_asset_url('home-05.png'),
+          'h6' => parilte_cs_asset_url('home-06.png'),
+          'h7' => parilte_cs_asset_url('home-07.jpg'),
+          'h8' => parilte_cs_asset_url('home-08.png'),
+          'h9' => parilte_cs_asset_url('home-09.jpg'),
         ];
         $sale_page = get_page_by_path('indirimler');
         $new_page  = get_page_by_path('yeni-gelenler');
         $sale_url = ($sale_page && !is_wp_error($sale_page)) ? get_permalink($sale_page) : $shop_url;
         $new_url  = ($new_page && !is_wp_error($new_page)) ? get_permalink($new_page) : $shop_url;
       ?>
-      <section class="parilte-mag-hero parilte-bleed" style="background-image:url('<?php echo esc_url($assets['hero']); ?>');">
-        <a class="parilte-mag-link" href="<?php echo esc_url($shop_url); ?>" aria-label="Mağazaya git"></a>
-        <div class="parilte-mag-hero-overlay">
-          <a class="parilte-hero-cta parilte-hero-shop" href="<?php echo esc_url($shop_url); ?>">Mağaza</a>
+      <section class="parilte-home-hero parilte-bleed">
+        <img class="parilte-home-img" src="<?php echo esc_url($assets['h1']); ?>" alt="Parilte" loading="eager" decoding="async" />
+        <div class="parilte-home-hero-cta">
+          <a class="parilte-home-cta-btn" href="<?php echo esc_url($sale_url); ?>">İndirimler</a>
+          <a class="parilte-home-cta-btn" href="<?php echo esc_url($new_url); ?>">Yeni Gelenler</a>
         </div>
       </section>
 
-      <section class="parilte-home-cats parilte-bleed">
-        <div class="parilte-home-cats-grid<?php echo count($cat_cards) < 2 ? ' is-single' : ''; ?>">
-          <?php foreach ($cat_cards as $card):
-              $term = get_term_by('slug', $card['slug'], 'product_cat');
-              $link = ($term && !is_wp_error($term)) ? get_term_link($term) : $shop_url;
-              $cls = trim('parilte-home-cat ' . ($card['class'] ?? ''));
-          ?>
-            <a class="<?php echo esc_attr($cls); ?>" href="<?php echo esc_url($link); ?>">
-              <img src="<?php echo esc_url($card['img']); ?>" alt="<?php echo esc_attr($card['label']); ?>" loading="lazy" decoding="async" />
-              <span class="parilte-home-cat-label"><?php echo esc_html($card['label']); ?></span>
-            </a>
-          <?php endforeach; ?>
+      <section class="parilte-home-duo parilte-bleed">
+        <div class="parilte-home-duo-grid">
+          <img class="parilte-home-img" src="<?php echo esc_url($assets['h2']); ?>" alt="" loading="lazy" decoding="async" />
+          <img class="parilte-home-img" src="<?php echo esc_url($assets['h3']); ?>" alt="" loading="lazy" decoding="async" />
         </div>
       </section>
 
-      <section class="parilte-home-cta parilte-bleed">
-        <div class="parilte-home-cta-inner">
-          <div class="parilte-home-cta-card">
-            <span>İndirimlere göz atmak ister misin?</span>
-            <a class="parilte-home-cta-btn" href="<?php echo esc_url($sale_url); ?>">İndirimlere git</a>
-          </div>
-          <div class="parilte-home-cta-card">
-            <span>Yeni eklenenler</span>
-            <a class="parilte-home-cta-btn" href="<?php echo esc_url($new_url); ?>">Yeni gelenler</a>
-          </div>
+      <section class="parilte-home-grid parilte-bleed">
+        <div class="parilte-home-grid-inner">
+          <img class="parilte-home-img span-2 shift-up" src="<?php echo esc_url($assets['h4']); ?>" alt="" loading="lazy" decoding="async" />
+          <img class="parilte-home-img" src="<?php echo esc_url($assets['h5']); ?>" alt="" loading="lazy" decoding="async" />
+          <img class="parilte-home-img shift-down" src="<?php echo esc_url($assets['h6']); ?>" alt="" loading="lazy" decoding="async" />
+          <img class="parilte-home-img" src="<?php echo esc_url($assets['h7']); ?>" alt="" loading="lazy" decoding="async" />
+          <img class="parilte-home-img" src="<?php echo esc_url($assets['h8']); ?>" alt="" loading="lazy" decoding="async" />
+          <img class="parilte-home-img span-2" src="<?php echo esc_url($assets['h9']); ?>" alt="" loading="lazy" decoding="async" />
         </div>
-      </section>
-
-      <section class="parilte-mag-lookbook parilte-bleed" style="background-image:url('<?php echo esc_url($assets['look']); ?>');">
-        <a class="parilte-mag-link" href="<?php echo esc_url($shop_url); ?>" aria-label="Lookbook"></a>
       </section>
 
     </main>
@@ -2235,6 +2219,45 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-mag-hero-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
     .parilte-hero-cta{display:inline-flex;align-items:center;justify-content:center;background:#c51d24;color:#fff;border-radius:999px;padding:12px 26px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;text-decoration:none;box-shadow:0 10px 24px rgba(0,0,0,.25);pointer-events:auto}
     .parilte-hero-cta:hover{background:#a8181f}
+    .parilte-home-hero{position:relative}
+    .parilte-home-img{width:100%;height:auto;display:block}
+    .parilte-home-hero-cta{
+      position:absolute;
+      left:clamp(12px,4vw,32px);
+      bottom:clamp(12px,4vw,32px);
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .parilte-home-cta-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:#c51d24;
+      color:#fff;
+      border-radius:999px;
+      padding:10px 16px;
+      font-size:.72rem;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      text-decoration:none;
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+      white-space:nowrap;
+    }
+    .parilte-home-duo-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:0;
+    }
+    .parilte-home-grid-inner{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:0;
+      overflow:visible;
+    }
+    .parilte-home-grid-inner .span-2{grid-column:span 2}
+    .parilte-home-grid-inner .shift-up{transform:translateY(-12px)}
+    .parilte-home-grid-inner .shift-down{transform:translateY(10px)}
     .parilte-home-cats{padding:0;background:#fff}
     .parilte-home-cats-grid{
       display:grid;
@@ -2328,6 +2351,11 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-home-cta-inner{grid-template-columns:1fr}
       .parilte-home-cta-card{border-right:0;border-top:1px solid rgba(0,0,0,.08)}
       .parilte-home-cta-btn{font-size:.68rem;padding:9px 14px}
+      .parilte-home-duo-grid{grid-template-columns:1fr}
+      .parilte-home-grid-inner{grid-template-columns:1fr}
+      .parilte-home-grid-inner .span-2{grid-column:auto}
+      .parilte-home-grid-inner .shift-up,
+      .parilte-home-grid-inner .shift-down{transform:none}
     }
     @media (prefers-reduced-motion: reduce){
       .parilte-home-cat{animation:none}
