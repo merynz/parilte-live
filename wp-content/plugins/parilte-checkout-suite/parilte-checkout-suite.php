@@ -1569,16 +1569,6 @@ function parilte_cs_front_markup(){
         </div>
       </section>
 
-      <section class="parilte-mag-story">
-        <div class="parilte-container parilte-mag-story-grid">
-          <article class="parilte-mag-card large" style="background-image:url('<?php echo esc_url($assets['ed3']); ?>');" aria-label="Editorial görsel"></article>
-          <div class="parilte-mag-stack">
-            <article class="parilte-mag-card tall" style="background-image:url('<?php echo esc_url($assets['ed1']); ?>');" aria-label="Editorial görsel"></article>
-            <article class="parilte-mag-card wide" style="background-image:url('<?php echo esc_url($assets['ed2']); ?>');" aria-label="Editorial görsel"></article>
-          </div>
-        </div>
-      </section>
-
       <section class="parilte-mag-lookbook parilte-bleed" style="background-image:url('<?php echo esc_url($assets['look']); ?>');">
         <a class="parilte-mag-link" href="<?php echo esc_url($shop_url); ?>" aria-label="Lookbook"></a>
       </section>
