@@ -1523,8 +1523,6 @@ function parilte_cs_front_markup(){
           'h5' => parilte_cs_asset_url('home-05.png'),
           'h6' => parilte_cs_asset_url('home-06.png'),
           'h7' => parilte_cs_asset_url('home-07.jpg'),
-          'h8' => parilte_cs_asset_url('home-08.png'),
-          'h9' => parilte_cs_asset_url('home-09.jpg'),
         ];
         $sale_page = get_page_by_path('indirimler');
         $new_page  = get_page_by_path('yeni-gelenler');
@@ -1545,8 +1543,8 @@ function parilte_cs_front_markup(){
           <?php
             $cats = [
               ['slug'=>'dis-giyim','label'=>'Dış Giyim','img'=>$assets['h2']],
-              ['slug'=>'ust-giyim','label'=>'Üst Giyim','img'=>$assets['h3']],
-              ['slug'=>'alt-giyim','label'=>'Alt Giyim','img'=>$assets['h4']],
+              ['slug'=>'ust-giyim','label'=>'Üst Giyim','img'=>$assets['h4']],
+              ['slug'=>'alt-giyim','label'=>'Alt Giyim','img'=>$assets['h3']],
               ['slug'=>'aksesuar','label'=>'Aksesuar','img'=>$assets['h5']],
             ];
             foreach ($cats as $card):
@@ -1564,8 +1562,6 @@ function parilte_cs_front_markup(){
       <section class="parilte-home-strip parilte-bleed">
         <img class="parilte-home-img" src="<?php echo esc_url($assets['h6']); ?>" alt="" loading="lazy" decoding="async" />
         <img class="parilte-home-img" src="<?php echo esc_url($assets['h7']); ?>" alt="" loading="lazy" decoding="async" />
-        <img class="parilte-home-img" src="<?php echo esc_url($assets['h8']); ?>" alt="" loading="lazy" decoding="async" />
-        <img class="parilte-home-img" src="<?php echo esc_url($assets['h9']); ?>" alt="" loading="lazy" decoding="async" />
       </section>
 
     </main>
