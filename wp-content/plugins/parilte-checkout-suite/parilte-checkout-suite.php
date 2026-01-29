@@ -1081,15 +1081,15 @@ function parilte_cs_custom_header_markup() {
     <header class="parilte-custom-header" role="banner">
       <div class="parilte-custom-inner">
         <div class="parilte-custom-left">
-          <a class="parilte-brand" href="<?php echo esc_url($home_url); ?>"><?php echo esc_html($site_name); ?></a>
-        </div>
-        <div class="parilte-custom-brand"></div>
-        <div class="parilte-custom-right">
           <button type="button" class="parilte-mobile-menu-toggle" aria-controls="parilte-mobile-drawer" aria-expanded="false"
             onclick="document.body.classList.add('parilte-mobile-open');document.getElementById('parilte-mobile-drawer')?.setAttribute('aria-hidden','false');this.setAttribute('aria-expanded','true');">
             <span class="parilte-mobile-menu-icon" aria-hidden="true"><span></span></span>
             <span class="parilte-label">Menü</span>
           </button>
+          <a class="parilte-brand" href="<?php echo esc_url($home_url); ?>"><?php echo esc_html($site_name); ?></a>
+        </div>
+        <div class="parilte-custom-brand"></div>
+        <div class="parilte-custom-right">
           <a class="parilte-account" href="<?php echo esc_url($account_url); ?>" aria-label="Hesabım">
             <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
             <span class="parilte-label"><?php echo esc_html($account_label); ?></span>
@@ -2770,7 +2770,7 @@ add_action('wp_enqueue_scripts', function () {
       gap:12px;
       padding:12px clamp(12px,2.5vw,24px);
     }
-    .parilte-custom-left{grid-area:brand;justify-self:start;align-self:center;display:flex;align-items:center}
+    .parilte-custom-left{grid-area:brand;justify-self:start;align-self:center;display:flex;align-items:center;gap:10px}
     .parilte-custom-brand{display:none}
     .parilte-custom-search{grid-area:search;display:flex;justify-content:center;justify-self:center}
     .parilte-custom-right{grid-area:tools;justify-self:end;align-self:center;display:flex;align-items:center;gap:18px;white-space:nowrap}
@@ -2779,7 +2779,7 @@ add_action('wp_enqueue_scripts', function () {
       color:inherit;
       font-family:var(--ct-heading-font-family, inherit);
       letter-spacing:.22em;
-      font-size:clamp(3.8rem,5.8vw,6.4rem);
+      font-size:clamp(3.2rem,4.8vw,5.2rem);
       font-weight:600;
       white-space:nowrap;
     }
@@ -2803,7 +2803,7 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-custom-right svg{width:18px;height:18px;opacity:.85}
     .parilte-custom-right .parilte-label{display:inline}
     .parilte-custom-header .parilte-search-form{
-      width:min(280px, 100%);
+      width:min(240px, 100%);
       padding:.35rem .6rem;
       background:rgba(255,255,255,.92);
       border:1px solid rgba(0,0,0,.12);
@@ -2829,8 +2829,11 @@ add_action('wp_enqueue_scripts', function () {
     @media (max-width: 1200px){
       .parilte-custom-right{gap:12px}
       .parilte-custom-right .parilte-label{display:inline}
-      .parilte-custom-inner{grid-template-columns:auto minmax(160px,300px) auto}
-      .parilte-custom-header .parilte-search-form{width:min(260px, 100%)}
+      .parilte-custom-inner{grid-template-columns:auto minmax(140px,260px) auto}
+      .parilte-custom-header .parilte-search-form{width:min(220px, 100%)}
+    }
+    @media (min-width: 901px){
+      .parilte-mobile-menu-toggle{display:none}
     }
     @media (max-width: 900px){
       .parilte-custom-inner{
@@ -2848,7 +2851,7 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-label{display:none}
     }
     @media (max-width: 600px){
-      .parilte-brand{font-size:clamp(2.9rem,10.2vw,3.8rem)}
+      .parilte-brand{font-size:clamp(2.4rem,8.2vw,3.1rem)}
       .parilte-custom-header .parilte-search-form{width:100%}
     }
     .parilte-mobile-drawer{z-index:10050}
