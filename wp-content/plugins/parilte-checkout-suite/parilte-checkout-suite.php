@@ -2848,6 +2848,33 @@ add_action('wp_enqueue_scripts', function () {
     }
     .parilte-mobile-drawer{z-index:10050}
     .parilte-mobile-panel{padding-top:calc(12px + var(--parilte-header-h,64px))}
+    .parilte-mobile-drawer{
+      font-family:var(--ct-text-font-family, inherit);
+      color:var(--ct-text-color, #111);
+    }
+    .parilte-mobile-backdrop{background:rgba(0,0,0,.35)}
+    .parilte-mobile-panel{
+      background:#fbfbf9;
+      border-right:1px solid rgba(0,0,0,.08);
+      box-shadow:0 18px 40px rgba(0,0,0,.12);
+    }
+    .parilte-mobile-header{
+      font-weight:600;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+    }
+    .parilte-mobile-links a,
+    .parilte-mobile-cats a{
+      text-decoration:none;
+      color:inherit;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      font-size:.78rem;
+    }
+    .parilte-mobile-cats .parilte-cat-tree-list{gap:6px}
+    .parilte-mobile-cats .parilte-cat-tree-item{padding:4px 0}
+    .parilte-mobile-cats .parilte-cat-tree-children{margin-left:10px}
+    .parilte-mobile-close{font-size:20px}
     .ct-header .ct-container{position:relative;overflow:visible}
     /* Hero CTA placement (avoid face overlap) */
     .parilte-mag-hero-overlay{
