@@ -2068,12 +2068,12 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-container{max-width:1140px;margin:0 auto;padding:0 16px}
     @keyframes parilte-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
     @keyframes parilte-fade{from{opacity:0}to{opacity:1}}
-    .parilte-mag-hero{min-height:clamp(320px,70vw,640px);background-size:cover;background-position:center;background-repeat:no-repeat;position:relative}
+    .parilte-mag-hero{min-height:clamp(320px,70vw,640px);background-size:cover;background-position:50% 12%;background-repeat:no-repeat;position:relative}
     .parilte-mag-hero-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
     .parilte-hero-cta{display:inline-flex;align-items:center;justify-content:center;background:#c51d24;color:#fff;border-radius:999px;padding:12px 26px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;text-decoration:none;box-shadow:0 10px 24px rgba(0,0,0,.25);pointer-events:auto}
     .parilte-hero-cta:hover{background:#a8181f}
-    .parilte-mag-lookbook{min-height:clamp(320px,70vw,620px);background-size:cover;background-position:center;background-repeat:no-repeat;position:relative}
-    .parilte-mag-strip{min-height:clamp(240px,60vw,520px);background-size:cover;background-position:center;background-repeat:no-repeat;position:relative}
+    .parilte-mag-lookbook{min-height:clamp(320px,70vw,620px);background-size:cover;background-position:50% 12%;background-repeat:no-repeat;position:relative}
+    .parilte-mag-strip{min-height:clamp(240px,60vw,520px);background-size:cover;background-position:50% 12%;background-repeat:no-repeat;position:relative}
     .parilte-mag-link{position:absolute;inset:0;display:block}
     :root{--ct-color-primary:#1c1c1c;--ct-color-primary-hover:#2b2b2b;--ct-link-color:#1c1c1c;--ct-link-hover-color:#2b2b2b}
     .parilte-front h1{font-weight:500;letter-spacing:.02em}
@@ -2081,7 +2081,7 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-front h3{font-weight:500}
     .parilte-mag-story{padding:clamp(18px,4vw,42px) 0;background:#fff}
     .parilte-mag-story-grid{display:grid;gap:0;grid-template-columns:1fr}
-    .parilte-mag-card{position:relative;border-radius:0;overflow:hidden;min-height:clamp(220px,52vw,520px);background-size:cover;background-position:center;background-repeat:no-repeat}
+    .parilte-mag-card{position:relative;border-radius:0;overflow:hidden;min-height:clamp(220px,52vw,520px);background-size:cover;background-position:50% 12%;background-repeat:no-repeat}
     .parilte-mag-stack{display:grid;gap:0}
     .parilte-mag-journal{padding:clamp(20px,5vw,52px) 0;background:#fff}
     .parilte-mag-journal-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
@@ -2588,6 +2588,10 @@ add_action('wp_enqueue_scripts', function () {
         .parilte-hero-copy h1{font-size:clamp(2rem,2.6vw,2.8rem)}
         .parilte-hero-photo{min-height:420px}
         .parilte-hero-stack{grid-template-columns:1fr 1fr;margin-top:-60px}
+        .parilte-mag-hero,
+        .parilte-mag-lookbook,
+        .parilte-mag-strip,
+        .parilte-mag-card{background-position:50% 22%}
         .parilte-strip-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
         .parilte-editorial-grid{grid-template-columns:repeat(6,1fr);grid-auto-rows:160px}
         .parilte-editorial-card.large{grid-column:1/4;grid-row:1/3}
