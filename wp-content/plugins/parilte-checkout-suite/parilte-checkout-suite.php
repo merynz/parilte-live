@@ -1036,27 +1036,32 @@ function parilte_cs_header_markup(){
     $account_label = is_user_logged_in() ? 'Hesabım' : 'Giriş';
     ob_start(); ?>
     <div class="parilte-header-icons">
-      <button type="button" class="parilte-mobile-menu-toggle" aria-controls="parilte-mobile-drawer" aria-expanded="false"
-        onclick="document.body.classList.add('parilte-mobile-open');document.getElementById('parilte-mobile-drawer')?.setAttribute('aria-hidden','false');this.setAttribute('aria-expanded','true');">
-        <span class="parilte-mobile-menu-icon" aria-hidden="true"><span></span></span>
-        <span class="parilte-mobile-menu-text">Menü</span>
-      </button>
-      <a class="parilte-account" href="<?php echo $account_url; ?>" aria-label="Hesabım">
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
-          <span class="parilte-label"><?php echo esc_html($account_label); ?></span>
-      </a>
-      <form role="search" method="get" class="parilte-search-form" action="<?php echo esc_url(home_url('/')); ?>">
-        <label class="screen-reader-text" for="parilte-search-inline">Ara</label>
-        <input type="search" id="parilte-search-inline" class="parilte-search-input" placeholder="Burada ara" value="<?php echo esc_attr(get_search_query()); ?>" name="s" />
-        <button type="submit" class="parilte-search-button" aria-label="Ara">
-          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 015.9 12.1l3.7 3.7-1.4 1.4-3.7-3.7A7.5 7.5 0 1110.5 3zm0 2a5.5 5.5 0 100 11 5.5 5.5 0 000-11z"/></svg>
+      <span class="parilte-header-spacer" aria-hidden="true"></span>
+      <div class="parilte-header-search">
+        <form role="search" method="get" class="parilte-search-form" action="<?php echo esc_url(home_url('/')); ?>">
+          <label class="screen-reader-text" for="parilte-search-inline">Ara</label>
+          <input type="search" id="parilte-search-inline" class="parilte-search-input" placeholder="Burada ara" value="<?php echo esc_attr(get_search_query()); ?>" name="s" />
+          <button type="submit" class="parilte-search-button" aria-label="Ara">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 015.9 12.1l3.7 3.7-1.4 1.4-3.7-3.7A7.5 7.5 0 1110.5 3zm0 2a5.5 5.5 0 100 11 5.5 5.5 0 000-11z"/></svg>
+          </button>
+        </form>
+      </div>
+      <div class="parilte-header-tools">
+        <button type="button" class="parilte-mobile-menu-toggle" aria-controls="parilte-mobile-drawer" aria-expanded="false"
+          onclick="document.body.classList.add('parilte-mobile-open');document.getElementById('parilte-mobile-drawer')?.setAttribute('aria-hidden','false');this.setAttribute('aria-expanded','true');">
+          <span class="parilte-mobile-menu-icon" aria-hidden="true"><span></span></span>
+          <span class="parilte-mobile-menu-text">Menü</span>
         </button>
-      </form>
-      <a class="parilte-cart" href="<?php echo esc_url($cart_url); ?>" aria-label="Sepet">
-          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 6h13l-2 9H9L7 6z"/><circle cx="10" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/></svg>
-          <span class="parilte-label">Sepet</span>
-          <span class="parilte-cart-count"><?php echo (int) $cart_count; ?></span>
-      </a>
+        <a class="parilte-account" href="<?php echo $account_url; ?>" aria-label="Hesabım">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+            <span class="parilte-label"><?php echo esc_html($account_label); ?></span>
+        </a>
+        <a class="parilte-cart" href="<?php echo esc_url($cart_url); ?>" aria-label="Sepet">
+            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 6h13l-2 9H9L7 6z"/><circle cx="10" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/></svg>
+            <span class="parilte-label">Sepet</span>
+            <span class="parilte-cart-count"><?php echo (int) $cart_count; ?></span>
+        </a>
+      </div>
     </div>
     <?php return ob_get_clean();
 }
@@ -2628,43 +2633,56 @@ add_action('wp_enqueue_scripts', function () {
       background-size:24px 24px, 36px 36px;
       background-position:0 0, 12px 12px;
     }
-    .ct-header .menu .parilte-menu-tools{width:100%;justify-content:center}
-    .parilte-header-icons{width:100%;justify-content:flex-end;position:relative;gap:14px}
-    .parilte-header-icons .parilte-account{margin-left:auto}
-    .parilte-header-icons .parilte-search-form{
-      position:absolute;
-      left:50%;
-      transform:translateX(-50%);
-      flex:0 1 auto;
-      width:clamp(260px,42vw,560px);
-      max-width:92vw;
+    .ct-header .menu .parilte-menu-tools{width:100%;justify-content:center;margin-left:0}
+    .ct-header .menu .parilte-menu-tools .parilte-header-icons{
+      width:100%;
+      display:grid;
+      grid-template-columns:1fr minmax(240px,560px) 1fr;
+      align-items:center;
+      gap:12px;
+    }
+    .ct-header .menu .parilte-menu-tools .parilte-header-spacer{grid-column:1}
+    .ct-header .menu .parilte-menu-tools .parilte-header-search{grid-column:2;display:flex;justify-content:center;width:100%}
+    .ct-header .menu .parilte-menu-tools .parilte-search-form{
+      width:100%;
+      max-width:560px;
       padding:.35rem .6rem;
       background:rgba(255,255,255,.92);
       border:1px solid rgba(0,0,0,.12);
       border-radius:999px;
       box-shadow:0 1px 3px rgba(0,0,0,.04);
+      display:flex;
+      align-items:center;
+      gap:8px;
     }
-    .parilte-header-icons .parilte-search-input{
+    .ct-header .menu .parilte-menu-tools .parilte-search-input{
       width:100%;
       max-width:none;
       padding:.4rem .5rem;
       border:0;
-      border-bottom:0;
       background:transparent;
       font:inherit;
       text-align:left;
     }
-    .parilte-header-icons .parilte-search-button{padding:.2rem .4rem}
+    .ct-header .menu .parilte-menu-tools .parilte-search-button{padding:.2rem .4rem}
+    .ct-header .menu .parilte-menu-tools .parilte-header-tools{
+      grid-column:3;
+      justify-self:end;
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
     @media (max-width: 900px){
-      .parilte-header-icons{gap:8px}
-      .parilte-header-icons .parilte-search-form{
-        position:static;
-        transform:none;
-        width:100%;
-        max-width:100%;
-        margin-left:0;
-        margin-right:0;
+      .ct-header .menu .parilte-menu-tools .parilte-header-icons{
+        display:flex;
+        flex-direction:column;
+        align-items:stretch;
+        gap:10px;
       }
+      .ct-header .menu .parilte-menu-tools .parilte-header-spacer{display:none}
+      .ct-header .menu .parilte-menu-tools .parilte-header-search{order:1}
+      .ct-header .menu .parilte-menu-tools .parilte-header-tools{order:2;justify-content:center}
+      .ct-header .menu .parilte-menu-tools .parilte-search-form{max-width:100%}
       .parilte-label{display:none}
     }
 
@@ -2679,7 +2697,19 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-shop-cat{display:inline-flex;align-items:center;justify-content:center;padding:8px 14px;border-radius:999px;border:1px solid rgba(0,0,0,.12);text-decoration:none;color:#111;letter-spacing:.14em;text-transform:uppercase;font-size:.68rem;white-space:nowrap}
     .parilte-shop-cat.is-active{background:#111;color:#fff;border-color:#111}
 
-    .woocommerce ul.products{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:clamp(12px,2.2vw,26px);margin:0}
+    .woocommerce.archive .ct-container,
+    .woocommerce.archive .ct-content,
+    .woocommerce.archive .site-main{max-width:100%;width:100%}
+    .woocommerce.archive .ct-container{padding-left:clamp(12px,2.5vw,24px);padding-right:clamp(12px,2.5vw,24px)}
+    .woocommerce.archive .ct-hero-section,
+    .woocommerce.archive .ct-hero,
+    .woocommerce.archive .ct-page-title,
+    .woocommerce.archive .ct-hero-title,
+    .woocommerce.archive .page-title,
+    .woocommerce.archive .woocommerce-products-header{display:none}
+    .woocommerce.archive .ct-content{padding-top:0}
+
+    .woocommerce ul.products{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(10px,2vw,22px);margin:0;padding:0;width:100%}
     .woocommerce ul.products li.product{float:none;width:100% !important;margin:0 !important;position:relative;background:transparent;box-shadow:none}
     .woocommerce ul.products li.product img{width:100%;height:auto;aspect-ratio:4/5;object-fit:cover}
     .woocommerce ul.products li.product .button,
@@ -2697,11 +2727,14 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-loop-attrs span{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;opacity:.6}
     .parilte-loop-attrs strong{font-size:.78rem;font-weight:600;letter-spacing:.04em}
     .woocommerce ul.products li.product:hover .parilte-loop-attrs{opacity:1;transform:translateY(0)}
-    @media (max-width: 1024px){
+    @media (min-width: 700px){
       .woocommerce ul.products{grid-template-columns:repeat(3,minmax(0,1fr))}
     }
-    @media (max-width: 820px){
-      .woocommerce ul.products{grid-template-columns:repeat(2,minmax(0,1fr))}
+    @media (min-width: 1024px){
+      .woocommerce ul.products{grid-template-columns:repeat(4,minmax(0,1fr))}
+    }
+    @media (min-width: 1400px){
+      .woocommerce ul.products{grid-template-columns:repeat(5,minmax(0,1fr))}
     }
     @media (max-width: 600px){
       .woocommerce ul.products{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
