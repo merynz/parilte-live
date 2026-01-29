@@ -1516,21 +1516,18 @@ function parilte_cs_front_markup(){
       <?php
         $shop_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('shop') : home_url('/magaza/');
         $assets = [
-          'hero'  => parilte_cs_asset_url('home-hero.png'),
-          'ed1'   => parilte_cs_asset_url('home-ed-1.png'),
-          'ed2'   => parilte_cs_asset_url('home-ed-2.png'),
-          'ed3'   => parilte_cs_asset_url('home-ed-3.png'),
-          'look'  => parilte_cs_asset_url('home-lookbook.png'),
-          'cat_outer' => parilte_cs_asset_url('home-cat-outer.jpg'),
-          'cat_top'   => parilte_cs_asset_url('home-cat-top.jpg'),
-          'cat_bottom'=> parilte_cs_asset_url('home-cat-bottom.jpg'),
-          'cat_acc'   => parilte_cs_asset_url('home-cat-accessory.jpg'),
+          'hero'  => plugins_url('assets/home-hero.png', __FILE__),
+          'ed1'   => plugins_url('assets/home-ed-1.png', __FILE__),
+          'ed2'   => plugins_url('assets/home-ed-2.png', __FILE__),
+          'ed3'   => plugins_url('assets/home-ed-3.png', __FILE__),
+          'look'  => plugins_url('assets/home-lookbook.png', __FILE__),
+          'cat_outer' => plugins_url('assets/home-cat-outer.jpg', __FILE__),
+          'cat_top'   => plugins_url('assets/home-cat-top.jpg', __FILE__),
+          'cat_bottom'=> plugins_url('assets/home-cat-bottom.jpg', __FILE__),
+          'cat_acc'   => plugins_url('assets/home-cat-accessory.jpg', __FILE__),
         ];
         $cat_cards = [
           ['slug'=>'dis-giyim', 'label'=>'Dış Giyim', 'img'=>$assets['cat_outer'], 'class'=>'is-tall'],
-          ['slug'=>'ust-giyim', 'label'=>'Üst Giyim', 'img'=>$assets['cat_top'], 'class'=>'is-shift'],
-          ['slug'=>'alt-giyim', 'label'=>'Alt Giyim', 'img'=>$assets['cat_bottom'], 'class'=>''],
-          ['slug'=>'aksesuar', 'label'=>'Aksesuar', 'img'=>$assets['cat_acc'], 'class'=>'is-wide'],
         ];
         $sale_page = get_page_by_path('indirimler');
         $new_page  = get_page_by_path('yeni-gelenler');
@@ -1545,7 +1542,7 @@ function parilte_cs_front_markup(){
       </section>
 
       <section class="parilte-home-cats parilte-bleed">
-        <div class="parilte-home-cats-grid">
+        <div class="parilte-home-cats-grid<?php echo count($cat_cards) < 2 ? ' is-single' : ''; ?>">
           <?php foreach ($cat_cards as $card):
               $term = get_term_by('slug', $card['slug'], 'product_cat');
               $link = ($term && !is_wp_error($term)) ? get_term_link($term) : $shop_url;
@@ -2256,6 +2253,9 @@ add_action('wp_enqueue_scripts', function () {
       border-top:1px solid rgba(0,0,0,.08);
       border-bottom:1px solid rgba(0,0,0,.08);
     }
+    .parilte-home-cats-grid.is-single{
+      grid-template-columns:1fr;
+    }
     .parilte-home-cat{
       position:relative;
       display:block;
@@ -2268,6 +2268,7 @@ add_action('wp_enqueue_scripts', function () {
       animation:parilte-rise .7s ease both;
     }
     .parilte-home-cat:nth-child(2n){border-right:0}
+    .parilte-home-cats-grid.is-single .parilte-home-cat{border-right:0}
     .parilte-home-cat:nth-child(2){animation-delay:.05s}
     .parilte-home-cat:nth-child(3){animation-delay:.1s}
     .parilte-home-cat:nth-child(4){animation-delay:.15s}
