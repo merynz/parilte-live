@@ -6,9 +6,10 @@
 - Admin yenilendiginde "Parilte Bootstrap tamamlandi" bildirimi gorunmelidir.
 
 ## Header: Hesap + Arama
-- Gorunum -> Ozellestir -> Header
-- HTML ogesi ekleyin ve icerik olarak `\[parilte_header]` yazin.
-- Ogeleri kategori menusunun sagina tasiyip yayinlayin.
+- Varsayilan: **Parilte Checkout Suite** aktifse ve `PARILTE_AUTO_HEADER` true ise header ikonlari otomatik eklenir.
+- Manuel kurulum isterseniz: Gorunum -> Ozellestir -> Header
+  - HTML ogesi ekleyin ve icerik olarak `\[parilte_header]` yazin.
+  - Ogeleri kategori menusunun sagina tasiyip yayinlayin.
 
 ## Katalog yonetimi
 - Urunler: Urun ekle, kategori ata, gorsel ekle.

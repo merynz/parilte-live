@@ -4,6 +4,16 @@ add_action('wp_enqueue_scripts', function() {
   wp_enqueue_style('parilte-child', get_stylesheet_uri(), [], '1.0.0');
 }, 20);
 
+function parilte_child_has_checkout_suite() {
+  return function_exists('parilte_cs_bootstrap') || (defined('PARILTE_CS_ON') && PARILTE_CS_ON);
+}
+
+function parilte_child_bootstrap_from_plugin() {
+  if (!function_exists('parilte_cs_bootstrap')) return false;
+  if (defined('PARILTE_BOOTSTRAP_ON') && !PARILTE_BOOTSTRAP_ON) return false;
+  return true;
+}
+
 /**
  * PARILTE-BOOTSTRAP-SETUP — tek seferlik:
  * - Sayfalar (Anasayfa, Mağaza, Sepet, Ödeme, Hesabım, Hakkımızda, İade & Değişim, Teslimat & Kargo, KVKK, Blog, Beden Rehberi)
@@ -12,6 +22,7 @@ add_action('wp_enqueue_scripts', function() {
  * - Ürün Kategori ağacı; Nitelikler: Beden (XS–XL), Renk (Mavi, Siyah, Beyaz, Gri, Bej, Haki)
  * - “Ana Menü” (Anasayfa/Mağaza + ana kategoriler) ve konum denemesi
  */
+if (!parilte_child_bootstrap_from_plugin()) {
 add_action('admin_init', function () {
   if (!current_user_can('manage_options')) return;
   if (get_option('parilte_bootstrap_done')) return;
@@ -114,51 +125,58 @@ add_action('admin_init', function () {
     echo '<div class="notice notice-success"><p><strong>Parilté Bootstrap</strong> tamamlandı.</p></div>';
   });
 });
+}
 
 // === UI HOOKS ===
 
 // Header: Hesap + Ürün araması (shortcode)
-add_shortcode('parilte_header', function () {
-  if (!function_exists('wc_get_page_permalink')) return '';
-  $account_url = esc_url( wc_get_page_permalink('myaccount') );
-  ob_start(); ?>
-  <div class="parilte-header-icons">
-    <a class="parilte-account" href="<?php echo $account_url; ?>" aria-label="Hesabım">
-      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
-      <span>Hesap</span>
-    </a>
-    <div class="parilte-search">
-      <?php if (function_exists('get_product_search_form')) { get_product_search_form(); } else { get_search_form(); } ?>
+if (!shortcode_exists('parilte_header')) {
+  add_shortcode('parilte_header', function () {
+    if (!function_exists('wc_get_page_permalink')) return '';
+    $account_url = esc_url( wc_get_page_permalink('myaccount') );
+    ob_start(); ?>
+    <div class="parilte-header-icons">
+      <a class="parilte-account" href="<?php echo $account_url; ?>" aria-label="Hesabım">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+        <span>Hesap</span>
+      </a>
+      <div class="parilte-search">
+        <?php if (function_exists('get_product_search_form')) { get_product_search_form(); } else { get_search_form(); } ?>
+      </div>
     </div>
-  </div>
-  <?php return ob_get_clean();
-});
+    <?php return ob_get_clean();
+  });
+}
 
 // Kategori açıklamasını ızgara altına al
-add_action('after_setup_theme', function () {
-  remove_action('woocommerce_archive_description','woocommerce_taxonomy_archive_description',10);
-  add_action('woocommerce_after_shop_loop','woocommerce_taxonomy_archive_description',5);
-});
+if (!parilte_child_has_checkout_suite()) {
+  add_action('after_setup_theme', function () {
+    remove_action('woocommerce_archive_description','woocommerce_taxonomy_archive_description',10);
+    add_action('woocommerce_after_shop_loop','woocommerce_taxonomy_archive_description',5);
+  });
+}
 
 // Tek ürün: Beden tablosu kutusu
-add_action('woocommerce_single_product_summary', function () {
-  ?>
-  <details class="parilte-size-box">
-    <summary>Beden Tablosu</summary>
-    <div class="parilte-size-grid">
-      <div><strong>XS</strong><span>34</span></div>
-      <div><strong>S</strong><span>36</span></div>
-      <div><strong>M</strong><span>38</span></div>
-      <div><strong>L</strong><span>40</span></div>
-      <div><strong>XL</strong><span>42</span></div>
-    </div>
-    <small>Kalıp: Normal. İki beden arasında kaldıysan bir büyüğünü öneririz.</small>
-  </details>
-  <?php
-}, 26);
+if (!parilte_child_has_checkout_suite()) {
+  add_action('woocommerce_single_product_summary', function () {
+    ?>
+    <details class="parilte-size-box">
+      <summary>Beden Tablosu</summary>
+      <div class="parilte-size-grid">
+        <div><strong>XS</strong><span>34</span></div>
+        <div><strong>S</strong><span>36</span></div>
+        <div><strong>M</strong><span>38</span></div>
+        <div><strong>L</strong><span>40</span></div>
+        <div><strong>XL</strong><span>42</span></div>
+      </div>
+      <small>Kalıp: Normal. İki beden arasında kaldıysan bir büyüğünü öneririz.</small>
+    </details>
+    <?php
+  }, 26);
 
-// Ürün kart buton sınıfı
-add_filter('woocommerce_loop_add_to_cart_args', function($args,$product){
-  $args['class'] .= ' button parilte-card-btn';
-  return $args;
-},10,2);
+  // Ürün kart buton sınıfı
+  add_filter('woocommerce_loop_add_to_cart_args', function($args,$product){
+    $args['class'] .= ' button parilte-card-btn';
+    return $args;
+  },10,2);
+}
