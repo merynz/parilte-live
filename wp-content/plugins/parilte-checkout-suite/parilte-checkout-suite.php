@@ -1538,8 +1538,9 @@ function parilte_cs_front_markup(){
         </div>
       </section>
 
-      <section class="parilte-home-cats parilte-bleed">
-        <div class="parilte-home-cats-grid">
+      <section class="parilte-home-cats">
+        <div class="parilte-container">
+          <div class="parilte-home-cats-grid">
           <?php
             $cats = [
               ['slug'=>'dis-giyim','label'=>'Dış Giyim','img'=>$assets['h2']],
@@ -1556,44 +1557,40 @@ function parilte_cs_front_markup(){
               <span class="parilte-home-cat-label"><?php echo esc_html($card['label']); ?></span>
             </a>
           <?php endforeach; ?>
-        </div>
-      </section>
-
-      <section class="parilte-home-promo parilte-bleed">
-        <div class="parilte-home-promo-row">
-          <div class="parilte-home-promo-media">
-            <img class="parilte-home-img" src="<?php echo esc_url($assets['h6']); ?>" alt="" loading="lazy" decoding="async" />
-          </div>
-          <div class="parilte-home-promo-copy">
-            <small>İndirimler</small>
-            <h2>Seçili ürünlerde fırsatlar</h2>
-            <p>Sezona özel indirimleri keşfet, favorilerini kaçırma.</p>
-            <a class="parilte-home-cta-btn" href="<?php echo esc_url($sale_url); ?>">İndirimlere Git</a>
-          </div>
-        </div>
-        <div class="parilte-home-promo-row reverse">
-          <div class="parilte-home-promo-media">
-            <img class="parilte-home-img" src="<?php echo esc_url($assets['h7']); ?>" alt="" loading="lazy" decoding="async" />
-          </div>
-          <div class="parilte-home-promo-copy">
-            <small>Yeni Gelenler</small>
-            <h2>Son eklenen seçkiler</h2>
-            <p>Yeni sezon parçalarıyla görünümünü yenile.</p>
-            <a class="parilte-home-cta-btn" href="<?php echo esc_url($new_url); ?>">Yeni Gelenler</a>
           </div>
         </div>
       </section>
 
-      <section class="parilte-home-actions parilte-bleed">
-        <div class="parilte-home-action-card">
-          <h3>Hesabın var mı?</h3>
-          <p>Giriş yap veya hızlıca hesap oluştur.</p>
-          <a class="parilte-home-cta-btn" href="<?php echo esc_url($account_url); ?>">Oturum Aç / Hesap Oluştur</a>
-        </div>
-        <div class="parilte-home-action-card">
-          <h3>Bize Ulaşın</h3>
-          <p>Soru ve destek için e‑posta gönder.</p>
-          <a class="parilte-home-cta-btn" href="<?php echo esc_url('mailto:' . $contact_email); ?>">Bize Ulaşın</a>
+      <section class="parilte-home-modules">
+        <div class="parilte-container">
+          <div class="parilte-home-modules-grid">
+            <article class="parilte-home-module">
+              <img class="parilte-home-img" src="<?php echo esc_url($assets['h6']); ?>" alt="" loading="lazy" decoding="async" />
+              <small>İndirimler</small>
+              <h3>Seçili ürünlerde fırsatlar</h3>
+              <p>Sezona özel indirimleri keşfet, favorilerini kaçırma.</p>
+              <a class="parilte-home-cta-btn" href="<?php echo esc_url($sale_url); ?>">İndirimlere Git</a>
+            </article>
+            <article class="parilte-home-module">
+              <img class="parilte-home-img" src="<?php echo esc_url($assets['h7']); ?>" alt="" loading="lazy" decoding="async" />
+              <small>Yeni Gelenler</small>
+              <h3>Son eklenen seçkiler</h3>
+              <p>Yeni sezon parçalarıyla görünümünü yenile.</p>
+              <a class="parilte-home-cta-btn" href="<?php echo esc_url($new_url); ?>">Yeni Gelenler</a>
+            </article>
+            <article class="parilte-home-module">
+              <small>Hesabın var mı?</small>
+              <h3>Oturum aç veya hesap oluştur</h3>
+              <p>Favorilerini ve siparişlerini takip et.</p>
+              <a class="parilte-home-cta-btn" href="<?php echo esc_url($account_url); ?>">Oturum Aç / Hesap Oluştur</a>
+            </article>
+            <article class="parilte-home-module">
+              <small>Bize Ulaşın</small>
+              <h3>Soru ve destek için yaz</h3>
+              <p><?php echo esc_html($contact_email); ?></p>
+              <a class="parilte-home-cta-btn" href="<?php echo esc_url('mailto:' . $contact_email); ?>">Bize Ulaşın</a>
+            </article>
+          </div>
         </div>
       </section>
 
@@ -2286,6 +2283,38 @@ add_action('wp_enqueue_scripts', function () {
       box-shadow:0 10px 22px rgba(0,0,0,.18);
       white-space:nowrap;
     }
+    /* Home layout overrides: non-bleed categories + mixed modules */
+    .parilte-home-cats{padding:32px 0;background:#fff}
+    .parilte-home-cats .parilte-home-cats-grid{
+      gap:14px;
+      border:0;
+    }
+    .parilte-home-cats .parilte-home-cat{
+      border:0;
+      border-radius:16px;
+      animation:none;
+      transform:none;
+    }
+    .parilte-home-cats .parilte-home-cat::after{height:36%}
+    .parilte-home-modules{padding:32px 0;background:#fff}
+    .parilte-home-modules-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px;
+    }
+    .parilte-home-module{
+      background:#fff;
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:18px;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .parilte-home-module img{border-radius:14px}
+    .parilte-home-module small{opacity:.6;font-size:.72rem;text-transform:uppercase;letter-spacing:.12em}
+    .parilte-home-module h3{margin:0;font-size:clamp(1rem,2.2vw,1.25rem);letter-spacing:.06em;text-transform:uppercase}
+    .parilte-home-module p{margin:0;opacity:.7;font-size:.9rem}
     .parilte-home-promo{
       display:flex;
       flex-direction:column;
@@ -2456,6 +2485,7 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-home-promo-row.reverse{grid-template-columns:1fr}
       .parilte-home-actions{grid-template-columns:1fr}
       .parilte-home-action-card{border-right:0;border-top:1px solid rgba(0,0,0,.08)}
+      .parilte-home-modules-grid{grid-template-columns:1fr}
     }
     @media (prefers-reduced-motion: reduce){
       .parilte-home-cat{animation:none}
