@@ -1437,17 +1437,11 @@ function parilte_cs_front_markup(){
       <?php
         $shop_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('shop') : home_url('/magaza/');
         $assets = [
-          'hero'  => plugins_url('assets/hero.jpg', __FILE__),
-          'ed1'   => plugins_url('assets/editorial-1.jpg', __FILE__),
-          'ed2'   => plugins_url('assets/editorial-2.jpg', __FILE__),
-          'ed3'   => plugins_url('assets/editorial-3.jpg', __FILE__),
-          'look'  => plugins_url('assets/lookbook.jpg', __FILE__),
-          'mag1'  => plugins_url('assets/mag-1.jpg', __FILE__),
-          'mag2'  => plugins_url('assets/mag-2.jpg', __FILE__),
-          'cat1'  => plugins_url('assets/cat-1.jpg', __FILE__),
-          'cat2'  => plugins_url('assets/cat-2.jpg', __FILE__),
-          'cat3'  => plugins_url('assets/cat-3.jpg', __FILE__),
-          'cat4'  => plugins_url('assets/cat-4.jpg', __FILE__),
+          'hero'  => plugins_url('assets/home-hero.png', __FILE__),
+          'ed1'   => plugins_url('assets/home-ed-1.png', __FILE__),
+          'ed2'   => plugins_url('assets/home-ed-2.png', __FILE__),
+          'ed3'   => plugins_url('assets/home-ed-3.png', __FILE__),
+          'look'  => plugins_url('assets/home-lookbook.png', __FILE__),
         ];
       ?>
       <section class="parilte-mag-hero parilte-bleed" style="background-image:url('<?php echo esc_url($assets['hero']); ?>');">
@@ -1467,18 +1461,8 @@ function parilte_cs_front_markup(){
         </div>
       </section>
 
-      <section class="parilte-mag-strip parilte-bleed" style="background-image:url('<?php echo esc_url($assets['mag1']); ?>');">
-        <a class="parilte-mag-link" href="<?php echo esc_url($shop_url); ?>" aria-label="Yeni sezon"></a>
-      </section>
-
-
-
       <section class="parilte-mag-lookbook parilte-bleed" style="background-image:url('<?php echo esc_url($assets['look']); ?>');">
         <a class="parilte-mag-link" href="<?php echo esc_url($shop_url); ?>" aria-label="Lookbook"></a>
-      </section>
-
-      <section class="parilte-mag-strip parilte-bleed" style="background-image:url('<?php echo esc_url($assets['mag2']); ?>');">
-        <a class="parilte-mag-link" href="<?php echo esc_url($shop_url); ?>" aria-label="Koleksiyonlar"></a>
       </section>
 
     </main>
