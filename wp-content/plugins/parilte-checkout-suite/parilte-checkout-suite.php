@@ -1511,10 +1511,10 @@ function parilte_cs_front_markup(){
           'ed2'   => plugins_url('assets/home-ed-2.png', __FILE__),
           'ed3'   => plugins_url('assets/home-ed-3.png', __FILE__),
           'look'  => plugins_url('assets/home-lookbook.png', __FILE__),
-          'cat_outer' => plugins_url('assets/home-cat-outer.png', __FILE__),
-          'cat_top'   => plugins_url('assets/home-cat-top.png', __FILE__),
-          'cat_bottom'=> plugins_url('assets/home-cat-bottom.png', __FILE__),
-          'cat_acc'   => plugins_url('assets/home-cat-accessory.png', __FILE__),
+          'cat_outer' => plugins_url('assets/home-cat-outer.jpg', __FILE__),
+          'cat_top'   => plugins_url('assets/home-cat-top.jpg', __FILE__),
+          'cat_bottom'=> plugins_url('assets/home-cat-bottom.jpg', __FILE__),
+          'cat_acc'   => plugins_url('assets/home-cat-accessory.jpg', __FILE__),
         ];
         $cat_cards = [
           ['slug'=>'dis-giyim', 'label'=>'Dış Giyim', 'img'=>$assets['cat_outer'], 'class'=>'is-tall'],
