@@ -2641,11 +2641,13 @@ add_action('wp_enqueue_scripts', function () {
       background-position:0 0, 12px 12px;
     }
     .ct-header .menu .parilte-menu-tools{width:100%;justify-content:center}
-    .parilte-header-icons{width:100%;justify-content:space-between}
+    .parilte-header-icons{width:100%;justify-content:flex-end;position:relative;gap:14px}
+    .parilte-header-icons .parilte-account{margin-left:auto}
     .parilte-header-icons .parilte-search-form{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
       flex:0 1 auto;
-      margin-left:auto;
-      margin-right:auto;
       width:clamp(260px,42vw,560px);
       max-width:92vw;
       padding:.35rem .6rem;
@@ -2667,7 +2669,14 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-header-icons .parilte-search-button{padding:.2rem .4rem}
     @media (max-width: 900px){
       .parilte-header-icons{gap:8px}
-      .parilte-header-icons .parilte-search-form{width:100%;max-width:100%}
+      .parilte-header-icons .parilte-search-form{
+        position:static;
+        transform:none;
+        width:100%;
+        max-width:100%;
+        margin-left:0;
+        margin-right:0;
+      }
       .parilte-label{display:none}
     }
 
