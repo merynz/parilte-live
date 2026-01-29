@@ -2640,31 +2640,38 @@ add_action('wp_enqueue_scripts', function () {
       background-position:0 0, 12px 12px;
     }
     .ct-header .ct-container{position:relative;overflow:visible}
+    /* Hero CTA placement (avoid face overlap) */
+    .parilte-mag-hero-overlay{
+      align-items:flex-end;
+      justify-content:flex-start;
+      padding:clamp(16px,4vw,36px);
+    }
     .ct-header .ct-row,
     .ct-header .ct-container,
     .ct-header .ct-row > div{
       width:100%;
       max-width:none;
     }
-    .ct-header .menu{position:static}
-    /* Overlay tools so search is always centered relative to header */
-    .ct-header .menu .parilte-menu-tools{
-      position:absolute;
-      left:0;
-      right:0;
-      top:50%;
-      transform:translateY(-50%);
+    .ct-header .menu{
+      position:static !important;
+      display:flex !important;
+      align-items:center;
       width:100%;
-      margin:0;
+    }
+    .ct-header .menu > li:not(.parilte-menu-tools){display:none !important;}
+    .ct-header .menu .parilte-menu-tools{
+      width:100vw;
+      margin-left:calc(50% - 50vw);
+      margin-right:calc(50% - 50vw);
       padding-left:clamp(12px,2.5vw,24px);
       padding-right:clamp(12px,2.5vw,24px);
-      justify-content:center;
-      pointer-events:none;
+      display:flex;
+      align-items:center;
     }
     .ct-header .menu .parilte-menu-tools .parilte-header-icons{
       width:100%;
       display:grid;
-      grid-template-columns:minmax(0,1fr) minmax(240px,560px) minmax(0,1fr);
+      grid-template-columns:minmax(0,1fr) minmax(240px,520px) minmax(0,1fr);
       align-items:center;
       gap:12px;
     }
@@ -2674,11 +2681,10 @@ add_action('wp_enqueue_scripts', function () {
       display:flex;
       justify-content:center;
       width:100%;
-      pointer-events:auto;
     }
     .ct-header .menu .parilte-menu-tools .parilte-search-form{
       width:100%;
-      max-width:560px;
+      max-width:520px;
       padding:.35rem .6rem;
       background:rgba(255,255,255,.92);
       border:1px solid rgba(0,0,0,.12);
@@ -2703,15 +2709,28 @@ add_action('wp_enqueue_scripts', function () {
       justify-self:end;
       display:flex;
       align-items:center;
-      gap:14px;
-      pointer-events:auto;
+      gap:16px;
+      flex-wrap:nowrap;
+      white-space:nowrap;
+    }
+    .ct-header .menu .parilte-menu-tools .parilte-header-tools a,
+    .ct-header .menu .parilte-menu-tools .parilte-header-tools button{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+    @media (max-width: 1200px){
+      .ct-header .menu .parilte-menu-tools .parilte-header-tools{gap:10px}
+      .parilte-label{display:none}
     }
     @media (max-width: 900px){
       .ct-header .ct-container{position:static}
+      .ct-header .menu{display:flex !important}
       .ct-header .menu .parilte-menu-tools{
-        position:static;
-        transform:none;
-        pointer-events:auto;
+        width:100%;
+        margin:0;
+        padding-left:0;
+        padding-right:0;
       }
       .ct-header .menu .parilte-menu-tools .parilte-header-icons{
         display:flex;
@@ -2723,9 +2742,10 @@ add_action('wp_enqueue_scripts', function () {
         width:100%;
         max-width:100%;
       }
-      .ct-header .menu .parilte-menu-tools .parilte-header-tools{justify-content:center}
+      .ct-header .menu .parilte-menu-tools .parilte-header-tools{justify-content:center;flex-wrap:wrap}
       .ct-header .menu .parilte-menu-tools .parilte-search-form{max-width:100%}
       .parilte-label{display:none}
+      .parilte-mobile-menu-toggle{display:inline-flex !important}
     }
 
     .woocommerce #secondary,
