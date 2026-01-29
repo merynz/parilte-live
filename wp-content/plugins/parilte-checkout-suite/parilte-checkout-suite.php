@@ -2634,14 +2634,8 @@ add_action('wp_enqueue_scripts', function () {
       background-position:0 0, 12px 12px;
     }
     .ct-header .ct-container{position:relative;overflow:visible}
-    .ct-header .menu .parilte-menu-tools{width:100%;justify-content:center;margin-left:0}
-    .ct-header .menu .parilte-menu-tools .parilte-header-icons{
-      width:100%;
-      display:flex;
-      align-items:center;
-      justify-content:flex-end;
-      gap:14px;
-    }
+    .ct-header .menu .parilte-menu-tools{width:100%;justify-content:center;margin-left:0;position:static}
+    .ct-header .menu .parilte-menu-tools .parilte-header-icons{position:static}
     .ct-header .menu .parilte-menu-tools .parilte-header-spacer{display:none}
     .ct-header .menu .parilte-menu-tools .parilte-header-search{
       position:absolute;
@@ -2650,7 +2644,7 @@ add_action('wp_enqueue_scripts', function () {
       transform:translate(-50%,-50%);
       width:clamp(260px,42vw,560px);
       max-width:92vw;
-      z-index:1;
+      z-index:2;
       display:flex;
       justify-content:center;
     }
@@ -2677,11 +2671,14 @@ add_action('wp_enqueue_scripts', function () {
     }
     .ct-header .menu .parilte-menu-tools .parilte-search-button{padding:.2rem .4rem}
     .ct-header .menu .parilte-menu-tools .parilte-header-tools{
+      position:absolute;
+      right:0;
+      top:50%;
+      transform:translateY(-50%);
       display:flex;
       align-items:center;
       gap:14px;
-      position:relative;
-      z-index:2;
+      z-index:3;
     }
     @media (max-width: 900px){
       .ct-header .ct-container{position:static}
@@ -2697,7 +2694,11 @@ add_action('wp_enqueue_scripts', function () {
         width:100%;
         max-width:100%;
       }
-      .ct-header .menu .parilte-menu-tools .parilte-header-tools{justify-content:center}
+      .ct-header .menu .parilte-menu-tools .parilte-header-tools{
+        position:static;
+        transform:none;
+        justify-content:center;
+      }
       .ct-header .menu .parilte-menu-tools .parilte-search-form{max-width:100%}
       .parilte-label{display:none}
     }
@@ -2716,8 +2717,17 @@ add_action('wp_enqueue_scripts', function () {
     .woocommerce.archive .ct-container,
     .woocommerce.archive .ct-content,
     .woocommerce.archive .ct-row,
+    .woocommerce.archive .content-area,
+    .woocommerce.archive #primary,
     .woocommerce.archive .site-main{max-width:none !important;width:100% !important}
-    .woocommerce.archive .ct-container{padding-left:clamp(12px,2.5vw,24px) !important;padding-right:clamp(12px,2.5vw,24px) !important}
+    .woocommerce.archive .ct-container{
+      padding-left:clamp(12px,2.5vw,24px) !important;
+      padding-right:clamp(12px,2.5vw,24px) !important;
+      margin-left:0 !important;
+      margin-right:0 !important;
+    }
+    .woocommerce.archive .ct-content{padding-top:0 !important;margin:0 !important}
+    .woocommerce.archive .content-area{margin:0 !important}
     .woocommerce.archive .ct-hero-section,
     .woocommerce.archive .ct-hero,
     .woocommerce.archive .ct-page-title,
