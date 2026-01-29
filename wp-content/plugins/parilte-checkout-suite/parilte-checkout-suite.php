@@ -1507,12 +1507,40 @@ function parilte_cs_front_markup(){
           'ed2'   => plugins_url('assets/home-ed-2.png', __FILE__),
           'ed3'   => plugins_url('assets/home-ed-3.png', __FILE__),
           'look'  => plugins_url('assets/home-lookbook.png', __FILE__),
+          'cat_outer' => plugins_url('assets/home-cat-outer.png', __FILE__),
+          'cat_top'   => plugins_url('assets/home-cat-top.png', __FILE__),
+          'cat_bottom'=> plugins_url('assets/home-cat-bottom.png', __FILE__),
+          'cat_acc'   => plugins_url('assets/home-cat-accessory.png', __FILE__),
+        ];
+        $cat_cards = [
+          ['slug'=>'dis-giyim', 'label'=>'Dış Giyim', 'img'=>$assets['cat_outer'], 'class'=>'is-tall', 'cta'=>'%30 İndirim'],
+          ['slug'=>'ust-giyim', 'label'=>'Üst Giyim', 'img'=>$assets['cat_top'], 'class'=>'is-shift'],
+          ['slug'=>'alt-giyim', 'label'=>'Alt Giyim', 'img'=>$assets['cat_bottom'], 'class'=>''],
+          ['slug'=>'aksesuar', 'label'=>'Aksesuar', 'img'=>$assets['cat_acc'], 'class'=>'is-wide'],
         ];
       ?>
       <section class="parilte-mag-hero parilte-bleed" style="background-image:url('<?php echo esc_url($assets['hero']); ?>');">
         <a class="parilte-mag-link" href="<?php echo esc_url($shop_url); ?>" aria-label="Mağazaya git"></a>
         <div class="parilte-mag-hero-overlay">
           <a class="parilte-hero-cta parilte-hero-shop" href="<?php echo esc_url($shop_url); ?>">Mağaza</a>
+        </div>
+      </section>
+
+      <section class="parilte-home-cats parilte-bleed">
+        <div class="parilte-home-cats-grid">
+          <?php foreach ($cat_cards as $card):
+              $term = get_term_by('slug', $card['slug'], 'product_cat');
+              $link = ($term && !is_wp_error($term)) ? get_term_link($term) : $shop_url;
+              $cls = trim('parilte-home-cat ' . ($card['class'] ?? ''));
+          ?>
+            <a class="<?php echo esc_attr($cls); ?>" href="<?php echo esc_url($link); ?>">
+              <img src="<?php echo esc_url($card['img']); ?>" alt="<?php echo esc_attr($card['label']); ?>" loading="lazy" decoding="async" />
+              <span class="parilte-home-cat-label"><?php echo esc_html($card['label']); ?></span>
+              <?php if (!empty($card['cta'])): ?>
+                <span class="parilte-home-cat-cta"><?php echo esc_html($card['cta']); ?></span>
+              <?php endif; ?>
+            </a>
+          <?php endforeach; ?>
         </div>
       </section>
 
@@ -2192,6 +2220,77 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-mag-hero-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
     .parilte-hero-cta{display:inline-flex;align-items:center;justify-content:center;background:#c51d24;color:#fff;border-radius:999px;padding:12px 26px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;text-decoration:none;box-shadow:0 10px 24px rgba(0,0,0,.25);pointer-events:auto}
     .parilte-hero-cta:hover{background:#a8181f}
+    .parilte-home-cats{padding:0;background:#fff}
+    .parilte-home-cats-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:0;
+      border-top:1px solid rgba(0,0,0,.08);
+      border-bottom:1px solid rgba(0,0,0,.08);
+    }
+    .parilte-home-cat{
+      position:relative;
+      display:block;
+      text-decoration:none;
+      color:inherit;
+      border-right:1px solid rgba(0,0,0,.08);
+      border-bottom:1px solid rgba(0,0,0,.08);
+      overflow:hidden;
+      background:#fff;
+      animation:parilte-rise .7s ease both;
+    }
+    .parilte-home-cat:nth-child(2n){border-right:0}
+    .parilte-home-cat:nth-child(2){animation-delay:.05s}
+    .parilte-home-cat:nth-child(3){animation-delay:.1s}
+    .parilte-home-cat:nth-child(4){animation-delay:.15s}
+    .parilte-home-cat img{width:100%;height:auto;display:block}
+    .parilte-home-cat::after{
+      content:"";
+      position:absolute;
+      inset:auto 0 0 0;
+      height:30%;
+      background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.22));
+      pointer-events:none;
+    }
+    .parilte-home-cat-label{
+      position:absolute;
+      left:16px;
+      bottom:14px;
+      font-size:.85rem;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color:#fff;
+      z-index:1;
+    }
+    .parilte-home-cat-cta{
+      position:absolute;
+      right:16px;
+      bottom:12px;
+      background:#c51d24;
+      color:#fff;
+      border-radius:999px;
+      padding:8px 14px;
+      font-size:.7rem;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+      z-index:1;
+    }
+    .parilte-home-cat.is-tall{transform:translateY(-10px)}
+    .parilte-home-cat.is-shift{transform:translateY(12px)}
+    .parilte-home-cat.is-wide{transform:translateY(-6px)}
+    @media (max-width: 900px){
+      .parilte-home-cats-grid{grid-template-columns:1fr}
+      .parilte-home-cat{border-right:0}
+      .parilte-home-cat.is-tall,
+      .parilte-home-cat.is-shift,
+      .parilte-home-cat.is-wide{transform:none}
+      .parilte-home-cat-label{font-size:.8rem}
+      .parilte-home-cat-cta{font-size:.68rem;padding:7px 12px}
+    }
+    @media (prefers-reduced-motion: reduce){
+      .parilte-home-cat{animation:none}
+    }
     .parilte-mag-lookbook{min-height:clamp(320px,70vw,620px);background-size:cover;background-position:50% 12%;background-repeat:no-repeat;position:relative}
     .parilte-mag-strip{min-height:clamp(240px,60vw,520px);background-size:cover;background-position:50% 12%;background-repeat:no-repeat;position:relative}
     .parilte-mag-link{position:absolute;inset:0;display:block}
@@ -2979,12 +3078,14 @@ add_action('wp_enqueue_scripts', function () {
     .woocommerce ul.products li.product .price ins{color:#c51d24}
     .woocommerce ul.products li.product .price del{color:#6b7280}
     .parilte-discount{display:inline-flex;align-items:center;justify-content:center;margin-left:8px;font-size:.72rem;color:#c51d24;letter-spacing:.08em}
-    .parilte-loop-attrs{position:absolute;left:10px;right:10px;bottom:10px;background:rgba(255,255,255,.92);
-      padding:8px 10px;border-radius:12px;box-shadow:0 8px 18px rgba(0,0,0,.12);
+    .woocommerce ul.products li.product .woocommerce-LoopProduct-link{position:relative;display:block}
+    .parilte-loop-attrs{position:absolute;left:0;right:0;bottom:0;background:#fff;
+      padding:10px 12px;border-top:1px solid rgba(0,0,0,.12);
       display:flex;flex-direction:column;gap:4px;opacity:0;transform:translateY(6px);transition:all .2s ease;pointer-events:none}
     .parilte-loop-attrs span{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;opacity:.6}
     .parilte-loop-attrs strong{font-size:.78rem;font-weight:600;letter-spacing:.04em}
-    .woocommerce ul.products li.product:hover .parilte-loop-attrs{opacity:1;transform:translateY(0)}
+    .woocommerce ul.products li.product:hover .parilte-loop-attrs,
+    .woocommerce ul.products li.product:focus-within .parilte-loop-attrs{opacity:1;transform:translateY(0)}
     @media (min-width: 700px){
       .woocommerce ul.products{grid-template-columns:repeat(3,minmax(0,1fr))}
     }
@@ -3231,7 +3332,7 @@ function parilte_cs_collect_loop_attrs($product){
     ];
 }
 
-add_action('woocommerce_after_shop_loop_item', function () {
+add_action('woocommerce_before_shop_loop_item_title', function () {
     global $product;
     if (!$product instanceof WC_Product) return;
     $data = parilte_cs_collect_loop_attrs($product);
@@ -3247,7 +3348,7 @@ add_action('woocommerce_after_shop_loop_item', function () {
         echo '<div><span>Boy</span><strong>'.esc_html(implode(' ', $data['lengths'])).'</strong></div>';
     }
     echo '</div>';
-}, 15);
+}, 20);
 
 /* ==========================================================
  * 1) ÜCRETSİZ KARGO BAR
