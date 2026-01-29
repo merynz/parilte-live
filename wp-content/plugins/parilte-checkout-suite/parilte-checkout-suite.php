@@ -2646,16 +2646,20 @@ add_action('wp_enqueue_scripts', function () {
       width:100%;
       max-width:none;
     }
-    /* Make tools span full viewport so search can be truly centered */
+    .ct-header .menu{position:static}
+    /* Overlay tools so search is always centered relative to header */
     .ct-header .menu .parilte-menu-tools{
-      width:100vw;
-      margin-left:calc(50% - 50vw);
-      margin-right:calc(50% - 50vw);
+      position:absolute;
+      left:0;
+      right:0;
+      top:50%;
+      transform:translateY(-50%);
+      width:100%;
+      margin:0;
       padding-left:clamp(12px,2.5vw,24px);
       padding-right:clamp(12px,2.5vw,24px);
       justify-content:center;
-      position:static;
-      flex:1;
+      pointer-events:none;
     }
     .ct-header .menu .parilte-menu-tools .parilte-header-icons{
       width:100%;
@@ -2670,6 +2674,7 @@ add_action('wp_enqueue_scripts', function () {
       display:flex;
       justify-content:center;
       width:100%;
+      pointer-events:auto;
     }
     .ct-header .menu .parilte-menu-tools .parilte-search-form{
       width:100%;
@@ -2699,9 +2704,15 @@ add_action('wp_enqueue_scripts', function () {
       display:flex;
       align-items:center;
       gap:14px;
+      pointer-events:auto;
     }
     @media (max-width: 900px){
       .ct-header .ct-container{position:static}
+      .ct-header .menu .parilte-menu-tools{
+        position:static;
+        transform:none;
+        pointer-events:auto;
+      }
       .ct-header .menu .parilte-menu-tools .parilte-header-icons{
         display:flex;
         flex-direction:column;
