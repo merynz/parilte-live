@@ -3451,7 +3451,7 @@ add_action('wp_enqueue_scripts', function () {
     .woocommerce ul.products li.product .price del{color:#6b7280}
     .parilte-discount{display:inline-flex;align-items:center;justify-content:center;margin-left:8px;font-size:.72rem;color:#c51d24;letter-spacing:.08em}
     .woocommerce ul.products li.product .woocommerce-LoopProduct-link{position:relative;display:block}
-    .parilte-loop-media{position:relative;overflow:hidden}
+    .parilte-loop-media{position:relative;overflow:hidden;display:block}
     .parilte-loop-attrs{position:absolute;left:0;right:0;bottom:0;background:#fff;
       padding:10px 12px;border-top:1px solid rgba(0,0,0,.12);
       display:flex !important;flex-direction:column;gap:4px;opacity:0;transform:translateY(6px);
@@ -3460,7 +3460,11 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-loop-attrs strong{font-size:.78rem;font-weight:600;letter-spacing:.04em}
     .woocommerce ul.products li.product:hover .parilte-loop-attrs,
     .woocommerce ul.products li.product:focus-within .parilte-loop-attrs,
-    .parilte-loop-media:hover .parilte-loop-attrs{opacity:1;transform:translateY(0)}
+    .woocommerce ul.products li.product .woocommerce-LoopProduct-link:hover .parilte-loop-attrs,
+    .parilte-loop-media:hover .parilte-loop-attrs{
+      opacity:1 !important;
+      transform:translateY(0) !important;
+    }
     .parilte-fav-btn{
       margin-top:8px;
       border:1px solid rgba(0,0,0,.12);
