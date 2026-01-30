@@ -2467,7 +2467,13 @@ add_action('wp_enqueue_scripts', function () {
       background:#c51d24 !important;
       color:#fff !important;
       border-radius:999px !important;
+      padding:10px 16px;
+      font-size:.72rem;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
     }
+    .parilte-home-contact-inner .parilte-contact-toggle{margin-top:6px}
     .parilte-contact-form label{
       display:flex;
       flex-direction:column;
