@@ -2264,7 +2264,7 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-home-hero .parilte-home-img{
       height:clamp(320px,60vw,560px);
       object-fit:cover;
-      object-position:50% 20%;
+      object-position:50% 10%;
       background:transparent;
       position:relative;
       z-index:1;
