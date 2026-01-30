@@ -1527,8 +1527,7 @@ function parilte_cs_front_markup(){
         $sale_url = add_query_arg('parilte_sale', '1', $shop_url);
         $new_url  = add_query_arg('parilte_new', '1', $shop_url);
         $account_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('myaccount') : home_url('/hesabim/');
-        $about_page = get_page_by_path('hakkimizda');
-        $about_url = ($about_page && !is_wp_error($about_page)) ? get_permalink($about_page) : home_url('/hakkimizda/');
+        $contact_email = 'g-zemkoroglu-772011@hotmail.com';
       ?>
       <section class="parilte-home-hero parilte-bleed">
         <img class="parilte-home-img" src="<?php echo esc_url($assets['h1']); ?>" alt="Parilte" loading="eager" decoding="async" />
@@ -1580,9 +1579,9 @@ function parilte_cs_front_markup(){
       <section class="parilte-home-contact parilte-bleed">
         <div class="parilte-home-contact-inner">
           <small>Bize Ulaşın</small>
-          <h3>İletişim ve marka bilgileri</h3>
-          <p>Hakkımızda sayfasında tüm iletişim kanallarını bulabilirsin.</p>
-          <a class="parilte-home-cta-btn" href="<?php echo esc_url($about_url); ?>">Hakkımızda</a>
+          <h3>Soru ve destek için yaz</h3>
+          <p><?php echo esc_html($contact_email); ?></p>
+          <a class="parilte-home-cta-btn" href="<?php echo esc_url('mailto:' . $contact_email); ?>">Bize Ulaşın</a>
         </div>
       </section>
 
@@ -3481,6 +3480,30 @@ add_action('wp_enqueue_scripts', function () {
       color:#fff;
       border-color:#111;
     }
+    .parilte-fav-single{margin-top:12px}
+    @media (max-width: 600px){
+      .parilte-fav-single{width:100%;justify-content:center}
+    }
+
+    .woocommerce-account .woocommerce-MyAccount-navigation a,
+    .woocommerce-account .woocommerce-MyAccount-content,
+    .woocommerce-account .woocommerce-MyAccount-content p,
+    .woocommerce-account .woocommerce-MyAccount-content li{
+      font-family:"Montserrat","Helvetica Neue",Arial,sans-serif;
+      font-size:.92rem;
+      letter-spacing:.02em;
+    }
+    .woocommerce-account .woocommerce-MyAccount-navigation a{
+      text-transform:uppercase;
+      letter-spacing:.14em;
+      font-size:.72rem;
+    }
+    .woocommerce-account .woocommerce-MyAccount-content h2,
+    .woocommerce-account .woocommerce-MyAccount-content h3{
+      font-family:"Bodoni MT","Didot","Playfair Display","Times New Roman",serif;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
     @media (min-width: 700px){
       .woocommerce ul.products{grid-template-columns:repeat(3,minmax(0,1fr))}
     }
@@ -3823,20 +3846,20 @@ add_action('wp_ajax_parilte_toggle_favorite', function () {
     wp_send_json_success(['active' => $active, 'count' => count($list)]);
 });
 
-add_action('woocommerce_after_shop_loop_item', function () {
+add_action('woocommerce_single_product_summary', function () {
     global $product;
     if (!$product instanceof WC_Product) return;
     $pid = $product->get_id();
     $login_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('myaccount') : home_url('/hesabim/');
     if (!is_user_logged_in()) {
-        echo '<a class="parilte-fav-btn" href="'.esc_url($login_url).'">Favorilere eklemek için giriş yap</a>';
+        echo '<a class="parilte-fav-btn parilte-fav-single" href="'.esc_url($login_url).'">Favorilere eklemek için giriş yap</a>';
         return;
     }
     $is_active = parilte_cs_is_favorite($pid);
     $label = $is_active ? 'Favoride' : 'Favorilere Ekle';
     $cls = $is_active ? 'is-active' : '';
-    echo '<button class="parilte-fav-btn '.$cls.'" type="button" data-product="'.esc_attr($pid).'" data-nonce="'.esc_attr(wp_create_nonce('parilte_fav')).'">'.$label.'</button>';
-}, 15);
+    echo '<button class="parilte-fav-btn parilte-fav-single '.$cls.'" type="button" data-product="'.esc_attr($pid).'" data-nonce="'.esc_attr(wp_create_nonce('parilte_fav')).'">'.$label.'</button>';
+}, 35);
 
 add_action('init', function () {
     add_rewrite_endpoint('favoriler', EP_ROOT | EP_PAGES);
