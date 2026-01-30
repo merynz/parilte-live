@@ -3454,11 +3454,13 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-loop-media{position:relative;overflow:hidden}
     .parilte-loop-attrs{position:absolute;left:0;right:0;bottom:0;background:#fff;
       padding:10px 12px;border-top:1px solid rgba(0,0,0,.12);
-      display:flex;flex-direction:column;gap:4px;opacity:0;transform:translateY(6px);transition:all .2s ease;pointer-events:none}
+      display:flex !important;flex-direction:column;gap:4px;opacity:0;transform:translateY(6px);
+      transition:all .2s ease;pointer-events:none;z-index:2}
     .parilte-loop-attrs span{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;opacity:.6}
     .parilte-loop-attrs strong{font-size:.78rem;font-weight:600;letter-spacing:.04em}
     .woocommerce ul.products li.product:hover .parilte-loop-attrs,
-    .woocommerce ul.products li.product:focus-within .parilte-loop-attrs{opacity:1;transform:translateY(0)}
+    .woocommerce ul.products li.product:focus-within .parilte-loop-attrs,
+    .parilte-loop-media:hover .parilte-loop-attrs{opacity:1;transform:translateY(0)}
     .parilte-fav-btn{
       margin-top:8px;
       border:1px solid rgba(0,0,0,.12);
