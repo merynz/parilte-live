@@ -1583,13 +1583,15 @@ function parilte_cs_front_markup(){
           <p>İade, değişim ve genel sorular için bize yazabilirsin.</p>
           <?php
             $contact_status = isset($_GET['parilte_contact']) ? sanitize_text_field(wp_unslash($_GET['parilte_contact'])) : '';
+            $contact_open = in_array($contact_status, ['success','error'], true);
             if ($contact_status === 'success') {
               echo '<div class="parilte-contact-note success">Mesajın bize ulaştı. En kısa sürede dönüş yapacağız.</div>';
             } elseif ($contact_status === 'error') {
               echo '<div class="parilte-contact-note error">Mesaj gönderilemedi. Lütfen tekrar dene.</div>';
             }
           ?>
-          <form class="parilte-contact-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+          <button class="parilte-home-cta-btn parilte-contact-toggle" type="button" data-target="parilte-contact-form">Bize Ulaşın</button>
+          <form id="parilte-contact-form" class="parilte-contact-form<?php echo $contact_open ? ' is-open' : ''; ?>" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
             <input type="hidden" name="action" value="parilte_contact" />
             <?php wp_nonce_field('parilte_contact', 'parilte_contact_nonce'); ?>
             <div class="parilte-contact-row">
@@ -2452,10 +2454,11 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-contact-note.error{background:#fef2f2;color:#7f1d1d}
     .parilte-contact-form{
       margin-top:8px;
-      display:flex;
+      display:none;
       flex-direction:column;
       gap:12px;
     }
+    .parilte-contact-form.is-open{display:flex}
     .parilte-contact-form label{
       display:flex;
       flex-direction:column;
@@ -3632,6 +3635,22 @@ add_action('wp_enqueue_scripts', function () {
     "});";
     wp_add_inline_script('parilte-favorites', $script);
 }, 26);
+
+add_action('wp_enqueue_scripts', function () {
+    if (!is_front_page()) return;
+    wp_register_script('parilte-contact-toggle', '', [], null, true);
+    wp_enqueue_script('parilte-contact-toggle');
+    $script = "document.addEventListener('click',function(e){\n".
+    "  var btn=e.target.closest('.parilte-contact-toggle');\n".
+    "  if(!btn){return;}\n".
+    "  var target=btn.getAttribute('data-target');\n".
+    "  var form=target?document.getElementById(target):null;\n".
+    "  if(!form){return;}\n".
+    "  form.classList.toggle('is-open');\n".
+    "  if(form.classList.contains('is-open')){form.scrollIntoView({behavior:'smooth',block:'nearest'});} \n".
+    "});";
+    wp_add_inline_script('parilte-contact-toggle', $script);
+}, 27);
 
 // Kategori açıklamasını ızgara altına al
 add_action('after_setup_theme', function () {
