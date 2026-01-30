@@ -1531,7 +1531,7 @@ function parilte_cs_front_markup(){
         $account_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('myaccount') : home_url('/hesabim/');
         $contact_email = get_option('admin_email');
       ?>
-      <section class="parilte-home-hero parilte-bleed" style="--parilte-bg:url('<?php echo esc_url($assets['h1']); ?>');">
+      <section class="parilte-home-hero parilte-bleed">
         <img class="parilte-home-img" src="<?php echo esc_url($assets['h1']); ?>" alt="Parilte" loading="eager" decoding="async" />
         <div class="parilte-home-hero-cta">
           <a class="parilte-home-cta-btn" href="<?php echo esc_url($shop_url); ?>">Mağaza</a>
@@ -1547,7 +1547,7 @@ function parilte_cs_front_markup(){
         </div>
       </section>
 
-      <section class="parilte-home-banner parilte-bleed" style="--parilte-bg:url('<?php echo esc_url($assets['h6']); ?>');">
+      <section class="parilte-home-banner parilte-bleed">
         <img class="parilte-home-img" src="<?php echo esc_url($assets['h6']); ?>" alt="" loading="lazy" decoding="async" />
         <div class="parilte-home-banner-content">
           <small>İndirimler</small>
@@ -1570,7 +1570,7 @@ function parilte_cs_front_markup(){
               $term = get_term_by('slug', $card['slug'], 'product_cat');
               $link = ($term && !is_wp_error($term)) ? get_term_link($term) : $shop_url;
           ?>
-            <a class="parilte-home-cat" href="<?php echo esc_url($link); ?>" style="--parilte-bg:url('<?php echo esc_url($card['img']); ?>');">
+            <a class="parilte-home-cat" href="<?php echo esc_url($link); ?>">
               <img class="parilte-home-img" src="<?php echo esc_url($card['img']); ?>" alt="<?php echo esc_attr($card['label']); ?>" loading="lazy" decoding="async" />
               <span class="parilte-home-cat-label"><?php echo esc_html($card['label']); ?></span>
             </a>
@@ -1587,7 +1587,7 @@ function parilte_cs_front_markup(){
         </div>
       </section>
 
-      <section class="parilte-home-banner parilte-bleed" style="--parilte-bg:url('<?php echo esc_url($assets['h7']); ?>');">
+      <section class="parilte-home-banner parilte-bleed">
         <img class="parilte-home-img" src="<?php echo esc_url($assets['h7']); ?>" alt="" loading="lazy" decoding="async" />
         <div class="parilte-home-banner-content">
           <small>Yeni Gelenler</small>
@@ -2260,17 +2260,6 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-hero-cta{display:inline-flex;align-items:center;justify-content:center;background:#c51d24;color:#fff;border-radius:999px;padding:12px 26px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;text-decoration:none;box-shadow:0 10px 24px rgba(0,0,0,.25);pointer-events:auto}
     .parilte-hero-cta:hover{background:#a8181f}
     .parilte-home-hero{position:relative;background:#f6f1ea;overflow:hidden}
-    .parilte-home-hero::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      background-image:var(--parilte-bg);
-      background-size:cover;
-      background-position:center;
-      filter:blur(18px);
-      transform:scale(1.08);
-      opacity:.75;
-    }
     .parilte-home-img{width:100%;height:auto;display:block}
     .parilte-home-hero .parilte-home-img{
       height:clamp(300px,55vw,520px);
@@ -2316,17 +2305,6 @@ add_action('wp_enqueue_scripts', function () {
       position:relative;
       overflow:hidden;
       background:#f6f1ea;
-    }
-    .parilte-home-banner::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      background-image:var(--parilte-bg);
-      background-size:cover;
-      background-position:center;
-      filter:blur(18px);
-      transform:scale(1.08);
-      opacity:.75;
     }
     .parilte-home-banner .parilte-home-img{
       width:100%;
@@ -2562,17 +2540,6 @@ add_action('wp_enqueue_scripts', function () {
       border-radius:0;
       animation:none;
       transform:none;
-    }
-    .parilte-home-cats .parilte-home-cat::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      background-image:var(--parilte-bg);
-      background-size:cover;
-      background-position:center;
-      filter:blur(16px);
-      transform:scale(1.08);
-      opacity:.75;
     }
     .parilte-home-cats .parilte-home-cat img{
       width:100%;
