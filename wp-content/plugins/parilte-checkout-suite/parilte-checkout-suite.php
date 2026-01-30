@@ -1526,6 +1526,7 @@ function parilte_cs_front_markup(){
         ];
         $sale_url = add_query_arg('parilte_sale', '1', $shop_url);
         $new_url  = add_query_arg('parilte_new', '1', $shop_url);
+        $best_url = add_query_arg('parilte_best', '1', $shop_url);
         $account_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('myaccount') : home_url('/hesabim/');
         $contact_email = 'g-zemkoroglu-772011@hotmail.com';
       ?>
@@ -1552,6 +1553,15 @@ function parilte_cs_front_markup(){
           <h2>Seçili ürünlerde fırsatlar</h2>
           <p>Sezona özel indirimleri keşfet, favorilerini kaçırma.</p>
           <a class="parilte-home-cta-btn" href="<?php echo esc_url($sale_url); ?>">İndirimlere Git</a>
+        </div>
+      </section>
+
+      <section class="parilte-home-hot parilte-bleed">
+        <div class="parilte-home-hot-inner">
+          <small>En Çok Satanlar</small>
+          <h3>Bu hafta öne çıkan parçalar</h3>
+          <p>En yüksek satışa sahip ürünleri keşfet.</p>
+          <a class="parilte-home-cta-btn parilte-home-cta-btn--hot" href="<?php echo esc_url($best_url); ?>">Hot Ones</a>
         </div>
       </section>
 
@@ -1738,6 +1748,7 @@ add_filter('woocommerce_product_categories_args', function ($args) {
 add_filter('query_vars', function ($vars) {
     $vars[] = 'parilte_sale';
     $vars[] = 'parilte_new';
+    $vars[] = 'parilte_best';
     return $vars;
 });
 
@@ -1750,6 +1761,7 @@ add_action('pre_get_posts', function ($query) {
 
     $sale_flag = isset($_GET['parilte_sale']) && $_GET['parilte_sale'] === '1';
     $new_flag  = isset($_GET['parilte_new']) && $_GET['parilte_new'] === '1';
+    $best_flag = isset($_GET['parilte_best']) && $_GET['parilte_best'] === '1';
 
     if ($sale_flag && function_exists('wc_get_product_ids_on_sale')) {
         $sale_ids = wc_get_product_ids_on_sale();
@@ -1768,6 +1780,12 @@ add_action('pre_get_posts', function ($query) {
                 'inclusive' => true,
             ],
         ]);
+    }
+
+    if ($best_flag) {
+        $query->set('orderby', 'meta_value_num');
+        $query->set('meta_key', 'total_sales');
+        $query->set('order', 'DESC');
     }
 }, 11);
 
@@ -2317,6 +2335,8 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-front h1,
     .parilte-front h2,
     .parilte-front h3{font-family:"Bodoni MT","Didot","Playfair Display","Times New Roman",serif;letter-spacing:.04em}
+    body.home .ct-content{padding-top:0 !important}
+    body.home .site-main.parilte-front{margin-top:0 !important;padding-top:0 !important}
     .parilte-bleed{width:100vw;max-width:100vw;margin-left:calc(50% - 50vw)}
     .parilte-container{max-width:1140px;margin:0 auto;padding:0 16px}
     @keyframes parilte-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
@@ -2413,6 +2433,39 @@ add_action('wp_enqueue_scripts', function () {
       opacity:.75;
       font-size:.9rem;
       max-width:560px;
+    }
+    .parilte-home-hot{
+      padding:clamp(18px,4vw,34px) 0;
+      background:#0f6c4a;
+      color:#fff;
+    }
+    .parilte-home-hot-inner{
+      width:min(1080px,100%);
+      margin:0 auto;
+      padding:0 clamp(16px,6vw,64px);
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .parilte-home-hot-inner small{
+      font-size:.72rem;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      opacity:.8;
+    }
+    .parilte-home-hot-inner h3{
+      margin:0;
+      font-size:clamp(1rem,2.4vw,1.5rem);
+      letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+    .parilte-home-hot-inner p{
+      margin:0;
+      opacity:.85;
+      font-size:.95rem;
+    }
+    .parilte-home-cta-btn--hot{
+      background:#0b5d3e;
     }
     .parilte-home-contact{
       padding:clamp(20px,4vw,36px) 0;
@@ -2743,6 +2796,7 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-home-cta-card{border-right:0;border-top:1px solid rgba(0,0,0,.08)}
       .parilte-home-cta-btn{font-size:.68rem;padding:9px 14px}
       .parilte-contact-row{grid-template-columns:1fr}
+      .parilte-home-hot-inner{padding:0 18px}
       .parilte-home-cats .parilte-home-cats-grid{grid-template-columns:1fr}
       .parilte-home-promo-row,
       .parilte-home-promo-row.reverse{grid-template-columns:1fr}
