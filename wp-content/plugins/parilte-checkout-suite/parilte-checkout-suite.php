@@ -1568,7 +1568,7 @@ function parilte_cs_front_markup(){
           <small>Keşfet</small>
           <h3>Bu hafta öne çıkan parçalar</h3>
           <p>En çok beğenilen ürünlerimizi senin için derledik.</p>
-          <a class="parilte-home-cta-btn parilte-home-cta-btn--hot" href="<?php echo esc_url($best_url); ?>">Hot Ones</a>
+          <a class="parilte-home-cta-btn parilte-home-cta-btn--hot" href="<?php echo esc_url($best_url); ?>">Keşfet</a>
         </div>
       </section>
 
@@ -1579,7 +1579,7 @@ function parilte_cs_front_markup(){
               ['slug'=>'dis-giyim','label'=>'Dış Giyim','img'=>$assets['h2'],'pos'=>'50% 20%','class'=>''],
               ['slug'=>'ust-giyim','label'=>'Üst Giyim','img'=>$assets['h4'],'pos'=>'50% 30%','class'=>''],
               ['slug'=>'alt-giyim','label'=>'Alt Giyim','img'=>$assets['h3'],'pos'=>'50% 75%','class'=>''],
-              ['slug'=>'aksesuar','label'=>'Aksesuar','img'=>$assets['h5'],'pos'=>'50% 55%','class'=>' is-accessory'],
+              ['slug'=>'aksesuar','label'=>'Aksesuar','img'=>$assets['h5'],'pos'=>'50% 45%','class'=>' is-accessory'],
             ];
             foreach ($cats as $card):
               $term = get_term_by('slug', $card['slug'], 'product_cat');
@@ -2371,6 +2371,7 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-front h3{font-family:"Bodoni MT","Didot","Playfair Display","Times New Roman",serif;letter-spacing:.04em}
     body.home .ct-content{padding-top:0 !important}
     body.home .site-main.parilte-front{margin-top:0 !important;padding-top:0 !important}
+    body.home .ct-header + .ct-content{margin-top:0 !important}
     .parilte-bleed{width:100vw;max-width:100vw;margin-left:calc(50% - 50vw)}
     .parilte-container{max-width:1140px;margin:0 auto;padding:0 16px}
     @keyframes parilte-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
@@ -2501,7 +2502,7 @@ add_action('wp_enqueue_scripts', function () {
       font-size:.95rem;
     }
     .parilte-home-cta-btn--hot{
-      background:#0f6c4a;
+      background:#0f6c4a !important;
     }
     .parilte-home-contact{
       padding:clamp(20px,4vw,36px) 0;
@@ -2767,10 +2768,6 @@ add_action('wp_enqueue_scripts', function () {
       display:block;
       position:relative;
       z-index:1;
-    }
-    .parilte-home-cat.is-accessory img{
-      transform:scale(.94);
-      transform-origin:center;
     }
     .parilte-home-cat::after{
       content:"";
