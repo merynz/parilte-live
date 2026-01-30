@@ -1516,13 +1516,13 @@ function parilte_cs_front_markup(){
       <?php
         $shop_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('shop') : home_url('/magaza/');
         $assets = [
-          'h1' => parilte_cs_asset_url('home-01.png'),
+          'h1' => parilte_cs_asset_url('home-07.jpg'),
           'h2' => parilte_cs_asset_url('home-02.png'),
           'h3' => parilte_cs_asset_url('home-03.png'),
           'h4' => parilte_cs_asset_url('home-04.png'),
           'h5' => parilte_cs_asset_url('home-05.png'),
           'h6' => parilte_cs_asset_url('home-06.png'),
-          'h7' => parilte_cs_asset_url('home-07.jpg'),
+          'h7' => parilte_cs_asset_url('home-01.png'),
         ];
         $sale_page = get_page_by_path('indirimler');
         $new_page  = get_page_by_path('yeni-gelenler');
@@ -1533,9 +1533,17 @@ function parilte_cs_front_markup(){
       ?>
       <section class="parilte-home-hero parilte-bleed">
         <img class="parilte-home-img" src="<?php echo esc_url($assets['h1']); ?>" alt="Parilte" loading="eager" decoding="async" />
-        <a class="parilte-home-hero-account" href="<?php echo esc_url($account_url); ?>">Oturum Aç / Hesap Oluştur</a>
         <div class="parilte-home-hero-cta">
           <a class="parilte-home-cta-btn" href="<?php echo esc_url($shop_url); ?>">Mağaza</a>
+        </div>
+      </section>
+
+      <section class="parilte-home-join parilte-bleed">
+        <div class="parilte-home-join-inner">
+          <small>Üye Ol</small>
+          <h3>Haberdar olmak istersen bize katıl</h3>
+          <p>Yeni ürünleri ve fırsatları kaçırmamak için hesabını oluştur.</p>
+          <a class="parilte-home-cta-btn" href="<?php echo esc_url($account_url); ?>">Oturum Aç / Hesap Oluştur</a>
         </div>
       </section>
 
@@ -1585,7 +1593,7 @@ function parilte_cs_front_markup(){
           <small>Yeni Gelenler</small>
           <h2>Son eklenen seçkiler</h2>
           <p>Yeni sezon parçalarıyla görünümünü yenile.</p>
-          <a class="parilte-home-cta-btn" href="<?php echo esc_url($new_url); ?>">Yeni Gelenler</a>
+          <a class="parilte-home-cta-btn parilte-home-cta-btn--sm" href="<?php echo esc_url($new_url); ?>">Yeni Gelenler</a>
         </div>
       </section>
 
@@ -2251,8 +2259,13 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-mag-hero-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
     .parilte-hero-cta{display:inline-flex;align-items:center;justify-content:center;background:#c51d24;color:#fff;border-radius:999px;padding:12px 26px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;text-decoration:none;box-shadow:0 10px 24px rgba(0,0,0,.25);pointer-events:auto}
     .parilte-hero-cta:hover{background:#a8181f}
-    .parilte-home-hero{position:relative}
+    .parilte-home-hero{position:relative;background:#f6f1ea}
     .parilte-home-img{width:100%;height:auto;display:block}
+    .parilte-home-hero .parilte-home-img{
+      height:clamp(300px,55vw,520px);
+      object-fit:contain;
+      background:#f6f1ea;
+    }
     .parilte-home-hero-cta{
       position:absolute;
       left:50%;
@@ -2278,30 +2291,21 @@ add_action('wp_enqueue_scripts', function () {
       box-shadow:0 10px 22px rgba(0,0,0,.18);
       white-space:nowrap;
     }
-    .parilte-home-hero-account{
-      position:absolute;
-      top:clamp(14px,4vw,28px);
-      left:clamp(14px,6vw,48px);
-      z-index:2;
-      background:#c51d24;
-      color:#fff;
-      padding:10px 16px;
-      border-radius:999px;
-      font-size:.7rem;
+    .parilte-home-cta-btn--sm{
+      padding:8px 14px;
+      font-size:.62rem;
       letter-spacing:.14em;
-      text-transform:uppercase;
-      text-decoration:none;
-      box-shadow:0 10px 22px rgba(0,0,0,.18);
     }
     .parilte-home-banner{
       position:relative;
       overflow:hidden;
-      background:#111;
+      background:#f6f1ea;
     }
     .parilte-home-banner .parilte-home-img{
       width:100%;
-      height:clamp(260px,34vw,380px);
-      object-fit:cover;
+      height:clamp(240px,32vw,360px);
+      object-fit:contain;
+      background:#f6f1ea;
       display:block;
     }
     .parilte-home-banner-content{
@@ -2359,6 +2363,35 @@ add_action('wp_enqueue_scripts', function () {
       text-transform:uppercase;
     }
     .parilte-home-contact-inner p{
+      margin:0;
+      opacity:.7;
+      font-size:.95rem;
+    }
+    .parilte-home-join{
+      padding:clamp(18px,3.6vw,30px) 0;
+      background:#fff;
+    }
+    .parilte-home-join-inner{
+      width:min(1080px,100%);
+      margin:0 auto;
+      padding:0 clamp(16px,6vw,64px);
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .parilte-home-join-inner small{
+      font-size:.72rem;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      opacity:.65;
+    }
+    .parilte-home-join-inner h3{
+      margin:0;
+      font-size:clamp(1rem,2.2vw,1.4rem);
+      letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+    .parilte-home-join-inner p{
       margin:0;
       opacity:.7;
       font-size:.95rem;
@@ -2503,7 +2536,8 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-home-cats .parilte-home-cat img{
       width:100%;
       height:clamp(220px,30vw,340px);
-      object-fit:cover;
+      object-fit:contain;
+      background:#f6f1ea;
       display:block;
     }
     .parilte-home-cat::after{
@@ -2565,14 +2599,9 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-home-cats .parilte-home-cat img{height:clamp(220px,60vw,360px)}
       .parilte-home-banner .parilte-home-img{height:clamp(220px,60vw,320px)}
       .parilte-home-banner-content{padding:16px 18px}
-      .parilte-home-hero-account{
-        top:12px;
-        left:12px;
-        font-size:.65rem;
-        padding:8px 12px;
-        letter-spacing:.12em;
-      }
       .parilte-home-contact-inner{padding:0 18px}
+      .parilte-home-join-inner{padding:0 18px}
+      .parilte-home-cta-btn--sm{font-size:.58rem;padding:7px 12px}
       .parilte-home-cta-inner{grid-template-columns:1fr}
       .parilte-home-cta-card{border-right:0;border-top:1px solid rgba(0,0,0,.08)}
       .parilte-home-cta-btn{font-size:.68rem;padding:9px 14px}
