@@ -1580,7 +1580,7 @@ function parilte_cs_front_markup(){
         <div class="parilte-home-contact-inner">
           <small>Bize Ulaşın</small>
           <h3>Soru ve destek için yaz</h3>
-          <p><?php echo esc_html($contact_email); ?></p>
+          <p>İade, değişim ve genel sorular için bize yazabilirsin.</p>
           <a class="parilte-home-cta-btn" href="<?php echo esc_url('mailto:' . $contact_email); ?>">Bize Ulaşın</a>
         </div>
       </section>
