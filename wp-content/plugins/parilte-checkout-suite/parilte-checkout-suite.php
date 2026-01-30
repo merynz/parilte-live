@@ -2462,6 +2462,11 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-contact-toggle{
       display:inline-flex !important;
       align-self:flex-start;
+      visibility:visible !important;
+      opacity:1 !important;
+      background:#c51d24 !important;
+      color:#fff !important;
+      border-radius:999px !important;
     }
     .parilte-contact-form label{
       display:flex;
