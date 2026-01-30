@@ -2262,8 +2262,8 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-home-hero{position:relative;background:#f6f1ea;overflow:hidden}
     .parilte-home-img{width:100%;height:auto;display:block}
     .parilte-home-hero .parilte-home-img{
-      height:clamp(300px,55vw,520px);
-      object-fit:contain;
+      height:clamp(320px,60vw,560px);
+      object-fit:cover;
       background:transparent;
       position:relative;
       z-index:1;
@@ -2308,8 +2308,8 @@ add_action('wp_enqueue_scripts', function () {
     }
     .parilte-home-banner .parilte-home-img{
       width:100%;
-      height:clamp(240px,32vw,360px);
-      object-fit:contain;
+      height:clamp(240px,34vw,420px);
+      object-fit:cover;
       background:transparent;
       display:block;
       position:relative;
@@ -2544,7 +2544,7 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-home-cats .parilte-home-cat img{
       width:100%;
       height:clamp(220px,30vw,340px);
-      object-fit:contain;
+      object-fit:cover;
       background:transparent;
       display:block;
       position:relative;
@@ -2608,7 +2608,7 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-home-cats .parilte-home-cat{border-right:0}
       .parilte-home-cat-label{font-size:.8rem}
       .parilte-home-cats .parilte-home-cat img{height:clamp(220px,60vw,360px)}
-      .parilte-home-banner .parilte-home-img{height:clamp(220px,60vw,320px)}
+      .parilte-home-banner .parilte-home-img{height:clamp(220px,60vw,360px)}
       .parilte-home-banner-content{padding:16px 18px}
       .parilte-home-contact-inner{padding:0 18px}
       .parilte-home-join-inner{padding:0 18px}
