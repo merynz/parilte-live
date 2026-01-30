@@ -1581,7 +1581,37 @@ function parilte_cs_front_markup(){
           <small>Bize Ulaşın</small>
           <h3>Soru ve destek için yaz</h3>
           <p>İade, değişim ve genel sorular için bize yazabilirsin.</p>
-          <a class="parilte-home-cta-btn" href="<?php echo esc_url('mailto:' . $contact_email); ?>">Bize Ulaşın</a>
+          <?php
+            $contact_status = isset($_GET['parilte_contact']) ? sanitize_text_field(wp_unslash($_GET['parilte_contact'])) : '';
+            if ($contact_status === 'success') {
+              echo '<div class="parilte-contact-note success">Mesajın bize ulaştı. En kısa sürede dönüş yapacağız.</div>';
+            } elseif ($contact_status === 'error') {
+              echo '<div class="parilte-contact-note error">Mesaj gönderilemedi. Lütfen tekrar dene.</div>';
+            }
+          ?>
+          <form class="parilte-contact-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+            <input type="hidden" name="action" value="parilte_contact" />
+            <?php wp_nonce_field('parilte_contact', 'parilte_contact_nonce'); ?>
+            <div class="parilte-contact-row">
+              <label>
+                <span>Ad Soyad</span>
+                <input type="text" name="parilte_name" required />
+              </label>
+              <label>
+                <span>E-posta</span>
+                <input type="email" name="parilte_email" required />
+              </label>
+            </div>
+            <label>
+              <span>Konu</span>
+              <input type="text" name="parilte_subject" required />
+            </label>
+            <label>
+              <span>Mesaj</span>
+              <textarea name="parilte_message" rows="5" required></textarea>
+            </label>
+            <button class="parilte-home-cta-btn" type="submit">Gönder</button>
+          </form>
         </div>
       </section>
 
@@ -2411,6 +2441,47 @@ add_action('wp_enqueue_scripts', function () {
       opacity:.7;
       font-size:.95rem;
     }
+    .parilte-contact-note{
+      padding:10px 12px;
+      border-radius:12px;
+      font-size:.9rem;
+      background:#f4f4f5;
+      color:#111;
+    }
+    .parilte-contact-note.success{background:#ecfdf3;color:#0f5132}
+    .parilte-contact-note.error{background:#fef2f2;color:#7f1d1d}
+    .parilte-contact-form{
+      margin-top:8px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .parilte-contact-form label{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      font-size:.72rem;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color:var(--parilte-muted);
+    }
+    .parilte-contact-form input,
+    .parilte-contact-form textarea{
+      font:inherit;
+      letter-spacing:.02em;
+      text-transform:none;
+      border:1px solid rgba(0,0,0,.12);
+      border-radius:14px;
+      padding:10px 12px;
+      background:#fff;
+      color:#111;
+    }
+    .parilte-contact-form textarea{resize:vertical;min-height:140px}
+    .parilte-contact-row{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+    }
     .parilte-home-join{
       padding:clamp(18px,3.6vw,30px) 0;
       background:#fff;
@@ -2653,6 +2724,7 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-home-cta-inner{grid-template-columns:1fr}
       .parilte-home-cta-card{border-right:0;border-top:1px solid rgba(0,0,0,.08)}
       .parilte-home-cta-btn{font-size:.68rem;padding:9px 14px}
+      .parilte-contact-row{grid-template-columns:1fr}
       .parilte-home-cats .parilte-home-cats-grid{grid-template-columns:1fr}
       .parilte-home-promo-row,
       .parilte-home-promo-row.reverse{grid-template-columns:1fr}
@@ -3783,31 +3855,57 @@ function parilte_cs_collect_loop_attrs($product){
     ];
 }
 
-add_action('woocommerce_before_shop_loop_item_title', function () {
-    echo '<div class="parilte-loop-media">';
-}, 5);
+function parilte_cs_contact_form_redirect($status) {
+    $ref = wp_get_referer();
+    if (!$ref) $ref = home_url('/');
+    $ref = remove_query_arg('parilte_contact', $ref);
+    return add_query_arg('parilte_contact', $status, $ref);
+}
 
-add_action('woocommerce_before_shop_loop_item_title', function () {
-    global $product;
-    if (!$product instanceof WC_Product) return;
+function parilte_cs_handle_contact_form() {
+    if (!isset($_POST['parilte_contact_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['parilte_contact_nonce'])), 'parilte_contact')) {
+        wp_safe_redirect(parilte_cs_contact_form_redirect('error'));
+        exit;
+    }
+    $name = isset($_POST['parilte_name']) ? sanitize_text_field(wp_unslash($_POST['parilte_name'])) : '';
+    $email = isset($_POST['parilte_email']) ? sanitize_email(wp_unslash($_POST['parilte_email'])) : '';
+    $subject = isset($_POST['parilte_subject']) ? sanitize_text_field(wp_unslash($_POST['parilte_subject'])) : '';
+    $message = isset($_POST['parilte_message']) ? sanitize_textarea_field(wp_unslash($_POST['parilte_message'])) : '';
+    if (!$name || !$email || !$subject || !$message) {
+        wp_safe_redirect(parilte_cs_contact_form_redirect('error'));
+        exit;
+    }
+    $to = 'g-zemkoroglu-772011@hotmail.com';
+    $body = "Ad Soyad: {$name}\nE-posta: {$email}\n\n{$message}";
+    $headers = ['Reply-To: '.$email];
+    $sent = wp_mail($to, $subject, $body, $headers);
+    wp_safe_redirect(parilte_cs_contact_form_redirect($sent ? 'success' : 'error'));
+    exit;
+}
+
+add_action('admin_post_nopriv_parilte_contact', 'parilte_cs_handle_contact_form');
+add_action('admin_post_parilte_contact', 'parilte_cs_handle_contact_form');
+
+add_filter('woocommerce_get_product_thumbnail', function ($html, $size = 'woocommerce_thumbnail', $deprecated = null, $attr = [], $product = null) {
+    if (!($product instanceof WC_Product)) return $html;
+    if (!is_shop() && !is_product_taxonomy() && !is_product_category() && !is_product_tag()) return $html;
     $data = parilte_cs_collect_loop_attrs($product);
-    if (empty($data['sizes']) && empty($data['colors']) && empty($data['lengths'])) return;
-    echo '<div class="parilte-loop-attrs">';
-    if (!empty($data['sizes'])) {
-        echo '<div><span>Beden</span><strong>'.esc_html(implode(' ', $data['sizes'])).'</strong></div>';
+    $panel = '';
+    if (!empty($data['sizes']) || !empty($data['colors']) || !empty($data['lengths'])) {
+        $panel .= '<div class="parilte-loop-attrs">';
+        if (!empty($data['sizes'])) {
+            $panel .= '<div><span>Beden</span><strong>'.esc_html(implode(' ', $data['sizes'])).'</strong></div>';
+        }
+        if (!empty($data['colors'])) {
+            $panel .= '<div><span>Renk</span><strong>'.esc_html(implode(' ', $data['colors'])).'</strong></div>';
+        }
+        if (!empty($data['lengths'])) {
+            $panel .= '<div><span>Boy</span><strong>'.esc_html(implode(' ', $data['lengths'])).'</strong></div>';
+        }
+        $panel .= '</div>';
     }
-    if (!empty($data['colors'])) {
-        echo '<div><span>Renk</span><strong>'.esc_html(implode(' ', $data['colors'])).'</strong></div>';
-    }
-    if (!empty($data['lengths'])) {
-        echo '<div><span>Boy</span><strong>'.esc_html(implode(' ', $data['lengths'])).'</strong></div>';
-    }
-    echo '</div>';
-}, 15);
-
-add_action('woocommerce_before_shop_loop_item_title', function () {
-    echo '</div>';
-}, 30);
+    return '<div class="parilte-loop-media">'.$html.$panel.'</div>';
+}, 20, 5);
 
 function parilte_cs_get_favorites($user_id = 0) {
     $user_id = $user_id ? (int) $user_id : get_current_user_id();
