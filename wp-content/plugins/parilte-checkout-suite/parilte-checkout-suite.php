@@ -2056,7 +2056,7 @@ add_action('wp_footer', 'parilte_cs_footer_links', 30);
 
 function parilte_cs_update_legal_pages_once() {
     if (!current_user_can('manage_options')) return;
-    if (get_option('parilte_legal_pages_v4')) return;
+    if (get_option('parilte_legal_pages_v5')) return;
 
     $pages = [
         'hakkimizda' => '<h2>Hakkımızda</h2>
@@ -2078,6 +2078,7 @@ function parilte_cs_update_legal_pages_once() {
 <ul>
   <li>Instagram: <a href="https://www.instagram.com/butik_parilte_/" target="_blank" rel="noopener">@butik_parilte_</a></li>
   <li>WhatsApp: <a href="https://wa.me/905394353913" target="_blank" rel="noopener">0539 435 39 13</a></li>
+  <li>Mail: <a href="mailto:g-zemkoroglu-772011@hotmail.com">g-zemkoroglu-772011@hotmail.com</a></li>
   <li>Adres: Parılte Butik, Rüstempaşa Mah. Çeşme Sk. No:17/D, Yalova/Merkez</li>
 </ul>',
         'teslimat-kargo' => '<h2>Teslimat & Kargo</h2>
@@ -2141,7 +2142,7 @@ function parilte_cs_update_legal_pages_once() {
         if (!$p) continue;
         wp_update_post(['ID' => $p->ID, 'post_content' => wp_kses_post($html)]);
     }
-    update_option('parilte_legal_pages_v4', 1);
+    update_option('parilte_legal_pages_v5', 1);
 }
 add_action('admin_init', 'parilte_cs_update_legal_pages_once', 36);
 
@@ -3451,6 +3452,7 @@ add_action('wp_enqueue_scripts', function () {
     .woocommerce ul.products li.product .price del{color:#6b7280}
     .parilte-discount{display:inline-flex;align-items:center;justify-content:center;margin-left:8px;font-size:.72rem;color:#c51d24;letter-spacing:.08em}
     .woocommerce ul.products li.product .woocommerce-LoopProduct-link{position:relative;display:block}
+    .parilte-loop-media{position:relative;overflow:hidden}
     .parilte-loop-attrs{position:absolute;left:0;right:0;bottom:0;background:#fff;
       padding:10px 12px;border-top:1px solid rgba(0,0,0,.12);
       display:flex;flex-direction:column;gap:4px;opacity:0;transform:translateY(6px);transition:all .2s ease;pointer-events:none}
@@ -3458,6 +3460,27 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-loop-attrs strong{font-size:.78rem;font-weight:600;letter-spacing:.04em}
     .woocommerce ul.products li.product:hover .parilte-loop-attrs,
     .woocommerce ul.products li.product:focus-within .parilte-loop-attrs{opacity:1;transform:translateY(0)}
+    .parilte-fav-btn{
+      margin-top:8px;
+      border:1px solid rgba(0,0,0,.12);
+      border-radius:999px;
+      background:#fff;
+      color:#111;
+      padding:6px 12px;
+      font-size:.7rem;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      text-decoration:none;
+    }
+    .parilte-fav-btn.is-active{
+      background:#111;
+      color:#fff;
+      border-color:#111;
+    }
     @media (min-width: 700px){
       .woocommerce ul.products{grid-template-columns:repeat(3,minmax(0,1fr))}
     }
@@ -3481,6 +3504,33 @@ add_action('wp_enqueue_scripts', function () {
     wp_enqueue_script('jquery-ui-slider');
     wp_enqueue_script('wc-price-slider');
 }, 25);
+
+add_action('wp_enqueue_scripts', function () {
+    if (!is_shop() && !is_product() && !is_product_taxonomy() && !is_product_category() && !is_product_tag()) return;
+    wp_register_script('parilte-favorites', '', [], null, true);
+    wp_enqueue_script('parilte-favorites');
+    $ajax_url = admin_url('admin-ajax.php');
+    $login_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('myaccount') : home_url('/hesabim/');
+    $script = "window.parilteFav={ajaxUrl:'".esc_url_raw($ajax_url)."',loginUrl:'".esc_url_raw($login_url)."'};\n".
+    "document.addEventListener('click',function(e){\n".
+    "  var btn=e.target.closest('.parilte-fav-btn');\n".
+    "  if(!btn||!btn.dataset.product){return;}\n".
+    "  e.preventDefault();\n".
+    "  var fd=new FormData();\n".
+    "  fd.append('action','parilte_toggle_favorite');\n".
+    "  fd.append('product_id',btn.dataset.product);\n".
+    "  fd.append('nonce',btn.dataset.nonce);\n".
+    "  fetch(window.parilteFav.ajaxUrl,{method:'POST',credentials:'same-origin',body:fd}).then(function(r){return r.json();}).then(function(data){\n".
+    "    if(!data||!data.success){\n".
+    "      if(data&&data.data&&data.data.login){window.location=window.parilteFav.loginUrl;}\n".
+    "      return;\n".
+    "    }\n".
+    "    if(data.data&&data.data.active){btn.classList.add('is-active');btn.textContent='Favoride';}\n".
+    "    else{btn.classList.remove('is-active');btn.textContent='Favorilere Ekle';}\n".
+    "  });\n".
+    "});";
+    wp_add_inline_script('parilte-favorites', $script);
+}, 26);
 
 // Kategori açıklamasını ızgara altına al
 add_action('after_setup_theme', function () {
@@ -3705,6 +3755,10 @@ function parilte_cs_collect_loop_attrs($product){
 }
 
 add_action('woocommerce_before_shop_loop_item_title', function () {
+    echo '<div class="parilte-loop-media">';
+}, 5);
+
+add_action('woocommerce_before_shop_loop_item_title', function () {
     global $product;
     if (!$product instanceof WC_Product) return;
     $data = parilte_cs_collect_loop_attrs($product);
@@ -3720,7 +3774,101 @@ add_action('woocommerce_before_shop_loop_item_title', function () {
         echo '<div><span>Boy</span><strong>'.esc_html(implode(' ', $data['lengths'])).'</strong></div>';
     }
     echo '</div>';
-}, 20);
+}, 15);
+
+add_action('woocommerce_before_shop_loop_item_title', function () {
+    echo '</div>';
+}, 30);
+
+function parilte_cs_get_favorites($user_id = 0) {
+    $user_id = $user_id ? (int) $user_id : get_current_user_id();
+    if (!$user_id) return [];
+    $list = get_user_meta($user_id, 'parilte_favorites', true);
+    if (!is_array($list)) $list = [];
+    $list = array_values(array_unique(array_filter(array_map('intval', $list))));
+    return $list;
+}
+
+function parilte_cs_is_favorite($product_id, $user_id = 0) {
+    $product_id = (int) $product_id;
+    if (!$product_id) return false;
+    $list = parilte_cs_get_favorites($user_id);
+    return in_array($product_id, $list, true);
+}
+
+function parilte_cs_toggle_favorite($product_id, $user_id = 0) {
+    $user_id = $user_id ? (int) $user_id : get_current_user_id();
+    if (!$user_id) return [false, []];
+    $product_id = (int) $product_id;
+    if (!$product_id) return [false, parilte_cs_get_favorites($user_id)];
+    $list = parilte_cs_get_favorites($user_id);
+    $active = false;
+    if (in_array($product_id, $list, true)) {
+        $list = array_values(array_diff($list, [$product_id]));
+    } else {
+        $list[] = $product_id;
+        $active = true;
+    }
+    update_user_meta($user_id, 'parilte_favorites', $list);
+    return [$active, $list];
+}
+
+add_action('wp_ajax_parilte_toggle_favorite', function () {
+    if (!is_user_logged_in()) {
+        wp_send_json_error(['login' => true, 'url' => wc_get_page_permalink('myaccount')]);
+    }
+    check_ajax_referer('parilte_fav', 'nonce');
+    $pid = isset($_POST['product_id']) ? (int) $_POST['product_id'] : 0;
+    [$active, $list] = parilte_cs_toggle_favorite($pid);
+    wp_send_json_success(['active' => $active, 'count' => count($list)]);
+});
+
+add_action('woocommerce_after_shop_loop_item', function () {
+    global $product;
+    if (!$product instanceof WC_Product) return;
+    $pid = $product->get_id();
+    $login_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('myaccount') : home_url('/hesabim/');
+    if (!is_user_logged_in()) {
+        echo '<a class="parilte-fav-btn" href="'.esc_url($login_url).'">Favorilere eklemek için giriş yap</a>';
+        return;
+    }
+    $is_active = parilte_cs_is_favorite($pid);
+    $label = $is_active ? 'Favoride' : 'Favorilere Ekle';
+    $cls = $is_active ? 'is-active' : '';
+    echo '<button class="parilte-fav-btn '.$cls.'" type="button" data-product="'.esc_attr($pid).'" data-nonce="'.esc_attr(wp_create_nonce('parilte_fav')).'">'.$label.'</button>';
+}, 15);
+
+add_action('init', function () {
+    add_rewrite_endpoint('favoriler', EP_ROOT | EP_PAGES);
+    if (!get_option('parilte_favorites_endpoint_flushed')) {
+        flush_rewrite_rules(false);
+        update_option('parilte_favorites_endpoint_flushed', 1);
+    }
+});
+
+add_filter('woocommerce_account_menu_items', function ($items) {
+    $new = [];
+    foreach ($items as $key => $label) {
+        $new[$key] = $label;
+        if ($key === 'dashboard') {
+            $new['favoriler'] = 'Favoriler';
+        }
+    }
+    return $new;
+});
+
+add_action('woocommerce_account_favoriler_endpoint', function () {
+    if (!is_user_logged_in()) {
+        echo '<p>Favorileri görmek için lütfen giriş yap.</p>';
+        return;
+    }
+    $list = parilte_cs_get_favorites(get_current_user_id());
+    if (!$list) {
+        echo '<p>Henüz favorilere eklenmiş ürünün yok.</p>';
+        return;
+    }
+    echo do_shortcode('[products ids="'.esc_attr(implode(',', $list)).'" columns="4" paginate="false"]');
+});
 
 /* ==========================================================
  * 1) ÜCRETSİZ KARGO BAR
