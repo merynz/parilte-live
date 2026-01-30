@@ -1561,17 +1561,17 @@ function parilte_cs_front_markup(){
         <div class="parilte-home-cats-grid">
           <?php
             $cats = [
-              ['slug'=>'dis-giyim','label'=>'Dış Giyim','img'=>$assets['h2']],
-              ['slug'=>'ust-giyim','label'=>'Üst Giyim','img'=>$assets['h4']],
-              ['slug'=>'alt-giyim','label'=>'Alt Giyim','img'=>$assets['h3']],
-              ['slug'=>'aksesuar','label'=>'Aksesuar','img'=>$assets['h5']],
+              ['slug'=>'dis-giyim','label'=>'Dış Giyim','img'=>$assets['h2'],'pos'=>'50% 20%'],
+              ['slug'=>'ust-giyim','label'=>'Üst Giyim','img'=>$assets['h4'],'pos'=>'50% 30%'],
+              ['slug'=>'alt-giyim','label'=>'Alt Giyim','img'=>$assets['h3'],'pos'=>'50% 75%'],
+              ['slug'=>'aksesuar','label'=>'Aksesuar','img'=>$assets['h5'],'pos'=>'50% 55%'],
             ];
             foreach ($cats as $card):
               $term = get_term_by('slug', $card['slug'], 'product_cat');
               $link = ($term && !is_wp_error($term)) ? get_term_link($term) : $shop_url;
           ?>
             <a class="parilte-home-cat" href="<?php echo esc_url($link); ?>">
-              <img class="parilte-home-img" src="<?php echo esc_url($card['img']); ?>" alt="<?php echo esc_attr($card['label']); ?>" loading="lazy" decoding="async" />
+              <img class="parilte-home-img" src="<?php echo esc_url($card['img']); ?>" alt="<?php echo esc_attr($card['label']); ?>" loading="lazy" decoding="async" style="object-position: <?php echo esc_attr($card['pos']); ?>;" />
               <span class="parilte-home-cat-label"><?php echo esc_html($card['label']); ?></span>
             </a>
           <?php endforeach; ?>
@@ -2264,7 +2264,7 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-home-hero .parilte-home-img{
       height:clamp(320px,60vw,560px);
       object-fit:cover;
-      object-position:50% 0%;
+      object-position:50% 70%;
       background:transparent;
       position:relative;
       z-index:1;
