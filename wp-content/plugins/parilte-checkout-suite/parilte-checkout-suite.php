@@ -1524,9 +1524,12 @@ function parilte_cs_front_markup(){
           'h6' => parilte_cs_asset_url('home-06.png'),
           'h7' => parilte_cs_asset_url('home-01.png'),
         ];
-        $sale_url = add_query_arg('parilte_sale', '1', $shop_url);
-        $new_url  = add_query_arg('parilte_new', '1', $shop_url);
-        $best_url = add_query_arg('parilte_best', '1', $shop_url);
+        $sale_page = get_page_by_path('indirimler');
+        $new_page  = get_page_by_path('yeni-gelenler');
+        $best_page = get_page_by_path('en-cok-satanlar');
+        $sale_url = ($sale_page && !is_wp_error($sale_page)) ? get_permalink($sale_page) : add_query_arg('parilte_sale', '1', $shop_url);
+        $new_url  = ($new_page && !is_wp_error($new_page)) ? get_permalink($new_page) : add_query_arg('parilte_new', '1', $shop_url);
+        $best_url = ($best_page && !is_wp_error($best_page)) ? get_permalink($best_page) : add_query_arg('parilte_best', '1', $shop_url);
         $account_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('myaccount') : home_url('/hesabim/');
         $contact_email = 'g-zemkoroglu-772011@hotmail.com';
       ?>
@@ -1539,10 +1542,14 @@ function parilte_cs_front_markup(){
 
       <section class="parilte-home-join parilte-bleed">
         <div class="parilte-home-join-inner">
-          <small>Üye Ol</small>
-          <h3>Yeni koleksiyonlardan ilk sen haberdar ol</h3>
-          <p>Favorilerini kaydetmek ve fırsatları kaçırmamak için hesabını oluştur.</p>
-          <a class="parilte-home-cta-btn" href="<?php echo esc_url($account_url); ?>">Oturum Aç / Hesap Oluştur</a>
+          <div class="parilte-home-join-copy">
+            <small>Üye Ol</small>
+            <h3>Yeni koleksiyonlardan ilk sen haberdar ol</h3>
+            <p>Favorilerini kaydetmek ve fırsatları kaçırmamak için hesabını oluştur.</p>
+          </div>
+          <div class="parilte-home-join-action">
+            <a class="parilte-home-cta-btn" href="<?php echo esc_url($account_url); ?>">Oturum Aç / Hesap Oluştur</a>
+          </div>
         </div>
       </section>
 
@@ -1558,9 +1565,9 @@ function parilte_cs_front_markup(){
 
       <section class="parilte-home-hot parilte-bleed">
         <div class="parilte-home-hot-inner">
-          <small>En Çok Satanlar</small>
+          <small>Keşfet</small>
           <h3>Bu hafta öne çıkan parçalar</h3>
-          <p>En yüksek satışa sahip ürünleri keşfet.</p>
+          <p>En çok beğenilen ürünlerimizi senin için derledik.</p>
           <a class="parilte-home-cta-btn parilte-home-cta-btn--hot" href="<?php echo esc_url($best_url); ?>">Hot Ones</a>
         </div>
       </section>
@@ -1569,16 +1576,16 @@ function parilte_cs_front_markup(){
         <div class="parilte-home-cats-grid">
           <?php
             $cats = [
-              ['slug'=>'dis-giyim','label'=>'Dış Giyim','img'=>$assets['h2'],'pos'=>'50% 20%'],
-              ['slug'=>'ust-giyim','label'=>'Üst Giyim','img'=>$assets['h4'],'pos'=>'50% 30%'],
-              ['slug'=>'alt-giyim','label'=>'Alt Giyim','img'=>$assets['h3'],'pos'=>'50% 75%'],
-              ['slug'=>'aksesuar','label'=>'Aksesuar','img'=>$assets['h5'],'pos'=>'50% 55%'],
+              ['slug'=>'dis-giyim','label'=>'Dış Giyim','img'=>$assets['h2'],'pos'=>'50% 20%','class'=>''],
+              ['slug'=>'ust-giyim','label'=>'Üst Giyim','img'=>$assets['h4'],'pos'=>'50% 30%','class'=>''],
+              ['slug'=>'alt-giyim','label'=>'Alt Giyim','img'=>$assets['h3'],'pos'=>'50% 75%','class'=>''],
+              ['slug'=>'aksesuar','label'=>'Aksesuar','img'=>$assets['h5'],'pos'=>'50% 55%','class'=>' is-accessory'],
             ];
             foreach ($cats as $card):
               $term = get_term_by('slug', $card['slug'], 'product_cat');
               $link = ($term && !is_wp_error($term)) ? get_term_link($term) : $shop_url;
           ?>
-            <a class="parilte-home-cat" href="<?php echo esc_url($link); ?>">
+            <a class="parilte-home-cat<?php echo esc_attr($card['class']); ?>" href="<?php echo esc_url($link); ?>">
               <img class="parilte-home-img" src="<?php echo esc_url($card['img']); ?>" alt="<?php echo esc_attr($card['label']); ?>" loading="lazy" decoding="async" style="object-position: <?php echo esc_attr($card['pos']); ?>;" />
               <span class="parilte-home-cat-label"><?php echo esc_html($card['label']); ?></span>
             </a>
@@ -2195,6 +2202,33 @@ function parilte_cs_update_legal_pages_once() {
 }
 add_action('admin_init', 'parilte_cs_update_legal_pages_once', 36);
 
+function parilte_cs_ensure_promo_pages_once() {
+    if (!current_user_can('manage_options')) return;
+    if (get_option('parilte_promo_pages_v1')) return;
+
+    $pages = [
+        'indirimler' => '[products on_sale="true" columns="4" paginate="true"]',
+        'yeni-gelenler' => '[products orderby="date" order="DESC" columns="4" paginate="true"]',
+        'en-cok-satanlar' => '[products best_selling="true" columns="4" paginate="true"]',
+    ];
+
+    foreach ($pages as $slug => $shortcode) {
+        $p = get_page_by_path($slug);
+        if (!$p || is_wp_error($p)) {
+            $title = ($slug === 'indirimler') ? 'İndirimler' : (($slug === 'yeni-gelenler') ? 'Yeni Gelenler' : 'En Çok Satanlar');
+            $pid = wp_insert_post(['post_type'=>'page','post_status'=>'publish','post_title'=>$title,'post_name'=>$slug,'post_content'=>$shortcode]);
+            if (is_wp_error($pid)) continue;
+            $p = get_post($pid);
+        }
+        if ($p && !is_wp_error($p)) {
+            wp_update_post(['ID' => $p->ID, 'post_content' => $shortcode]);
+        }
+    }
+
+    update_option('parilte_promo_pages_v1', 1);
+}
+add_action('admin_init', 'parilte_cs_ensure_promo_pages_once', 37);
+
 add_action('woocommerce_product_query', function ($q) {
     if (is_admin()) return;
     $ids = parilte_cs_get_placeholder_ids();
@@ -2436,8 +2470,10 @@ add_action('wp_enqueue_scripts', function () {
     }
     .parilte-home-hot{
       padding:clamp(18px,4vw,34px) 0;
-      background:#0f6c4a;
-      color:#fff;
+      background:#fff;
+      color:var(--parilte-ink);
+      border-top:1px solid rgba(0,0,0,.08);
+      border-bottom:1px solid rgba(0,0,0,.08);
     }
     .parilte-home-hot-inner{
       width:min(1080px,100%);
@@ -2451,7 +2487,7 @@ add_action('wp_enqueue_scripts', function () {
       font-size:.72rem;
       letter-spacing:.16em;
       text-transform:uppercase;
-      opacity:.8;
+      opacity:.6;
     }
     .parilte-home-hot-inner h3{
       margin:0;
@@ -2461,11 +2497,11 @@ add_action('wp_enqueue_scripts', function () {
     }
     .parilte-home-hot-inner p{
       margin:0;
-      opacity:.85;
+      opacity:.7;
       font-size:.95rem;
     }
     .parilte-home-cta-btn--hot{
-      background:#0b5d3e;
+      background:#0f6c4a;
     }
     .parilte-home-contact{
       padding:clamp(20px,4vw,36px) 0;
@@ -2561,10 +2597,13 @@ add_action('wp_enqueue_scripts', function () {
       width:min(1080px,100%);
       margin:0 auto;
       padding:0 clamp(16px,6vw,64px);
-      display:flex;
-      flex-direction:column;
-      gap:8px;
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:18px;
+      align-items:center;
     }
+    .parilte-home-join-copy{display:flex;flex-direction:column;gap:8px}
+    .parilte-home-join-action{display:flex;justify-content:flex-end}
     .parilte-home-join-inner small{
       font-size:.72rem;
       letter-spacing:.16em;
@@ -2729,6 +2768,10 @@ add_action('wp_enqueue_scripts', function () {
       position:relative;
       z-index:1;
     }
+    .parilte-home-cat.is-accessory img{
+      transform:scale(.94);
+      transform-origin:center;
+    }
     .parilte-home-cat::after{
       content:"";
       position:absolute;
@@ -2790,7 +2833,8 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-home-banner .parilte-home-img{height:clamp(220px,60vw,360px)}
       .parilte-home-banner-content{padding:16px 18px}
       .parilte-home-contact-inner{padding:0 18px}
-      .parilte-home-join-inner{padding:0 18px}
+      .parilte-home-join-inner{padding:0 18px;grid-template-columns:1fr}
+      .parilte-home-join-action{justify-content:flex-start}
       .parilte-home-cta-btn--sm{font-size:.58rem;padding:7px 12px}
       .parilte-home-cta-inner{grid-template-columns:1fr}
       .parilte-home-cta-card{border-right:0;border-top:1px solid rgba(0,0,0,.08)}
