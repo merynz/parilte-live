@@ -2459,6 +2459,10 @@ add_action('wp_enqueue_scripts', function () {
       gap:12px;
     }
     .parilte-contact-form.is-open{display:flex}
+    .parilte-contact-toggle{
+      display:inline-flex !important;
+      align-self:flex-start;
+    }
     .parilte-contact-form label{
       display:flex;
       flex-direction:column;
