@@ -1524,12 +1524,11 @@ function parilte_cs_front_markup(){
           'h6' => parilte_cs_asset_url('home-06.png'),
           'h7' => parilte_cs_asset_url('home-01.png'),
         ];
-        $sale_page = get_page_by_path('indirimler');
-        $new_page  = get_page_by_path('yeni-gelenler');
-        $sale_url = ($sale_page && !is_wp_error($sale_page)) ? get_permalink($sale_page) : $shop_url;
-        $new_url  = ($new_page && !is_wp_error($new_page)) ? get_permalink($new_page) : $shop_url;
+        $sale_url = add_query_arg('parilte_sale', '1', $shop_url);
+        $new_url  = add_query_arg('parilte_new', '1', $shop_url);
         $account_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('myaccount') : home_url('/hesabim/');
-        $contact_email = get_option('admin_email');
+        $about_page = get_page_by_path('hakkimizda');
+        $about_url = ($about_page && !is_wp_error($about_page)) ? get_permalink($about_page) : home_url('/hakkimizda/');
       ?>
       <section class="parilte-home-hero parilte-bleed">
         <img class="parilte-home-img" src="<?php echo esc_url($assets['h1']); ?>" alt="Parilte" loading="eager" decoding="async" />
@@ -1541,8 +1540,8 @@ function parilte_cs_front_markup(){
       <section class="parilte-home-join parilte-bleed">
         <div class="parilte-home-join-inner">
           <small>Üye Ol</small>
-          <h3>Haberdar olmak istersen bize katıl</h3>
-          <p>Yeni ürünleri ve fırsatları kaçırmamak için hesabını oluştur.</p>
+          <h3>Yeni koleksiyonlardan ilk sen haberdar ol</h3>
+          <p>Favorilerini kaydetmek ve fırsatları kaçırmamak için hesabını oluştur.</p>
           <a class="parilte-home-cta-btn" href="<?php echo esc_url($account_url); ?>">Oturum Aç / Hesap Oluştur</a>
         </div>
       </section>
@@ -1581,9 +1580,9 @@ function parilte_cs_front_markup(){
       <section class="parilte-home-contact parilte-bleed">
         <div class="parilte-home-contact-inner">
           <small>Bize Ulaşın</small>
-          <h3>Soru ve destek için yaz</h3>
-          <p><?php echo esc_html($contact_email); ?></p>
-          <a class="parilte-home-cta-btn" href="<?php echo esc_url('mailto:' . $contact_email); ?>">Bize Ulaşın</a>
+          <h3>İletişim ve marka bilgileri</h3>
+          <p>Hakkımızda sayfasında tüm iletişim kanallarını bulabilirsin.</p>
+          <a class="parilte-home-cta-btn" href="<?php echo esc_url($about_url); ?>">Hakkımızda</a>
         </div>
       </section>
 
@@ -1704,6 +1703,42 @@ add_filter('woocommerce_product_categories_widget_args', function ($args) {
 add_filter('woocommerce_product_categories_args', function ($args) {
     return parilte_cs_exclude_all_products_term($args);
 });
+
+add_filter('query_vars', function ($vars) {
+    $vars[] = 'parilte_sale';
+    $vars[] = 'parilte_new';
+    return $vars;
+});
+
+add_action('pre_get_posts', function ($query) {
+    if (is_admin() || !$query->is_main_query()) return;
+    if (!function_exists('is_shop')) return;
+
+    $is_shop_archive = is_shop() || is_product_category() || is_product_tag();
+    if (!$is_shop_archive) return;
+
+    $sale_flag = isset($_GET['parilte_sale']) && $_GET['parilte_sale'] === '1';
+    $new_flag  = isset($_GET['parilte_new']) && $_GET['parilte_new'] === '1';
+
+    if ($sale_flag && function_exists('wc_get_product_ids_on_sale')) {
+        $sale_ids = wc_get_product_ids_on_sale();
+        $sale_ids = !empty($sale_ids) ? $sale_ids : [0];
+        $query->set('post__in', $sale_ids);
+        $query->set('orderby', 'date');
+        $query->set('order', 'DESC');
+    }
+
+    if ($new_flag) {
+        $query->set('orderby', 'date');
+        $query->set('order', 'DESC');
+        $query->set('date_query', [
+            [
+                'after'     => '7 days ago',
+                'inclusive' => true,
+            ],
+        ]);
+    }
+}, 11);
 
 function parilte_cs_category_tree_markup() {
     if (!function_exists('get_terms')) return '';
@@ -2021,7 +2056,7 @@ add_action('wp_footer', 'parilte_cs_footer_links', 30);
 
 function parilte_cs_update_legal_pages_once() {
     if (!current_user_can('manage_options')) return;
-    if (get_option('parilte_legal_pages_v3')) return;
+    if (get_option('parilte_legal_pages_v4')) return;
 
     $pages = [
         'hakkimizda' => '<h2>Hakkımızda</h2>
@@ -2043,7 +2078,6 @@ function parilte_cs_update_legal_pages_once() {
 <ul>
   <li>Instagram: <a href="https://www.instagram.com/butik_parilte_/" target="_blank" rel="noopener">@butik_parilte_</a></li>
   <li>WhatsApp: <a href="https://wa.me/905394353913" target="_blank" rel="noopener">0539 435 39 13</a></li>
-  <li>Mail: <a href="mailto:g-zemkoroglu-772011@hotmail.com">g-zemkoroglu-772011@hotmail.com</a></li>
   <li>Adres: Parılte Butik, Rüstempaşa Mah. Çeşme Sk. No:17/D, Yalova/Merkez</li>
 </ul>',
         'teslimat-kargo' => '<h2>Teslimat & Kargo</h2>
@@ -2107,7 +2141,7 @@ function parilte_cs_update_legal_pages_once() {
         if (!$p) continue;
         wp_update_post(['ID' => $p->ID, 'post_content' => wp_kses_post($html)]);
     }
-    update_option('parilte_legal_pages_v3', 1);
+    update_option('parilte_legal_pages_v4', 1);
 }
 add_action('admin_init', 'parilte_cs_update_legal_pages_once', 36);
 
