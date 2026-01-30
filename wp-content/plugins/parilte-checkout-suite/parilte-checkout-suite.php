@@ -1533,8 +1533,19 @@ function parilte_cs_front_markup(){
       ?>
       <section class="parilte-home-hero parilte-bleed">
         <img class="parilte-home-img" src="<?php echo esc_url($assets['h1']); ?>" alt="Parilte" loading="eager" decoding="async" />
+        <a class="parilte-home-hero-account" href="<?php echo esc_url($account_url); ?>">Oturum Aç / Hesap Oluştur</a>
         <div class="parilte-home-hero-cta">
           <a class="parilte-home-cta-btn" href="<?php echo esc_url($shop_url); ?>">Mağaza</a>
+        </div>
+      </section>
+
+      <section class="parilte-home-banner parilte-bleed">
+        <img class="parilte-home-img" src="<?php echo esc_url($assets['h6']); ?>" alt="" loading="lazy" decoding="async" />
+        <div class="parilte-home-banner-content">
+          <small>İndirimler</small>
+          <h2>Seçili ürünlerde fırsatlar</h2>
+          <p>Sezona özel indirimleri keşfet, favorilerini kaçırma.</p>
+          <a class="parilte-home-cta-btn" href="<?php echo esc_url($sale_url); ?>">İndirimlere Git</a>
         </div>
       </section>
 
@@ -1559,34 +1570,22 @@ function parilte_cs_front_markup(){
         </div>
       </section>
 
-      <section class="parilte-home-modules parilte-bleed">
-        <div class="parilte-home-modules-grid">
-            <article class="parilte-home-module module-sale">
-              <img class="parilte-home-img" src="<?php echo esc_url($assets['h6']); ?>" alt="" loading="lazy" decoding="async" />
-              <small>İndirimler</small>
-              <h3>Seçili ürünlerde fırsatlar</h3>
-              <p>Sezona özel indirimleri keşfet, favorilerini kaçırma.</p>
-              <a class="parilte-home-cta-btn" href="<?php echo esc_url($sale_url); ?>">İndirimlere Git</a>
-            </article>
-            <article class="parilte-home-module module-new">
-              <img class="parilte-home-img" src="<?php echo esc_url($assets['h7']); ?>" alt="" loading="lazy" decoding="async" />
-              <small>Yeni Gelenler</small>
-              <h3>Son eklenen seçkiler</h3>
-              <p>Yeni sezon parçalarıyla görünümünü yenile.</p>
-              <a class="parilte-home-cta-btn" href="<?php echo esc_url($new_url); ?>">Yeni Gelenler</a>
-            </article>
-            <article class="parilte-home-module module-account">
-              <small>Hesabın var mı?</small>
-              <h3>Oturum aç veya hesap oluştur</h3>
-              <p>Favorilerini ve siparişlerini takip et.</p>
-              <a class="parilte-home-cta-btn" href="<?php echo esc_url($account_url); ?>">Oturum Aç / Hesap Oluştur</a>
-            </article>
-            <article class="parilte-home-module module-contact">
-              <small>Bize Ulaşın</small>
-              <h3>Soru ve destek için yaz</h3>
-              <p><?php echo esc_html($contact_email); ?></p>
-              <a class="parilte-home-cta-btn" href="<?php echo esc_url('mailto:' . $contact_email); ?>">Bize Ulaşın</a>
-            </article>
+      <section class="parilte-home-contact parilte-bleed">
+        <div class="parilte-home-contact-inner">
+          <small>Bize Ulaşın</small>
+          <h3>Soru ve destek için yaz</h3>
+          <p><?php echo esc_html($contact_email); ?></p>
+          <a class="parilte-home-cta-btn" href="<?php echo esc_url('mailto:' . $contact_email); ?>">Bize Ulaşın</a>
+        </div>
+      </section>
+
+      <section class="parilte-home-banner parilte-bleed">
+        <img class="parilte-home-img" src="<?php echo esc_url($assets['h7']); ?>" alt="" loading="lazy" decoding="async" />
+        <div class="parilte-home-banner-content">
+          <small>Yeni Gelenler</small>
+          <h2>Son eklenen seçkiler</h2>
+          <p>Yeni sezon parçalarıyla görünümünü yenile.</p>
+          <a class="parilte-home-cta-btn" href="<?php echo esc_url($new_url); ?>">Yeni Gelenler</a>
         </div>
       </section>
 
@@ -2279,6 +2278,91 @@ add_action('wp_enqueue_scripts', function () {
       box-shadow:0 10px 22px rgba(0,0,0,.18);
       white-space:nowrap;
     }
+    .parilte-home-hero-account{
+      position:absolute;
+      top:clamp(14px,4vw,28px);
+      left:clamp(14px,6vw,48px);
+      z-index:2;
+      background:#c51d24;
+      color:#fff;
+      padding:10px 16px;
+      border-radius:999px;
+      font-size:.7rem;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      text-decoration:none;
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+    }
+    .parilte-home-banner{
+      position:relative;
+      overflow:hidden;
+      background:#111;
+    }
+    .parilte-home-banner .parilte-home-img{
+      width:100%;
+      height:clamp(260px,34vw,380px);
+      object-fit:cover;
+      display:block;
+    }
+    .parilte-home-banner-content{
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:0;
+      padding:clamp(14px,4vw,30px) clamp(16px,6vw,64px);
+      color:#fff;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.72));
+    }
+    .parilte-home-banner-content small{
+      font-size:.7rem;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      opacity:.75;
+    }
+    .parilte-home-banner-content h2{
+      margin:0;
+      font-size:clamp(1.05rem,2.4vw,1.5rem);
+      letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+    .parilte-home-banner-content p{
+      margin:0;
+      opacity:.75;
+      font-size:.9rem;
+      max-width:560px;
+    }
+    .parilte-home-contact{
+      padding:clamp(20px,4vw,36px) 0;
+      background:#fff;
+    }
+    .parilte-home-contact-inner{
+      width:min(1080px,100%);
+      margin:0 auto;
+      padding:0 clamp(16px,6vw,64px);
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .parilte-home-contact-inner small{
+      font-size:.72rem;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      opacity:.65;
+    }
+    .parilte-home-contact-inner h3{
+      margin:0;
+      font-size:clamp(1rem,2.2vw,1.4rem);
+      letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+    .parilte-home-contact-inner p{
+      margin:0;
+      opacity:.7;
+      font-size:.95rem;
+    }
     /* Home layout overrides: full-bleed sections, smaller cards */
     .parilte-home-cats{padding:24px 0;background:#fff}
     .parilte-home-cats .parilte-home-cats-grid{
@@ -2396,39 +2480,38 @@ add_action('wp_enqueue_scripts', function () {
       gap:0;
     }
     .parilte-home-cats{padding:0;background:#fff}
-    .parilte-home-cats-grid{
+    .parilte-home-cats .parilte-home-cats-grid{
       display:grid;
       grid-template-columns:repeat(2,minmax(0,1fr));
       gap:0;
-      border-top:1px solid rgba(0,0,0,.08);
-      border-bottom:1px solid rgba(0,0,0,.08);
+      padding:0;
+      margin:0;
     }
-    .parilte-home-cats-grid.is-single{
-      grid-template-columns:1fr;
-    }
-    .parilte-home-cat{
+    .parilte-home-cats .parilte-home-cats-grid.is-single{grid-template-columns:1fr}
+    .parilte-home-cats .parilte-home-cat{
       position:relative;
       display:block;
       text-decoration:none;
       color:inherit;
-      border-right:1px solid rgba(0,0,0,.08);
-      border-bottom:1px solid rgba(0,0,0,.08);
       overflow:hidden;
-      background:#fff;
-      animation:parilte-rise .7s ease both;
+      background:#f6f1ea;
+      border:0;
+      border-radius:0;
+      animation:none;
+      transform:none;
     }
-    .parilte-home-cat:nth-child(2n){border-right:0}
-    .parilte-home-cats-grid.is-single .parilte-home-cat{border-right:0}
-    .parilte-home-cat:nth-child(2){animation-delay:.05s}
-    .parilte-home-cat:nth-child(3){animation-delay:.1s}
-    .parilte-home-cat:nth-child(4){animation-delay:.15s}
-    .parilte-home-cat img{width:100%;height:auto;display:block}
+    .parilte-home-cats .parilte-home-cat img{
+      width:100%;
+      height:clamp(220px,30vw,340px);
+      object-fit:cover;
+      display:block;
+    }
     .parilte-home-cat::after{
       content:"";
       position:absolute;
       inset:auto 0 0 0;
-      height:30%;
-      background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.22));
+      height:32%;
+      background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.28));
       pointer-events:none;
     }
     .parilte-home-cat-label{
@@ -2441,9 +2524,6 @@ add_action('wp_enqueue_scripts', function () {
       color:#fff;
       z-index:1;
     }
-    .parilte-home-cat.is-tall{transform:translateY(-10px)}
-    .parilte-home-cat.is-shift{transform:translateY(12px)}
-    .parilte-home-cat.is-wide{transform:translateY(-6px)}
     .parilte-home-cta{padding:0;background:#fff}
     .parilte-home-cta-inner{
       display:grid;
@@ -2479,16 +2559,24 @@ add_action('wp_enqueue_scripts', function () {
       white-space:nowrap;
     }
     @media (max-width: 900px){
-      .parilte-home-cats-grid{grid-template-columns:1fr}
-      .parilte-home-cat{border-right:0}
-      .parilte-home-cat.is-tall,
-      .parilte-home-cat.is-shift,
-      .parilte-home-cat.is-wide{transform:none}
+      .parilte-home-cats .parilte-home-cats-grid{grid-template-columns:1fr}
+      .parilte-home-cats .parilte-home-cat{border-right:0}
       .parilte-home-cat-label{font-size:.8rem}
+      .parilte-home-cats .parilte-home-cat img{height:clamp(220px,60vw,360px)}
+      .parilte-home-banner .parilte-home-img{height:clamp(220px,60vw,320px)}
+      .parilte-home-banner-content{padding:16px 18px}
+      .parilte-home-hero-account{
+        top:12px;
+        left:12px;
+        font-size:.65rem;
+        padding:8px 12px;
+        letter-spacing:.12em;
+      }
+      .parilte-home-contact-inner{padding:0 18px}
       .parilte-home-cta-inner{grid-template-columns:1fr}
       .parilte-home-cta-card{border-right:0;border-top:1px solid rgba(0,0,0,.08)}
       .parilte-home-cta-btn{font-size:.68rem;padding:9px 14px}
-      .parilte-home-cats-grid{grid-template-columns:1fr}
+      .parilte-home-cats .parilte-home-cats-grid{grid-template-columns:1fr}
       .parilte-home-promo-row,
       .parilte-home-promo-row.reverse{grid-template-columns:1fr}
       .parilte-home-actions{grid-template-columns:1fr}
