@@ -824,7 +824,7 @@ function parilte_cs_bootstrap(){
     $p['new']      = $get_or_create_page('Yeni Gelenler','yeni-gelenler');
 
     $site_name = get_bloginfo('name');
-    $contact_email = 'g-zemkoroglu-772011@hotmail.com';
+    $contact_email = 'destek@parilte.com';
     $contact_email_display = 'destek@parilte.com';
     parilte_cs_set_page_content_if_empty($p['about'], '<h2>Hakkımızda</h2><p>'.$site_name.' olarak zamansız, rahat ve günlük kombinlenebilir parçalarla güçlü bir stil sunuyoruz. Sezon seçkilerimizi özenle hazırlıyor, müşteri deneyimini her adımda sade ve güvenilir kılmayı amaçlıyoruz.</p><p>Koleksiyonlarımız; kalite, konfor ve şıklık dengesini koruyacak şekilde planlanır.</p>');
     parilte_cs_set_page_content_if_empty($p['returns'], '<h2>İade & Değişim</h2><ul><li>Ürün tesliminden itibaren 14 gün içinde iade/değişim talebi oluşturabilirsiniz.</li><li>Ürünler; kullanılmamış, etiketleri üzerinde ve orijinal ambalajında olmalıdır.</li><li>Hijyenik ürünlerde iade koşulları değişkenlik gösterebilir.</li><li>İade onayı sonrasında ücret iadesi, ödeme yöntemine göre 3-10 iş günü içinde tamamlanır.</li></ul><p>Detaylı bilgi için bizimle iletişime geçebilirsiniz: <a href="mailto:'.$contact_email.'">'.$contact_email_display.'</a></p>');
@@ -1532,8 +1532,6 @@ function parilte_cs_front_markup(){
         $new_url  = ($new_page && !is_wp_error($new_page)) ? get_permalink($new_page) : add_query_arg('parilte_new', '1', $shop_url);
         $best_url = ($best_page && !is_wp_error($best_page)) ? get_permalink($best_page) : add_query_arg('parilte_best', '1', $shop_url);
         $account_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('myaccount') : home_url('/hesabim/');
-        $contact_email = 'g-zemkoroglu-772011@hotmail.com';
-        $contact_email_display = 'destek@parilte.com';
       ?>
       <section class="parilte-home-hero parilte-bleed">
         <img class="parilte-home-img" src="<?php echo esc_url($assets['h1']); ?>" alt="Parilte" loading="eager" decoding="async" />
@@ -1611,7 +1609,6 @@ function parilte_cs_front_markup(){
           ?>
           <div class="parilte-contact-actions">
             <button class="parilte-home-cta-btn parilte-contact-toggle" type="button" data-target="parilte-contact-form">Bize Ulaşın</button>
-            <a class="parilte-home-cta-btn parilte-home-cta-btn--mail" href="mailto:<?php echo esc_attr($contact_email); ?>"><?php echo esc_html($contact_email_display); ?></a>
           </div>
           <form id="parilte-contact-form" class="parilte-contact-form<?php echo $contact_open ? ' is-open' : ''; ?>" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
             <input type="hidden" name="action" value="parilte_contact" />
@@ -2303,7 +2300,7 @@ function parilte_cs_update_legal_pages_once() {
     if (!current_user_can('manage_options')) return;
     if (get_option('parilte_legal_pages_v8')) return;
 
-    $mail_href = 'mailto:g-zemkoroglu-772011@hotmail.com';
+    $mail_href = 'mailto:destek@parilte.com';
     $mail_label = 'destek@parilte.com';
     $whatsapp_url = 'https://wa.me/905394353913';
 
@@ -2643,14 +2640,14 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-front h1,
     .parilte-front h2,
     .parilte-front h3{font-family:"Bodoni MT","Didot","Playfair Display","Times New Roman",serif;letter-spacing:.04em}
-    body.home{--content-vertical-spacing:0px}
-    body.home .ct-header{margin-bottom:0 !important}
-    body.home .ct-header .ct-container{padding-bottom:0 !important}
-    body.home .ct-content{padding-top:0 !important;margin-top:0 !important}
-    body.home .ct-content .ct-container,
-    body.home .ct-content .ct-container-fluid{padding-top:0 !important;margin-top:0 !important}
-    body.home .site-main.parilte-front{margin-top:0 !important;padding-top:0 !important}
-    body.home .ct-header + .ct-content{margin-top:-1px !important}
+    body{--content-vertical-spacing:0px}
+    body .ct-header{margin-bottom:0 !important}
+    body .ct-header .ct-container{padding-bottom:0 !important}
+    body .ct-content{padding-top:0 !important;margin-top:0 !important}
+    body .ct-content .ct-container,
+    body .ct-content .ct-container-fluid{padding-top:0 !important;margin-top:0 !important}
+    body .site-main{margin-top:0 !important;padding-top:0 !important}
+    body .ct-header + .ct-content{margin-top:-1px !important}
     body.home .parilte-home-hero{margin-top:0 !important}
     .parilte-bleed{width:100vw;max-width:100vw;margin-left:calc(50% - 50vw)}
     .parilte-container{max-width:1140px;margin:0 auto;padding:0 16px}
@@ -2688,9 +2685,9 @@ add_action('wp_enqueue_scripts', function () {
       background:#c51d24;
       color:#fff;
       border-radius:999px;
-      padding:10px 16px;
-      font-size:.72rem;
-      letter-spacing:.16em;
+      padding:8px 14px;
+      font-size:.66rem;
+      letter-spacing:.14em;
       text-transform:uppercase;
       text-decoration:none;
       box-shadow:0 10px 22px rgba(0,0,0,.18);
@@ -2709,14 +2706,14 @@ add_action('wp_enqueue_scripts', function () {
       display:inline-flex !important;
     }
     .parilte-home-hero-cta .parilte-home-cta-btn{
-      padding:12px 22px;
-      font-size:.78rem;
-      letter-spacing:.18em;
+      padding:14px 28px;
+      font-size:.86rem;
+      letter-spacing:.2em;
     }
     .parilte-home-cta-btn--sm{
-      padding:8px 14px;
-      font-size:.62rem;
-      letter-spacing:.14em;
+      padding:7px 12px;
+      font-size:.58rem;
+      letter-spacing:.12em;
     }
     .parilte-home-banner{
       position:relative;
@@ -3137,10 +3134,11 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-home-contact-inner{padding:0 18px}
       .parilte-home-join-inner{padding:0 18px;grid-template-columns:1fr}
       .parilte-home-join-action{justify-content:flex-start}
-      .parilte-home-cta-btn--sm{font-size:.58rem;padding:7px 12px}
+      .parilte-home-cta-btn--sm{font-size:.54rem;padding:6px 10px}
       .parilte-home-cta-inner{grid-template-columns:1fr}
       .parilte-home-cta-card{border-right:0;border-top:1px solid rgba(0,0,0,.08)}
-      .parilte-home-cta-btn{font-size:.68rem;padding:9px 14px}
+      .parilte-home-hero-cta .parilte-home-cta-btn{padding:12px 22px;font-size:.78rem;letter-spacing:.18em}
+      .parilte-home-cta-btn{font-size:.62rem;padding:8px 12px}
       .parilte-contact-row{grid-template-columns:1fr}
       .parilte-home-hot-inner{padding:0 18px}
       .parilte-home-cats .parilte-home-cats-grid{grid-template-columns:1fr}
@@ -4311,7 +4309,7 @@ function parilte_cs_handle_contact_form() {
         wp_safe_redirect(parilte_cs_contact_form_redirect('error'));
         exit;
     }
-    $to = 'g-zemkoroglu-772011@hotmail.com';
+    $to = 'destek@parilte.com';
     $body = "Ad Soyad: {$name}\nE-posta: {$email}\n\n{$message}";
     $headers = ['Reply-To: '.$email];
     $sent = wp_mail($to, $subject, $body, $headers);
