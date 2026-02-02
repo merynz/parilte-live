@@ -4033,7 +4033,7 @@ add_action('wp_enqueue_scripts', function () {
       font-size:.72rem;
       letter-spacing:.08em;
       box-shadow:0 8px 16px rgba(0,0,0,.18);
-      z-index:3;
+      z-index:6;
     }
     .woocommerce ul.products li.product .woocommerce-LoopProduct-link{position:relative;display:block}
     .parilte-loop-media{position:relative;overflow:hidden;display:block}
@@ -4346,7 +4346,11 @@ function parilte_cs_loop_discount_percent($product){
 }
 
 add_action('woocommerce_after_shop_loop_item_title', function () {
-    // Discount badge moved into product thumbnail overlay.
+    global $product;
+    if (!$product instanceof WC_Product) return;
+    $pct = parilte_cs_loop_discount_percent($product);
+    if ($pct <= 0) return;
+    echo '<span class="parilte-discount">-%'.(int)$pct.'</span>';
 }, 12);
 
 function parilte_cs_collect_loop_attrs($product){
@@ -4415,11 +4419,6 @@ add_filter('woocommerce_get_product_thumbnail', function ($html, $size = 'woocom
     if (!($product instanceof WC_Product)) return $html;
     if (!is_shop() && !is_product_taxonomy() && !is_product_category() && !is_product_tag()) return $html;
     $data = parilte_cs_collect_loop_attrs($product);
-    $badge = '';
-    $pct = parilte_cs_loop_discount_percent($product);
-    if ($pct > 0) {
-        $badge = '<span class="parilte-discount">-%'.(int)$pct.'</span>';
-    }
     $panel = '';
     if (!empty($data['sizes']) || !empty($data['colors']) || !empty($data['lengths'])) {
         $panel .= '<div class="parilte-loop-attrs">';
@@ -4434,7 +4433,7 @@ add_filter('woocommerce_get_product_thumbnail', function ($html, $size = 'woocom
         }
         $panel .= '</div>';
     }
-    return '<div class="parilte-loop-media">'.$badge.$html.$panel.'</div>';
+    return '<div class="parilte-loop-media">'.$html.$panel.'</div>';
 }, 20, 5);
 
 function parilte_cs_get_favorites($user_id = 0) {
