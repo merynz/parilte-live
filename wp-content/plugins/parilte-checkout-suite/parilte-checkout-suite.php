@@ -3148,11 +3148,11 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-home-contact-inner{padding:0 18px}
       .parilte-home-join-inner{padding:0 18px;grid-template-columns:1fr}
       .parilte-home-join-action{justify-content:flex-start}
-      .parilte-home-cta-btn--sm{font-size:.56rem;padding:6px 10px}
+      .parilte-home-cta-btn--sm{font-size:.6rem;padding:7px 12px}
       .parilte-home-cta-inner{grid-template-columns:1fr}
       .parilte-home-cta-card{border-right:0;border-top:1px solid rgba(0,0,0,.08)}
-      .parilte-home-hero-cta .parilte-home-cta-btn{padding:13px 24px;font-size:.82rem;letter-spacing:.18em}
-      .parilte-home-cta-btn{font-size:.6rem;padding:7px 12px}
+      .parilte-home-hero-cta .parilte-home-cta-btn{padding:14px 26px;font-size:.88rem;letter-spacing:.18em}
+      .parilte-home-cta-btn{font-size:.66rem;padding:8px 14px}
       .parilte-contact-row{grid-template-columns:1fr}
       .parilte-home-hot-inner{padding:0 18px}
       .parilte-home-cats .parilte-home-cats-grid{grid-template-columns:1fr}
@@ -3220,13 +3220,21 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-legal-footer{margin-top:28px;padding:18px 0;border-top:1px solid rgba(0,0,0,.08);background:var(--parilte-cream)}
     .parilte-legal-footer .parilte-container{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
     .parilte-legal-left{display:flex;flex-direction:column;gap:8px;min-width:0}
-    .parilte-legal-right{display:flex;align-items:center;justify-content:flex-end;gap:12px;min-width:0}
+    .parilte-legal-right{display:flex;align-items:center;justify-content:flex-end;gap:12px;min-width:0;margin-left:auto}
     .parilte-legal-links{display:flex;flex-wrap:wrap;gap:14px;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase}
     .parilte-legal-links a{text-decoration:none;color:var(--parilte-ink);opacity:.8}
     .parilte-legal-links a:hover{opacity:1}
     .parilte-legal-whatsapp{display:flex;align-items:center;gap:10px;font-size:.76rem;letter-spacing:.12em;text-transform:uppercase}
-    .parilte-legal-instagram{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:999px;border:1px solid rgba(0,0,0,.12);background:#fff;color:#e1306c;text-decoration:none;box-shadow:0 8px 18px rgba(0,0,0,.08)}
-    .parilte-legal-instagram svg{width:22px;height:22px;fill:currentColor}
+    .parilte-legal-instagram{display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:999px;border:1px solid rgba(0,0,0,.12);background:#fff;color:#e1306c;text-decoration:none;box-shadow:0 8px 18px rgba(0,0,0,.08)}
+    .parilte-legal-instagram svg{width:26px;height:26px;fill:currentColor}
+    @media (min-width: 901px){
+      .parilte-legal-footer .parilte-container{flex-wrap:nowrap}
+      .parilte-legal-left{flex:1 1 auto}
+    }
+    @media (max-width: 900px){
+      .parilte-legal-footer .parilte-container{flex-direction:column;align-items:flex-start}
+      .parilte-legal-right{width:100%;justify-content:flex-start;margin-left:0}
+    }
     .ct-footer-socials{display:none !important}
     .parilte-home-cta-btn--wa{background:#1fa855 !important;box-shadow:0 10px 22px rgba(31,168,85,.22) !important}
     .parilte-legal-contact{display:flex;flex-direction:column;gap:6px;font-size:.78rem;opacity:.85;max-width:420px}
