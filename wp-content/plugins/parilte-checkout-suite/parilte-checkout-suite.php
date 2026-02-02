@@ -3114,9 +3114,9 @@ add_action('wp_enqueue_scripts', function () {
       background:#c51d24;
       color:#fff;
       border-radius:999px;
-      padding:10px 16px;
-      font-size:.72rem;
-      letter-spacing:.16em;
+      padding:6px 12px;
+      font-size:.58rem;
+      letter-spacing:.12em;
       text-transform:uppercase;
       text-decoration:none;
       box-shadow:0 10px 22px rgba(0,0,0,.18);
