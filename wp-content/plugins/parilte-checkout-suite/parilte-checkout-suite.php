@@ -2852,13 +2852,23 @@ add_action('wp_enqueue_scripts', function () {
       width:min(1080px,100%);
       margin:0 auto;
       padding:0 clamp(16px,6vw,64px);
-      display:flex;
-      flex-direction:column;
-      align-items:flex-start;
-      gap:8px;
+      display:grid;
+      grid-template-columns:1fr auto;
+      align-items:center;
+      column-gap:24px;
+      row-gap:8px;
     }
+    .parilte-home-contact-inner > *{grid-column:1}
     .parilte-home-contact-inner .parilte-home-cta-btn{display:inline-flex !important}
-    .parilte-contact-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    .parilte-contact-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-self:end;
+      grid-column:2;
+      grid-row:1 / -1;
+    }
     .parilte-home-cta-btn--mail{background:#1c1c1c !important;color:#fff !important;box-shadow:0 10px 22px rgba(0,0,0,.18) !important}
     .parilte-home-contact-inner small{
       font-size:.72rem;
@@ -2903,11 +2913,19 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-contact-form.is-open{display:flex}
     .parilte-contact-toggle{
       display:inline-flex !important;
-      align-self:flex-start;
       visibility:visible !important;
       opacity:1 !important;
     }
     .parilte-home-contact-inner .parilte-contact-toggle{margin-top:6px}
+    .parilte-home-contact-inner button.parilte-home-cta-btn{
+      padding:6px 12px !important;
+      border-radius:999px !important;
+      box-shadow:0 10px 22px rgba(0,0,0,.18) !important;
+      letter-spacing:.12em !important;
+      text-transform:uppercase !important;
+      font-family:"Bodoni MT","Didot","Playfair Display","Times New Roman",serif !important;
+      font-weight:500 !important;
+    }
     .parilte-contact-form label{
       display:flex;
       flex-direction:column;
@@ -3179,7 +3197,8 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-home-cats .parilte-home-cat img{height:clamp(220px,60vw,360px)}
       .parilte-home-banner .parilte-home-img{height:clamp(220px,60vw,360px)}
       .parilte-home-banner-content{padding:16px 18px}
-      .parilte-home-contact-inner{padding:0 18px}
+      .parilte-home-contact-inner{padding:0 18px;grid-template-columns:1fr}
+      .parilte-contact-actions{grid-column:1;grid-row:auto;justify-self:flex-start}
       .parilte-home-join-inner{padding:0 18px;grid-template-columns:1fr}
       .parilte-home-join-action{justify-content:flex-start}
       .parilte-home-cta-btn--sm{font-size:.6rem;padding:7px 12px}
