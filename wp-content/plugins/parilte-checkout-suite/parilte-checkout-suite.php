@@ -2256,6 +2256,7 @@ function parilte_cs_footer_links() {
     }
     if (!$links) return;
     $whatsapp_url = 'https://wa.me/905394353913';
+    $instagram_url = 'https://www.instagram.com/butik_parilte_/';
     ?>
     <div class="parilte-legal-footer">
       <div class="parilte-container">
@@ -2265,8 +2266,11 @@ function parilte_cs_footer_links() {
           <?php } ?>
         </nav>
         <div class="parilte-legal-whatsapp">
-          <span>Whatsapp Danışma Hattı</span>
-          <a class="parilte-home-cta-btn parilte-home-cta-btn--wa" href="<?php echo esc_url($whatsapp_url); ?>" target="_blank" rel="noopener">Ulaş</a>
+          <span>WhatsApp Danışma Hattı</span>
+          <a class="parilte-home-cta-btn parilte-home-cta-btn--wa" href="<?php echo esc_url($whatsapp_url); ?>" target="_blank" rel="noopener">WhatsApp</a>
+          <a class="parilte-legal-instagram" href="<?php echo esc_url($instagram_url); ?>" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7zm5 3.2a3.8 3.8 0 1 1 0 7.6 3.8 3.8 0 0 1 0-7.6zm0 2a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 0 0 0-3.6zm5.25-.95a1.05 1.05 0 1 1 0 2.1 1.05 1.05 0 0 1 0-2.1z"/></svg>
+          </a>
         </div>
         <span class="parilte-legal-copy">© <?php echo date('Y'); ?> Parilté</span>
       </div>
@@ -2700,6 +2704,8 @@ add_action('wp_enqueue_scripts', function () {
       cursor:pointer;
       appearance:none;
       font:inherit;
+      font-family:"Bodoni MT","Didot","Playfair Display","Times New Roman",serif;
+      font-weight:500;
     }
     button.parilte-home-cta-btn{
       background:#c51d24 !important;
@@ -3027,7 +3033,7 @@ add_action('wp_enqueue_scripts', function () {
       position:absolute;
       left:16px;
       bottom:14px;
-      font-size:.85rem;
+      font-size:1rem;
       letter-spacing:.14em;
       text-transform:uppercase;
       color:#fff;
@@ -3082,7 +3088,7 @@ add_action('wp_enqueue_scripts', function () {
       position:absolute;
       left:16px;
       bottom:14px;
-      font-size:.85rem;
+      font-size:1rem;
       letter-spacing:.14em;
       text-transform:uppercase;
       color:#fff;
@@ -3125,11 +3131,13 @@ add_action('wp_enqueue_scripts', function () {
       cursor:pointer;
       appearance:none;
       font:inherit;
+      font-family:"Bodoni MT","Didot","Playfair Display","Times New Roman",serif;
+      font-weight:500;
     }
     @media (max-width: 900px){
       .parilte-home-cats .parilte-home-cats-grid{grid-template-columns:1fr}
       .parilte-home-cats .parilte-home-cat{border-right:0}
-      .parilte-home-cat-label{font-size:.8rem}
+      .parilte-home-cat-label{font-size:.9rem}
       .parilte-home-cats .parilte-home-cat img{height:clamp(220px,60vw,360px)}
       .parilte-home-banner .parilte-home-img{height:clamp(220px,60vw,360px)}
       .parilte-home-banner-content{padding:16px 18px}
@@ -3211,6 +3219,9 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-legal-links a{text-decoration:none;color:var(--parilte-ink);opacity:.8}
     .parilte-legal-links a:hover{opacity:1}
     .parilte-legal-whatsapp{display:flex;align-items:center;gap:10px;font-size:.76rem;letter-spacing:.12em;text-transform:uppercase}
+    .parilte-legal-instagram{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;border:1px solid rgba(0,0,0,.12);background:#fff;color:#e1306c;text-decoration:none;box-shadow:0 8px 18px rgba(0,0,0,.08)}
+    .parilte-legal-instagram svg{width:18px;height:18px;fill:currentColor}
+    .ct-footer-socials{display:none !important}
     .parilte-home-cta-btn--wa{background:#1fa855 !important;box-shadow:0 10px 22px rgba(31,168,85,.22) !important}
     .parilte-legal-contact{display:flex;flex-direction:column;gap:6px;font-size:.78rem;opacity:.85;max-width:420px}
     .parilte-legal-contact a{text-decoration:none;color:var(--parilte-ink)}
