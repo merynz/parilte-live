@@ -1876,6 +1876,39 @@ function parilte_cs_fix_category_hierarchy_once() {
 }
 add_action('admin_init', 'parilte_cs_fix_category_hierarchy_once', 30);
 
+function parilte_cs_ensure_season_terms_once() {
+    if (!current_user_can('manage_options')) return;
+    if (get_option('parilte_season_terms_v1')) return;
+    $parent = get_term_by('slug', 'genel', 'product_cat');
+    if (!$parent || is_wp_error($parent)) {
+        update_option('parilte_season_terms_v1', 1);
+        return;
+    }
+    $seasons = [
+        'ilkbahar-yaz' => 'İlkbahar Yaz',
+        'sonbahar-kis' => 'Sonbahar Kış',
+    ];
+    foreach ($seasons as $slug => $name) {
+        $term = get_term_by('slug', $slug, 'product_cat');
+        if (!$term || is_wp_error($term)) {
+            $term = wp_insert_term($name, 'product_cat', [
+                'slug' => $slug,
+                'parent' => (int) $parent->term_id,
+            ]);
+            if (is_wp_error($term)) continue;
+            $term_id = is_array($term) ? (int) $term['term_id'] : 0;
+        } else {
+            $term_id = (int) $term->term_id;
+            if ((int) $term->parent !== (int) $parent->term_id) {
+                wp_update_term($term_id, 'product_cat', ['parent' => (int) $parent->term_id]);
+            }
+        }
+    }
+    update_option('parilte_season_terms_v1', 1);
+}
+add_action('admin_init', 'parilte_cs_ensure_season_terms_once', 32);
+add_action('init', 'parilte_cs_ensure_season_terms_once', 32);
+
 function parilte_cs_guess_primary_category_id($product) {
     if (!$product instanceof WC_Product) return 0;
     $name = $product->get_name();
@@ -1923,6 +1956,7 @@ function parilte_cs_cleanup_categories_once() {
         $name = function_exists('mb_strtolower') ? mb_strtolower($term->name, 'UTF-8') : strtolower($term->name);
         $is_season = (strpos($slug, 'ilkbahar') !== false) || (strpos($slug, 'sonbahar') !== false)
             || (strpos($name, 'ilkbahar') !== false) || (strpos($name, 'sonbahar') !== false);
+        if (in_array($slug, ['ilkbahar-yaz','sonbahar-kis'], true)) continue;
         if (!$is_season) continue;
         if ($fallback_parent && !is_wp_error($fallback_parent)) {
             if ((int) $term->parent !== (int) $fallback_parent->term_id && strpos($name, 'sezon') === false) {
@@ -3966,7 +4000,22 @@ add_action('wp_enqueue_scripts', function () {
     .woocommerce ul.products li.product .price{margin-top:6px}
     .woocommerce ul.products li.product .price ins{color:#c51d24}
     .woocommerce ul.products li.product .price del{color:#6b7280}
-    .parilte-discount{display:inline-flex;align-items:center;justify-content:center;margin-left:8px;font-size:.72rem;color:#c51d24;letter-spacing:.08em}
+    .parilte-discount{
+      position:absolute;
+      top:10px;
+      right:10px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:4px 8px;
+      border-radius:999px;
+      background:#c51d24;
+      color:#fff;
+      font-size:.72rem;
+      letter-spacing:.08em;
+      box-shadow:0 8px 16px rgba(0,0,0,.18);
+      z-index:3;
+    }
     .woocommerce ul.products li.product .woocommerce-LoopProduct-link{position:relative;display:block}
     .parilte-loop-media{position:relative;overflow:hidden;display:block}
     .parilte-loop-attrs{position:absolute;left:0;right:0;bottom:0;background:#fff;
@@ -4278,11 +4327,7 @@ function parilte_cs_loop_discount_percent($product){
 }
 
 add_action('woocommerce_after_shop_loop_item_title', function () {
-    global $product;
-    if (!$product instanceof WC_Product) return;
-    $pct = parilte_cs_loop_discount_percent($product);
-    if ($pct <= 0) return;
-    echo '<span class="parilte-discount">-%'.(int)$pct.'</span>';
+    // Discount badge moved into product thumbnail overlay.
 }, 12);
 
 function parilte_cs_collect_loop_attrs($product){
@@ -4351,6 +4396,11 @@ add_filter('woocommerce_get_product_thumbnail', function ($html, $size = 'woocom
     if (!($product instanceof WC_Product)) return $html;
     if (!is_shop() && !is_product_taxonomy() && !is_product_category() && !is_product_tag()) return $html;
     $data = parilte_cs_collect_loop_attrs($product);
+    $badge = '';
+    $pct = parilte_cs_loop_discount_percent($product);
+    if ($pct > 0) {
+        $badge = '<span class="parilte-discount">-%'.(int)$pct.'</span>';
+    }
     $panel = '';
     if (!empty($data['sizes']) || !empty($data['colors']) || !empty($data['lengths'])) {
         $panel .= '<div class="parilte-loop-attrs">';
@@ -4365,7 +4415,7 @@ add_filter('woocommerce_get_product_thumbnail', function ($html, $size = 'woocom
         }
         $panel .= '</div>';
     }
-    return '<div class="parilte-loop-media">'.$html.$panel.'</div>';
+    return '<div class="parilte-loop-media">'.$badge.$html.$panel.'</div>';
 }, 20, 5);
 
 function parilte_cs_get_favorites($user_id = 0) {
@@ -4565,6 +4615,7 @@ if (PARILTE_CS_ON && PARILTE_CS_PAYBADGES) {
           'amex' => '<svg viewBox="0 0 48 16" width="48" height="16"><rect width="48" height="16" rx="3" fill="#2e77bc"/><text x="8" y="11" fill="#fff" font-size="7" font-family="Arial,Helvetica,sans-serif" font-weight="700">AMEX</text></svg>',
           'troy' => '<svg viewBox="0 0 48 16" width="48" height="16"><rect width="48" height="16" rx="3" fill="#0ea5b7"/><text x="9" y="11" fill="#fff" font-size="8" font-family="Arial,Helvetica,sans-serif" font-weight="700">TROY</text></svg>',
           'iyzico'=>'<svg viewBox="0 0 48 16" width="48" height="16"><rect width="48" height="16" rx="3" fill="#27a7df"/><text x="8" y="11" fill="#fff" font-size="8" font-family="Arial" font-weight="700">iyzico</text></svg>',
+          'iyzico_pay'=>'<svg class="parilte-paybadge-iyzico" viewBox="0 0 96 16" width="96" height="16" aria-hidden="true"><rect width="96" height="16" rx="3" fill="#27a7df"/><text x="6" y="11" fill="#fff" font-size="8" font-family="Arial" font-weight="700">iyzico ile Öde</text></svg>',
           'paytr'=>'<svg viewBox="0 0 48 16" width="48" height="16"><rect width="48" height="16" rx="3" fill="#1e7dd3"/><text x="10" y="11" fill="#fff" font-size="8" font-family="Arial" font-weight="700">PayTR</text></svg>',
           'stripe'=>'<svg viewBox="0 0 48 16" width="48" height="16"><rect width="48" height="16" rx="3" fill="#635bff"/><text x="8" y="11" fill="#fff" font-size="8" font-family="Arial" font-weight="700">Stripe</text></svg>',
         ];
@@ -4580,7 +4631,7 @@ if (PARILTE_CS_ON && PARILTE_CS_PAYBADGES) {
         $prov   = [];
         foreach ($gws as $id=>$gw) {
             $sid = strtolower($id);
-            if (strpos($sid,'iyz')!==false)   $prov['iyzico']=true;
+            if (strpos($sid,'iyz')!==false)   $prov['iyzico_pay']=true;
             if (strpos($sid,'paytr')!==false) $prov['paytr']=true;
             if (strpos($sid,'stripe')!==false)$prov['stripe']=true;
         }
@@ -4595,6 +4646,7 @@ if (PARILTE_CS_ON && PARILTE_CS_PAYBADGES) {
         $css = '
         .parilte-paybadges{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px}
         .parilte-paybadges svg{filter:drop-shadow(0 1px 0 rgba(0,0,0,.04))}
+        .parilte-paybadges .parilte-paybadge-iyzico{width:96px;height:16px}
         ';
         wp_add_inline_style('parilte-checkout-suite', $css);
     }, 25);
