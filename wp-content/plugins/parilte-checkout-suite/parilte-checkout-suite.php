@@ -2649,6 +2649,8 @@ add_action('wp_enqueue_scripts', function () {
     body .site-main{margin-top:0 !important;padding-top:0 !important}
     body .ct-header + .ct-content{margin-top:-1px !important}
     body.home .parilte-home-hero{margin-top:0 !important}
+    body.home .ct-hero-section,
+    body.home .ct-hero{display:none !important}
     .parilte-bleed{width:100vw;max-width:100vw;margin-left:calc(50% - 50vw)}
     .parilte-container{max-width:1140px;margin:0 auto;padding:0 16px}
     @keyframes parilte-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
@@ -2685,9 +2687,9 @@ add_action('wp_enqueue_scripts', function () {
       background:#c51d24;
       color:#fff;
       border-radius:999px;
-      padding:8px 14px;
-      font-size:.66rem;
-      letter-spacing:.14em;
+      padding:6px 12px;
+      font-size:.58rem;
+      letter-spacing:.12em;
       text-transform:uppercase;
       text-decoration:none;
       box-shadow:0 10px 22px rgba(0,0,0,.18);
@@ -2706,13 +2708,13 @@ add_action('wp_enqueue_scripts', function () {
       display:inline-flex !important;
     }
     .parilte-home-hero-cta .parilte-home-cta-btn{
-      padding:14px 28px;
-      font-size:.86rem;
+      padding:14px 30px;
+      font-size:.9rem;
       letter-spacing:.2em;
     }
     .parilte-home-cta-btn--sm{
-      padding:7px 12px;
-      font-size:.58rem;
+      padding:6px 10px;
+      font-size:.54rem;
       letter-spacing:.12em;
     }
     .parilte-home-banner{
@@ -3134,11 +3136,11 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-home-contact-inner{padding:0 18px}
       .parilte-home-join-inner{padding:0 18px;grid-template-columns:1fr}
       .parilte-home-join-action{justify-content:flex-start}
-      .parilte-home-cta-btn--sm{font-size:.54rem;padding:6px 10px}
+      .parilte-home-cta-btn--sm{font-size:.5rem;padding:5px 9px}
       .parilte-home-cta-inner{grid-template-columns:1fr}
       .parilte-home-cta-card{border-right:0;border-top:1px solid rgba(0,0,0,.08)}
-      .parilte-home-hero-cta .parilte-home-cta-btn{padding:12px 22px;font-size:.78rem;letter-spacing:.18em}
-      .parilte-home-cta-btn{font-size:.62rem;padding:8px 12px}
+      .parilte-home-hero-cta .parilte-home-cta-btn{padding:12px 20px;font-size:.78rem;letter-spacing:.18em}
+      .parilte-home-cta-btn{font-size:.54rem;padding:6px 10px}
       .parilte-contact-row{grid-template-columns:1fr}
       .parilte-home-hot-inner{padding:0 18px}
       .parilte-home-cats .parilte-home-cats-grid{grid-template-columns:1fr}
