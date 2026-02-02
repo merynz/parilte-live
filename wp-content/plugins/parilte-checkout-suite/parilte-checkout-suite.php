@@ -824,11 +824,12 @@ function parilte_cs_bootstrap(){
     $p['new']      = $get_or_create_page('Yeni Gelenler','yeni-gelenler');
 
     $site_name = get_bloginfo('name');
-    $contact_email = get_option('admin_email');
+    $contact_email = 'g-zemkoroglu-772011@hotmail.com';
+    $contact_email_display = 'destek@parilte.com';
     parilte_cs_set_page_content_if_empty($p['about'], '<h2>Hakkımızda</h2><p>'.$site_name.' olarak zamansız, rahat ve günlük kombinlenebilir parçalarla güçlü bir stil sunuyoruz. Sezon seçkilerimizi özenle hazırlıyor, müşteri deneyimini her adımda sade ve güvenilir kılmayı amaçlıyoruz.</p><p>Koleksiyonlarımız; kalite, konfor ve şıklık dengesini koruyacak şekilde planlanır.</p>');
-    parilte_cs_set_page_content_if_empty($p['returns'], '<h2>İade & Değişim</h2><ul><li>Ürün tesliminden itibaren 14 gün içinde iade/değişim talebi oluşturabilirsiniz.</li><li>Ürünler; kullanılmamış, etiketleri üzerinde ve orijinal ambalajında olmalıdır.</li><li>Hijyenik ürünlerde iade koşulları değişkenlik gösterebilir.</li><li>İade onayı sonrasında ücret iadesi, ödeme yöntemine göre 3-10 iş günü içinde tamamlanır.</li></ul><p>Detaylı bilgi için bizimle iletişime geçebilirsiniz: <a href="mailto:'.$contact_email.'">'.$contact_email.'</a></p>');
+    parilte_cs_set_page_content_if_empty($p['returns'], '<h2>İade & Değişim</h2><ul><li>Ürün tesliminden itibaren 14 gün içinde iade/değişim talebi oluşturabilirsiniz.</li><li>Ürünler; kullanılmamış, etiketleri üzerinde ve orijinal ambalajında olmalıdır.</li><li>Hijyenik ürünlerde iade koşulları değişkenlik gösterebilir.</li><li>İade onayı sonrasında ücret iadesi, ödeme yöntemine göre 3-10 iş günü içinde tamamlanır.</li></ul><p>Detaylı bilgi için bizimle iletişime geçebilirsiniz: <a href="mailto:'.$contact_email.'">'.$contact_email_display.'</a></p>');
     parilte_cs_set_page_content_if_empty($p['shipping'], '<h2>Teslimat & Kargo</h2><ul><li>Siparişler 1-3 iş günü içinde kargoya teslim edilir.</li><li>Türkiye içi sabit kargo ücreti 100 TL’dir.</li><li>1500 TL ve üzeri siparişlerde kargo ücretsizdir.</li><li>Kampanya dönemlerinde teslimat süreleri değişiklik gösterebilir.</li></ul>');
-    parilte_cs_set_page_content_if_empty($p['privacy'], '<h2>KVKK & Gizlilik</h2><p>Kişisel verileriniz, 6698 sayılı KVKK kapsamında işlenir ve korunur. Sitemiz üzerinden paylaştığınız bilgiler; siparişlerinizi tamamlamak, hizmet kalitesini artırmak ve yasal yükümlülüklerimizi yerine getirmek amacıyla kullanılabilir.</p><h3>Toplanan Veriler</h3><ul><li>Ad, soyad, iletişim bilgileri</li><li>Teslimat ve fatura adresleri</li><li>Sipariş ve ödeme bilgileri (kart bilgileri saklanmaz)</li></ul><h3>Çerezler</h3><p>Sitemizde deneyimi iyileştirmek için çerezler kullanılabilir. Tarayıcı ayarlarınızdan çerez tercihlerinizi yönetebilirsiniz.</p><p>KVKK başvuruları için: <a href="mailto:'.$contact_email.'">'.$contact_email.'</a></p>');
+    parilte_cs_set_page_content_if_empty($p['privacy'], '<h2>KVKK & Gizlilik</h2><p>Kişisel verileriniz, 6698 sayılı KVKK kapsamında işlenir ve korunur. Sitemiz üzerinden paylaştığınız bilgiler; siparişlerinizi tamamlamak, hizmet kalitesini artırmak ve yasal yükümlülüklerimizi yerine getirmek amacıyla kullanılabilir.</p><h3>Toplanan Veriler</h3><ul><li>Ad, soyad, iletişim bilgileri</li><li>Teslimat ve fatura adresleri</li><li>Sipariş ve ödeme bilgileri (kart bilgileri saklanmaz)</li></ul><h3>Çerezler</h3><p>Sitemizde deneyimi iyileştirmek için çerezler kullanılabilir. Tarayıcı ayarlarınızdan çerez tercihlerinizi yönetebilirsiniz.</p><p>KVKK başvuruları için: <a href="mailto:'.$contact_email.'">'.$contact_email_display.'</a></p>');
 
     // 2) Reading
     update_option('show_on_front','page');
@@ -1532,6 +1533,7 @@ function parilte_cs_front_markup(){
         $best_url = ($best_page && !is_wp_error($best_page)) ? get_permalink($best_page) : add_query_arg('parilte_best', '1', $shop_url);
         $account_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('myaccount') : home_url('/hesabim/');
         $contact_email = 'g-zemkoroglu-772011@hotmail.com';
+        $contact_email_display = 'destek@parilte.com';
       ?>
       <section class="parilte-home-hero parilte-bleed">
         <img class="parilte-home-img" src="<?php echo esc_url($assets['h1']); ?>" alt="Parilte" loading="eager" decoding="async" />
@@ -1565,7 +1567,7 @@ function parilte_cs_front_markup(){
 
       <section class="parilte-home-hot parilte-bleed">
         <div class="parilte-home-hot-inner">
-          <small>Keşfet</small>
+          <small>En Çok Satanlar</small>
           <h3>Bu hafta öne çıkan parçalar</h3>
           <p>En çok beğenilen ürünlerimizi senin için derledik.</p>
           <a class="parilte-home-cta-btn parilte-home-cta-btn--hot" href="<?php echo esc_url($best_url); ?>">Keşfet</a>
@@ -1579,7 +1581,7 @@ function parilte_cs_front_markup(){
               ['slug'=>'dis-giyim','label'=>'Dış Giyim','img'=>$assets['h2'],'pos'=>'50% 20%','class'=>''],
               ['slug'=>'ust-giyim','label'=>'Üst Giyim','img'=>$assets['h4'],'pos'=>'50% 30%','class'=>''],
               ['slug'=>'alt-giyim','label'=>'Alt Giyim','img'=>$assets['h3'],'pos'=>'50% 75%','class'=>''],
-              ['slug'=>'aksesuar','label'=>'Aksesuar','img'=>$assets['h5'],'pos'=>'50% 45%','class'=>' is-accessory'],
+              ['slug'=>'aksesuar','label'=>'Aksesuar','img'=>$assets['h5'],'pos'=>'50% 65%','class'=>' is-accessory'],
             ];
             foreach ($cats as $card):
               $term = get_term_by('slug', $card['slug'], 'product_cat');
@@ -1598,6 +1600,7 @@ function parilte_cs_front_markup(){
           <small>Bize Ulaşın</small>
           <h3>Soru ve destek için yaz</h3>
           <p>İade, değişim ve genel sorular için bize yazabilirsin.</p>
+          <p class="parilte-contact-mail"><?php echo esc_html($contact_email_display); ?></p>
           <?php
             $contact_status = isset($_GET['parilte_contact']) ? sanitize_text_field(wp_unslash($_GET['parilte_contact'])) : '';
             $contact_open = in_array($contact_status, ['success','error'], true);
@@ -1852,7 +1855,7 @@ function parilte_cs_fix_category_hierarchy_once() {
         'Alt Giyim' => ['Eşofman','Etek','Jean','Pantolon','Şort','Tayt','Tulum'],
         'Ayakkabı' => ['Babet','Bot','Çizme','Sandalet','Terlik','Topuklu Ayakkabı'],
         'Çanta' => ['Günlük','Şık','Spor'],
-        'Dış Giyim' => ['Ceket&Yelek','Kaban','Mont','Trençkot'],
+        'Dış Giyim' => ['Kaban','Mont','Trençkot'],
         'Elbise' => ['Düğün','Günlük Elbise','Mezuniyet','Şık Elbise'],
         'Takı' => ['Bel Zinciri','Bileklik','Bilezik','Kolye','Küpe'],
         'Üst Giyim' => ['Atlet','Badi','Bluz','Bodysuit','Crop','Gömlek','Kazak','Sweatshirt','Tişört','Triko','Tshirt'],
@@ -1882,10 +1885,10 @@ function parilte_cs_guess_primary_category_id($product) {
         'taki' => ['takı','taki','kolye','küpe','kupe','bileklik','bilezik','bel zinciri'],
         'canta' => ['çanta','canta','bag'],
         'ayakkabi' => ['ayakkabı','ayakkabi','bot','çizme','cizme','sandalet','terlik','topuklu'],
-        'dis-giyim' => ['kaban','mont','trenç','trench','ceket','yelek','palt','parka','kürk','kurk'],
+        'dis-giyim' => ['kaban','mont','trenç','trench','ceket','palt','parka','kürk','kurk'],
         'elbise' => ['elbise','abiye','dress'],
         'alt-giyim' => ['pantolon','jean','etek','şort','sort','tayt','eşofman','esofman','tulum'],
-        'ust-giyim' => ['bluz','gömlek','gomlek','tişört','tisort','t-shirt','tshirt','sweatshirt','kazak','triko','bodysuit','crop','atlet','badi'],
+        'ust-giyim' => ['bluz','gömlek','gomlek','tişört','tisort','t-shirt','tshirt','sweatshirt','kazak','triko','bodysuit','crop','atlet','badi','yelek'],
         'aksesuar' => ['aksesuar','kemer','şal','sal','atkı','atki','bere','eldiven','fular','şapka','sapka','şemsiye','semsiye','anahtarlik','anahtarlık'],
     ];
     foreach ($map as $slug => $keywords) {
@@ -1902,7 +1905,7 @@ function parilte_cs_guess_primary_category_id($product) {
 
 function parilte_cs_cleanup_categories_once() {
     if (!current_user_can('manage_options')) return;
-    if (get_option('parilte_cat_cleanup_done_v2')) return;
+    if (get_option('parilte_cat_cleanup_done_v3')) return;
 
     $fallback_parent = get_term_by('slug', 'genel', 'product_cat');
     $fallback_alt = get_term_by('slug', 'yeni-sezon', 'product_cat');
@@ -1953,21 +1956,93 @@ function parilte_cs_cleanup_categories_once() {
         wp_delete_term($term->term_id, 'product_cat');
     }
 
-    // Ensure Ceket&Yelek under Dış Giyim
-    $child = get_term_by('slug', 'ceket-yelek', 'product_cat');
-    if (!$child || is_wp_error($child)) {
-        $child = get_term_by('slug', 'ceketyelek', 'product_cat');
-    }
-    $parent = get_term_by('slug', 'dis-giyim', 'product_cat');
-    if ($child && $parent && !is_wp_error($child) && !is_wp_error($parent)) {
-        if ((int)$child->parent !== (int)$parent->term_id) {
-            wp_update_term($child->term_id, 'product_cat', ['parent' => (int)$parent->term_id]);
+    // Split Ceket & Yelek -> Ceket (Dış Giyim) + Yelek (Üst Giyim)
+    $parent_dis = get_term_by('slug', 'dis-giyim', 'product_cat');
+    $parent_ust = get_term_by('slug', 'ust-giyim', 'product_cat');
+    if ($parent_dis && $parent_ust && !is_wp_error($parent_dis) && !is_wp_error($parent_ust)) {
+        $ceket_dis = get_term_by('slug', 'ceket', 'product_cat');
+        if (!$ceket_dis || is_wp_error($ceket_dis)) {
+            $ceket_dis = wp_insert_term('Ceket', 'product_cat', ['slug' => 'ceket', 'parent' => (int) $parent_dis->term_id]);
+        } else {
+            wp_update_term($ceket_dis->term_id, 'product_cat', ['parent' => (int) $parent_dis->term_id]);
+        }
+        $ceket_dis_id = is_array($ceket_dis) ? (int) $ceket_dis['term_id'] : (is_object($ceket_dis) ? (int) $ceket_dis->term_id : 0);
+
+        $ceket_ust = get_term_by('slug', 'ceket-ust', 'product_cat');
+        if (!$ceket_ust || is_wp_error($ceket_ust)) {
+            $ceket_ust = wp_insert_term('Ceket', 'product_cat', ['slug' => 'ceket-ust', 'parent' => (int) $parent_ust->term_id]);
+        } else {
+            wp_update_term($ceket_ust->term_id, 'product_cat', ['parent' => (int) $parent_ust->term_id]);
+        }
+        $ceket_ust_id = is_array($ceket_ust) ? (int) $ceket_ust['term_id'] : (is_object($ceket_ust) ? (int) $ceket_ust->term_id : 0);
+
+        $yelek = get_term_by('slug', 'yelek', 'product_cat');
+        if (!$yelek || is_wp_error($yelek)) {
+            $yelek = wp_insert_term('Yelek', 'product_cat', ['slug' => 'yelek', 'parent' => (int) $parent_ust->term_id]);
+        } else {
+            wp_update_term($yelek->term_id, 'product_cat', ['parent' => (int) $parent_ust->term_id]);
+        }
+        $yelek_id = is_array($yelek) ? (int) $yelek['term_id'] : (is_object($yelek) ? (int) $yelek->term_id : 0);
+
+        $old = get_term_by('slug', 'ceket-yelek', 'product_cat');
+        if (!$old || is_wp_error($old)) {
+            $old = get_term_by('slug', 'ceketyelek', 'product_cat');
+        }
+        if ($old && !is_wp_error($old)) {
+            $posts = get_posts([
+                'post_type' => 'product',
+                'posts_per_page' => -1,
+                'fields' => 'ids',
+                'tax_query' => [[ 'taxonomy'=>'product_cat', 'field'=>'term_id', 'terms'=>$old->term_id ]]
+            ]);
+            foreach ((array) $posts as $pid) {
+                $product = function_exists('wc_get_product') ? wc_get_product($pid) : null;
+                $title = $product ? $product->get_name() : '';
+                $hay = function_exists('mb_strtolower') ? mb_strtolower($title, 'UTF-8') : strtolower($title);
+                $terms = wp_get_object_terms($pid, 'product_cat', ['fields' => 'ids']);
+                $terms = array_values(array_diff((array) $terms, [(int) $old->term_id]));
+                if (strpos($hay, 'yelek') !== false && $yelek_id) {
+                    $terms[] = $yelek_id;
+                } else {
+                    if ($ceket_dis_id) $terms[] = $ceket_dis_id;
+                    if ($ceket_ust_id) $terms[] = $ceket_ust_id;
+                }
+                $terms = array_values(array_unique(array_filter($terms)));
+                if ($terms) wp_set_object_terms($pid, $terms, 'product_cat', false);
+            }
+            wp_delete_term($old->term_id, 'product_cat');
         }
     }
 
-    update_option('parilte_cat_cleanup_done_v2', 1);
+    update_option('parilte_cat_cleanup_done_v3', 1);
 }
 add_action('admin_init', 'parilte_cs_cleanup_categories_once', 31);
+
+function parilte_cs_assign_ceket_dual_once() {
+    if (!current_user_can('manage_options')) return;
+    if (get_option('parilte_ceket_dual_done_v1')) return;
+
+    $ceket_dis = get_term_by('slug', 'ceket', 'product_cat');
+    $ceket_ust = get_term_by('slug', 'ceket-ust', 'product_cat');
+    if (!$ceket_dis || !$ceket_ust || is_wp_error($ceket_dis) || is_wp_error($ceket_ust)) return;
+
+    $posts = get_posts([
+        'post_type' => 'product',
+        'posts_per_page' => -1,
+        'fields' => 'ids',
+        'tax_query' => [[ 'taxonomy'=>'product_cat', 'field'=>'term_id', 'terms'=>$ceket_dis->term_id ]]
+    ]);
+    foreach ((array) $posts as $pid) {
+        $terms = wp_get_object_terms($pid, 'product_cat', ['fields' => 'ids']);
+        if (!in_array((int) $ceket_ust->term_id, $terms, true)) {
+            $terms[] = (int) $ceket_ust->term_id;
+            wp_set_object_terms($pid, array_values(array_unique($terms)), 'product_cat', false);
+        }
+    }
+
+    update_option('parilte_ceket_dual_done_v1', 1);
+}
+add_action('admin_init', 'parilte_cs_assign_ceket_dual_once', 32);
 
 add_action('template_redirect', function () {
     if (!is_tax('product_cat')) return;
@@ -2112,7 +2187,7 @@ add_action('wp_footer', 'parilte_cs_footer_links', 30);
 
 function parilte_cs_update_legal_pages_once() {
     if (!current_user_can('manage_options')) return;
-    if (get_option('parilte_legal_pages_v5')) return;
+    if (get_option('parilte_legal_pages_v6')) return;
 
     $pages = [
         'hakkimizda' => '<h2>Hakkımızda</h2>
@@ -2133,8 +2208,8 @@ function parilte_cs_update_legal_pages_once() {
 <h3>İletişim</h3>
 <ul>
   <li>Instagram: <a href="https://www.instagram.com/butik_parilte_/" target="_blank" rel="noopener">@butik_parilte_</a></li>
-  <li>WhatsApp: <a href="https://wa.me/905394353913" target="_blank" rel="noopener">0539 435 39 13</a></li>
-  <li>Mail: <a href="mailto:g-zemkoroglu-772011@hotmail.com">g-zemkoroglu-772011@hotmail.com</a></li>
+  <li>Whatsapp Danışma Hattı: <a href="https://wa.me/905394353913" target="_blank" rel="noopener">0539 435 39 13</a> <a href="https://wa.me/905394353913" target="_blank" rel="noopener" class="parilte-text-link">Ulaş</a></li>
+  <li>Mail: <a href="mailto:g-zemkoroglu-772011@hotmail.com">destek@parilte.com</a></li>
   <li>Adres: Parılte Butik, Rüstempaşa Mah. Çeşme Sk. No:17/D, Yalova/Merkez</li>
 </ul>',
         'teslimat-kargo' => '<h2>Teslimat & Kargo</h2>
@@ -2198,7 +2273,7 @@ function parilte_cs_update_legal_pages_once() {
         if (!$p) continue;
         wp_update_post(['ID' => $p->ID, 'post_content' => wp_kses_post($html)]);
     }
-    update_option('parilte_legal_pages_v5', 1);
+    update_option('parilte_legal_pages_v6', 1);
 }
 add_action('admin_init', 'parilte_cs_update_legal_pages_once', 36);
 
@@ -2503,6 +2578,7 @@ add_action('wp_enqueue_scripts', function () {
     }
     .parilte-home-cta-btn--hot{
       background:#0f6c4a !important;
+      color:#fff !important;
     }
     .parilte-home-contact{
       padding:clamp(20px,4vw,36px) 0;
@@ -2540,6 +2616,12 @@ add_action('wp_enqueue_scripts', function () {
       background:#f4f4f5;
       color:#111;
     }
+    .parilte-contact-mail{
+      font-size:.85rem;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--parilte-muted);
+    }
     .parilte-contact-note.success{background:#ecfdf3;color:#0f5132}
     .parilte-contact-note.error{background:#fef2f2;color:#7f1d1d}
     .parilte-contact-form{
@@ -2554,14 +2636,6 @@ add_action('wp_enqueue_scripts', function () {
       align-self:flex-start;
       visibility:visible !important;
       opacity:1 !important;
-      background:#c51d24 !important;
-      color:#fff !important;
-      border-radius:999px !important;
-      padding:10px 16px;
-      font-size:.72rem;
-      letter-spacing:.16em;
-      text-transform:uppercase;
-      box-shadow:0 10px 22px rgba(0,0,0,.18);
     }
     .parilte-home-contact-inner .parilte-contact-toggle{margin-top:6px}
     .parilte-contact-form label{
