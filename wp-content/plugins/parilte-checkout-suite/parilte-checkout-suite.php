@@ -2260,19 +2260,23 @@ function parilte_cs_footer_links() {
     ?>
     <div class="parilte-legal-footer">
       <div class="parilte-container">
-        <nav class="parilte-legal-links" aria-label="Yasal">
-          <?php foreach ($links as $l) { ?>
-            <a href="<?php echo esc_url($l['url']); ?>"><?php echo esc_html($l['label']); ?></a>
-          <?php } ?>
-        </nav>
-        <div class="parilte-legal-whatsapp">
-          <span>WhatsApp Danışma Hattı</span>
-          <a class="parilte-home-cta-btn parilte-home-cta-btn--wa" href="<?php echo esc_url($whatsapp_url); ?>" target="_blank" rel="noopener">WhatsApp</a>
-          <a class="parilte-legal-instagram" href="<?php echo esc_url($instagram_url); ?>" target="_blank" rel="noopener" aria-label="Instagram">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7zm5 3.2a3.8 3.8 0 1 1 0 7.6 3.8 3.8 0 0 1 0-7.6zm0 2a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 0 0 0-3.6zm5.25-.95a1.05 1.05 0 1 1 0 2.1 1.05 1.05 0 0 1 0-2.1z"/></svg>
-          </a>
+        <div class="parilte-legal-left">
+          <nav class="parilte-legal-links" aria-label="Yasal">
+            <?php foreach ($links as $l) { ?>
+              <a href="<?php echo esc_url($l['url']); ?>"><?php echo esc_html($l['label']); ?></a>
+            <?php } ?>
+          </nav>
+          <span class="parilte-legal-copy">© <?php echo date('Y'); ?> Parilté</span>
         </div>
-        <span class="parilte-legal-copy">© <?php echo date('Y'); ?> Parilté</span>
+        <div class="parilte-legal-right">
+          <div class="parilte-legal-whatsapp">
+            <span>WhatsApp Danışma Hattı</span>
+            <a class="parilte-home-cta-btn parilte-home-cta-btn--wa" href="<?php echo esc_url($whatsapp_url); ?>" target="_blank" rel="noopener">WhatsApp</a>
+            <a class="parilte-legal-instagram" href="<?php echo esc_url($instagram_url); ?>" target="_blank" rel="noopener" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H7zm5 3.2a3.8 3.8 0 1 1 0 7.6 3.8 3.8 0 0 1 0-7.6zm0 2a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 0 0 0-3.6zm5.25-.95a1.05 1.05 0 1 1 0 2.1 1.05 1.05 0 0 1 0-2.1z"/></svg>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
     <?php
@@ -3215,12 +3219,14 @@ add_action('wp_enqueue_scripts', function () {
     .woocommerce span.onsale{display:none !important}
     .parilte-legal-footer{margin-top:28px;padding:18px 0;border-top:1px solid rgba(0,0,0,.08);background:var(--parilte-cream)}
     .parilte-legal-footer .parilte-container{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .parilte-legal-left{display:flex;flex-direction:column;gap:8px;min-width:0}
+    .parilte-legal-right{display:flex;align-items:center;justify-content:flex-end;gap:12px;min-width:0}
     .parilte-legal-links{display:flex;flex-wrap:wrap;gap:14px;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase}
     .parilte-legal-links a{text-decoration:none;color:var(--parilte-ink);opacity:.8}
     .parilte-legal-links a:hover{opacity:1}
     .parilte-legal-whatsapp{display:flex;align-items:center;gap:10px;font-size:.76rem;letter-spacing:.12em;text-transform:uppercase}
-    .parilte-legal-instagram{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;border:1px solid rgba(0,0,0,.12);background:#fff;color:#e1306c;text-decoration:none;box-shadow:0 8px 18px rgba(0,0,0,.08)}
-    .parilte-legal-instagram svg{width:18px;height:18px;fill:currentColor}
+    .parilte-legal-instagram{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:999px;border:1px solid rgba(0,0,0,.12);background:#fff;color:#e1306c;text-decoration:none;box-shadow:0 8px 18px rgba(0,0,0,.08)}
+    .parilte-legal-instagram svg{width:22px;height:22px;fill:currentColor}
     .ct-footer-socials{display:none !important}
     .parilte-home-cta-btn--wa{background:#1fa855 !important;box-shadow:0 10px 22px rgba(31,168,85,.22) !important}
     .parilte-legal-contact{display:flex;flex-direction:column;gap:6px;font-size:.78rem;opacity:.85;max-width:420px}
