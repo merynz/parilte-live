@@ -1581,7 +1581,7 @@ function parilte_cs_front_markup(){
               ['slug'=>'dis-giyim','label'=>'Dış Giyim','img'=>$assets['h2'],'pos'=>'50% 20%','class'=>''],
               ['slug'=>'ust-giyim','label'=>'Üst Giyim','img'=>$assets['h4'],'pos'=>'50% 30%','class'=>''],
               ['slug'=>'alt-giyim','label'=>'Alt Giyim','img'=>$assets['h3'],'pos'=>'50% 75%','class'=>''],
-              ['slug'=>'aksesuar','label'=>'Aksesuar','img'=>$assets['h5'],'pos'=>'50% 65%','class'=>' is-accessory'],
+              ['slug'=>'aksesuar','label'=>'Aksesuar','img'=>$assets['h5'],'pos'=>'50% 45%','class'=>' is-accessory'],
             ];
             foreach ($cats as $card):
               $term = get_term_by('slug', $card['slug'], 'product_cat');
@@ -1600,7 +1600,6 @@ function parilte_cs_front_markup(){
           <small>Bize Ulaşın</small>
           <h3>Soru ve destek için yaz</h3>
           <p>İade, değişim ve genel sorular için bize yazabilirsin.</p>
-          <p class="parilte-contact-mail"><?php echo esc_html($contact_email_display); ?></p>
           <?php
             $contact_status = isset($_GET['parilte_contact']) ? sanitize_text_field(wp_unslash($_GET['parilte_contact'])) : '';
             $contact_open = in_array($contact_status, ['success','error'], true);
@@ -1610,7 +1609,10 @@ function parilte_cs_front_markup(){
               echo '<div class="parilte-contact-note error">Mesaj gönderilemedi. Lütfen tekrar dene.</div>';
             }
           ?>
-          <button class="parilte-home-cta-btn parilte-contact-toggle" type="button" data-target="parilte-contact-form">Bize Ulaşın</button>
+          <div class="parilte-contact-actions">
+            <button class="parilte-home-cta-btn parilte-contact-toggle" type="button" data-target="parilte-contact-form">Bize Ulaşın</button>
+            <a class="parilte-home-cta-btn parilte-home-cta-btn--mail" href="mailto:<?php echo esc_attr($contact_email); ?>"><?php echo esc_html($contact_email_display); ?></a>
+          </div>
           <form id="parilte-contact-form" class="parilte-contact-form<?php echo $contact_open ? ' is-open' : ''; ?>" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
             <input type="hidden" name="action" value="parilte_contact" />
             <?php wp_nonce_field('parilte_contact', 'parilte_contact_nonce'); ?>
@@ -1858,7 +1860,7 @@ function parilte_cs_fix_category_hierarchy_once() {
         'Dış Giyim' => ['Kaban','Mont','Trençkot'],
         'Elbise' => ['Düğün','Günlük Elbise','Mezuniyet','Şık Elbise'],
         'Takı' => ['Bel Zinciri','Bileklik','Bilezik','Kolye','Küpe'],
-        'Üst Giyim' => ['Atlet','Badi','Bluz','Bodysuit','Crop','Gömlek','Kazak','Sweatshirt','Tişört','Triko','Tshirt'],
+        'Üst Giyim' => ['Atlet','Badi','Bluz','Bodysuit','Crop','Gömlek','Kazak','Sweatshirt','Tişört','Triko'],
         'Yeni Sezon' => ['Yeni Ürünler'],
     ];
 
@@ -2018,6 +2020,91 @@ function parilte_cs_cleanup_categories_once() {
 }
 add_action('admin_init', 'parilte_cs_cleanup_categories_once', 31);
 
+function parilte_cs_merge_tisort_terms_once() {
+    if (!current_user_can('manage_options')) return;
+    if (get_option('parilte_tisort_merge_v1')) return;
+
+    $parent = get_term_by('slug', 'ust-giyim', 'product_cat');
+    $parent_id = ($parent && !is_wp_error($parent)) ? (int) $parent->term_id : 0;
+
+    $terms = get_terms([
+        'taxonomy' => 'product_cat',
+        'hide_empty' => false,
+    ]);
+
+    $normalize = function ($text) {
+        $text = function_exists('mb_strtolower') ? mb_strtolower($text, 'UTF-8') : strtolower($text);
+        $map = ['ş'=>'s','ı'=>'i','ö'=>'o','ü'=>'u','ç'=>'c','ğ'=>'g'];
+        return strtr($text, $map);
+    };
+
+    $keep_term = null;
+    $candidates = [];
+    foreach ((array) $terms as $term) {
+        if (!$term || is_wp_error($term)) continue;
+        $name_norm = $normalize($term->name);
+        $slug_norm = $normalize($term->slug);
+        $match = (strpos($name_norm, 'tisort') !== false)
+            || (strpos($slug_norm, 'tisort') !== false)
+            || (strpos($slug_norm, 'tshirt') !== false)
+            || (strpos($name_norm, 'tshirt') !== false)
+            || (strpos($slug_norm, 't-shirt') !== false)
+            || (strpos($name_norm, 't-shirt') !== false);
+        if (!$match) continue;
+        $candidates[] = $term;
+        if (strpos($name_norm, 'tisort') !== false || strpos($slug_norm, 'tisort') !== false) {
+            $keep_term = $term;
+        }
+    }
+
+    if (!$keep_term && !empty($candidates)) {
+        $keep_term = $candidates[0];
+    }
+
+    if (!$keep_term) {
+        $inserted = wp_insert_term('Tişört', 'product_cat', array_filter([
+            'slug' => 'tisort',
+            'parent' => $parent_id ?: null,
+        ]));
+        if (is_array($inserted)) {
+            $keep_term = get_term($inserted['term_id'], 'product_cat');
+        }
+    } else {
+        $keep_term = get_term($keep_term->term_id, 'product_cat');
+    }
+
+    if ($keep_term && !is_wp_error($keep_term)) {
+        wp_update_term($keep_term->term_id, 'product_cat', array_filter([
+            'name' => 'Tişört',
+            'slug' => 'tisort',
+            'parent' => $parent_id ?: null,
+        ]));
+    }
+
+    $keep_id = ($keep_term && !is_wp_error($keep_term)) ? (int) $keep_term->term_id : 0;
+    if ($keep_id) {
+        foreach ($candidates as $term) {
+            if ((int) $term->term_id === $keep_id) continue;
+            $posts = get_posts([
+                'post_type' => 'product',
+                'posts_per_page' => -1,
+                'fields' => 'ids',
+                'tax_query' => [[ 'taxonomy'=>'product_cat', 'field'=>'term_id', 'terms'=>$term->term_id ]]
+            ]);
+            foreach ((array) $posts as $pid) {
+                $current = wp_get_object_terms($pid, 'product_cat', ['fields' => 'ids']);
+                $current = array_values(array_diff((array) $current, [(int) $term->term_id]));
+                $current[] = $keep_id;
+                wp_set_object_terms($pid, array_values(array_unique($current)), 'product_cat', false);
+            }
+            wp_delete_term($term->term_id, 'product_cat');
+        }
+    }
+
+    update_option('parilte_tisort_merge_v1', 1);
+}
+add_action('admin_init', 'parilte_cs_merge_tisort_terms_once', 33);
+
 function parilte_cs_assign_ceket_dual_once() {
     if (!current_user_can('manage_options')) return;
     if (get_option('parilte_ceket_dual_done_v1')) return;
@@ -2164,12 +2251,14 @@ function parilte_cs_footer_links() {
         'KVKK & Gizlilik' => 'kvkk-gizlilik',
         'İade & Değişim' => 'iade-degisim',
         'Teslimat & Kargo' => 'teslimat-kargo',
+        'Mesafeli Satış Sözleşmesi' => 'mesafeli-satis-sozlesmesi',
     ];
     foreach ($pages as $label => $slug) {
         $p = get_page_by_path($slug);
         if ($p) $links[] = ['label' => $label, 'url' => get_permalink($p)];
     }
     if (!$links) return;
+    $whatsapp_url = 'https://wa.me/905394353913';
     ?>
     <div class="parilte-legal-footer">
       <div class="parilte-container">
@@ -2178,6 +2267,10 @@ function parilte_cs_footer_links() {
             <a href="<?php echo esc_url($l['url']); ?>"><?php echo esc_html($l['label']); ?></a>
           <?php } ?>
         </nav>
+        <div class="parilte-legal-whatsapp">
+          <span>Whatsapp Danışma Hattı</span>
+          <a class="parilte-home-cta-btn parilte-home-cta-btn--wa" href="<?php echo esc_url($whatsapp_url); ?>" target="_blank" rel="noopener">Ulaş</a>
+        </div>
         <span class="parilte-legal-copy">© <?php echo date('Y'); ?> Parilté</span>
       </div>
     </div>
@@ -2185,97 +2278,203 @@ function parilte_cs_footer_links() {
 }
 add_action('wp_footer', 'parilte_cs_footer_links', 30);
 
+function parilte_cs_upsert_page_content($slug, $title, $content) {
+    $page = get_page_by_path($slug);
+    if ($page && !is_wp_error($page)) {
+        wp_update_post([
+            'ID' => (int) $page->ID,
+            'post_title' => $title,
+            'post_content' => wp_kses_post($content),
+            'post_status' => 'publish',
+        ]);
+        return (int) $page->ID;
+    }
+    $new_id = wp_insert_post([
+        'post_type' => 'page',
+        'post_status' => 'publish',
+        'post_title' => $title,
+        'post_name' => $slug,
+        'post_content' => wp_kses_post($content),
+    ]);
+    return is_wp_error($new_id) ? 0 : (int) $new_id;
+}
+
 function parilte_cs_update_legal_pages_once() {
     if (!current_user_can('manage_options')) return;
-    if (get_option('parilte_legal_pages_v6')) return;
+    if (get_option('parilte_legal_pages_v8')) return;
 
-    $pages = [
-        'hakkimizda' => '<h2>Hakkımızda</h2>
+    $mail_href = 'mailto:g-zemkoroglu-772011@hotmail.com';
+    $mail_label = 'destek@parilte.com';
+    $whatsapp_url = 'https://wa.me/905394353913';
+
+    $about = '<h2>Hakkımızda</h2>
 <p>Parılté Butik, yalnızca bir moda markası değil; kendini değerli, güçlü ve özel hissetmek isteyen kadınların hikâyesidir.</p>
 <p>Parılté, ışığını kaybetmeyen, her ortamda zarafetiyle fark yaratan kadınlardan ilham alır.</p>
-<p>Her koleksiyonumuz; şıklığı, konforu ve zamansız stili bir araya getirmek için özenle seçilir.</p>
-<p>Biz modayı bir yarış değil, bir ifade biçimi olarak görüyoruz.</p>
+<p>Her koleksiyonumuz; şıklığı, konforu ve zamansız stili bir araya getirmek için özenle seçilir. Biz modayı bir yarış değil, bir ifade biçimi olarak görüyoruz.</p>
 <p>Bir elbise yalnızca bir elbise değildir; bir duruş, bir özgüven ve bir hatıradır.</p>
-<p>Parılté Butik’te bulacağınız her parça:</p>
+<p>Parılté Butik’te bulacağınız her parça;</p>
 <ul>
-  <li>Kendinizi iyi hissetmeniz için</li>
-  <li>Günün her anında şık olmanız için</li>
+  <li>Kendinizi iyi hissetmeniz için,</li>
+  <li>Günün her anında şık olmanız için,</li>
   <li>Yıllar sonra bile severek giymeniz için</li>
 </ul>
-<p>seçilmiştir.</p>
+<p>özenle seçilmiştir.</p>
 <p>Bizim için her kadın kendi ışığını taşır. Biz sadece onu ortaya çıkarırız.</p>
 <p><strong>Parılté – Çünkü her kadın parıldamayı hak eder.</strong></p>
 <h3>İletişim</h3>
 <ul>
+  <li>E-posta: <a href="'.$mail_href.'">'.$mail_label.'</a></li>
+  <li>WhatsApp: <a href="'.$whatsapp_url.'" target="_blank" rel="noopener">0539 435 39 13</a></li>
+  <li>Adres: Rüstempaşa Mah. Çeşme Sk. No: 17/D, Yalova / Merkez</li>
   <li>Instagram: <a href="https://www.instagram.com/butik_parilte_/" target="_blank" rel="noopener">@butik_parilte_</a></li>
-  <li>Whatsapp Danışma Hattı: <a href="https://wa.me/905394353913" target="_blank" rel="noopener">0539 435 39 13</a> <a href="https://wa.me/905394353913" target="_blank" rel="noopener" class="parilte-text-link">Ulaş</a></li>
-  <li>Mail: <a href="mailto:g-zemkoroglu-772011@hotmail.com">destek@parilte.com</a></li>
-  <li>Adres: Parılte Butik, Rüstempaşa Mah. Çeşme Sk. No:17/D, Yalova/Merkez</li>
-</ul>',
-        'teslimat-kargo' => '<h2>Teslimat & Kargo</h2>
-<p>Parılté Butik’ten verdiğiniz tüm siparişler özenle hazırlanır ve güvenle kargoya teslim edilir.</p>
-<h3>Kargo süreci</h3>
-<ul>
-  <li>Siparişleriniz 1–3 iş günü içerisinde hazırlanarak kargoya verilir.</li>
-  <li>Türkiye’nin her yerine gönderim yapılır.</li>
-  <li>Gönderiler anlaşmalı kargo firmamız aracılığıyla ulaştırılır.</li>
-  <li>Siparişiniz kargoya verildiğinde tarafınıza kargo takip numarası gönderilir.</li>
-</ul>
-<h3>Kargo teslimatı</h3>
-<ul>
-  <li>Kargonuz bulunduğunuz şehre göre genellikle 1–3 iş günü içinde adresinize ulaşır.</li>
-  <li>Teslimat sırasında paketinizi kontrol etmenizi öneririz. Hasarlı paketleri teslim almadan kargo görevlisine tutanak tutturmanızı rica ederiz.</li>
-</ul>
-<p>Parılté Butik olarak ürünlerinizi yalnızca şık değil, güvenli ve özenli şekilde size ulaştırırız.</p>',
-        'iade-degisim' => '<h2>İade & Değişim</h2>
-<p>Parılté Butik’te müşteri memnuniyeti her zaman önceliğimizdir.</p>
-<p>Satın aldığınız ürünler için teslim tarihinden itibaren 3 gün içerisinde iade veya değişim talebinde bulunabilirsiniz.</p>
-<h3>İade ve değişim şartları</h3>
-<ul>
-  <li>Kullanılmamış olması</li>
-  <li>Etiketlerinin koparılmamış olması</li>
-  <li>Hasar görmemiş olması</li>
-  <li>Orijinal ambalajında olması</li>
-  <li>Tekrar satılabilir durumda olması</li>
-</ul>
-<p>İç giyim, mayo, küpe, takı ve kişisel kullanım ürünlerinde hijyen sebebiyle iade ve değişim kabul edilmez.</p>
-<h3>Süreç nasıl işler?</h3>
-<ol>
-  <li>Talebinizi 3 gün içinde bize bildirirsiniz.</li>
-  <li>Ürün tarafımıza ulaştıktan sonra kontrol edilir.</li>
-  <li>Şartlara uygunsa değişim yapılır veya iade süreci başlatılır.</li>
-  <li>İade onaylandıktan sonra ücretiniz 7 iş günü içerisinde ödeme yaptığınız yönteme geri yatırılır.</li>
-</ol>
-<p>Parılté Butik olarak amacımız, alışverişinizden memnun kalmanız ve güvenle tekrar bizi tercih etmenizdir.</p>',
-        'kvkk-gizlilik' => '<h2>KVKK & Gizlilik Politikası</h2>
-<p>Parılté Butik olarak kişisel verilerinizin güvenliği bizim için büyük önem taşır.</p>
-<p>Web sitemiz üzerinden paylaştığınız;</p>
-<ul>
-  <li>Ad, soyad</li>
-  <li>Telefon numarası</li>
-  <li>E-posta adresi</li>
-  <li>Teslimat adresi</li>
-  <li>Sipariş ve ödeme bilgileri</li>
-</ul>
-<p>yalnızca siparişlerinizi oluşturmak, teslim etmek, sizinle iletişim kurmak ve yasal yükümlülüklerimizi yerine getirmek amacıyla kullanılmaktadır.</p>
-<p>Kişisel verileriniz;</p>
-<ul>
-  <li>Üçüncü kişilerle paylaşılmaz</li>
-  <li>Satılmaz</li>
-  <li>Reklam veya pazarlama amacıyla izinsiz kullanılmaz</li>
-</ul>
-<p>Verileriniz 6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) kapsamında güvenli şekilde saklanır.</p>
-<p>Dilediğiniz zaman kişisel verilerinizin silinmesini, güncellenmesini veya hangi amaçla işlendiğini öğrenmek için bizimle iletişime geçebilirsiniz.</p>',
-    ];
+</ul>';
 
-    foreach ($pages as $slug => $html) {
-        $p = get_page_by_path($slug);
-        if (!$p) continue;
-        wp_update_post(['ID' => $p->ID, 'post_content' => wp_kses_post($html)]);
+    $kvkk = '<h2>KVKK &amp; Gizlilik Politikası</h2>
+<p>Parılté Butik olarak, 6698 sayılı Kişisel Verilerin Korunması Kanunu (“KVKK”) kapsamında kişisel verilerinizin güvenliğini önemsiyoruz. Bu politika; parilte.com üzerinden toplanan kişisel verilerin hangi kapsamda işlendiğini açıklar.</p>
+<h3>1) Veri Sorumlusu</h3>
+<p>Parılté Butik (Şahıs İşletmesi)<br>Vergi Dairesi: Yalova Vergi Dairesi<br>Vergi No: 1020667844<br>Adres: Rüstempaşa Mah. Çeşme Sk. No: 17/D, Yalova / Merkez<br>Telefon/WhatsApp: 0539 435 39 13<br>E-posta: <a href="'.$mail_href.'">'.$mail_label.'</a></p>
+<h3>2) İşlenen Kişisel Veriler</h3>
+<ul>
+  <li>Kimlik: ad, soyad</li>
+  <li>İletişim: telefon, e-posta</li>
+  <li>Teslimat/Fatura: adres bilgileri</li>
+  <li>İşlem güvenliği: IP adresi ve site kullanım kayıtları</li>
+  <li>Sipariş: sipariş içeriği, tutar, teslimat ve iade kayıtları</li>
+  <li>Ödeme: ödeme işlemine ilişkin kayıtlar (kart bilgileri Parılté tarafından tutulmaz)</li>
+</ul>
+<h3>3) İşleme Amaçları</h3>
+<ul>
+  <li>Sipariş süreçlerinin yürütülmesi (satış, ödeme, teslimat, iade/değişim)</li>
+  <li>Müşteri ilişkileri ve destek süreçlerinin yürütülmesi</li>
+  <li>Hukuki yükümlülüklerin yerine getirilmesi (muhasebe, e-arşiv/e-fatura, resmi merciler)</li>
+  <li>İşlem güvenliği ve kötüye kullanımın önlenmesi</li>
+</ul>
+<h3>4) Veri Paylaşımı / Aktarım</h3>
+<p>Kişisel verileriniz; yalnızca hizmetin ifası için gerekli ölçüde ve mevzuata uygun şekilde aşağıdaki alıcı gruplarıyla paylaşılabilir:</p>
+<ul>
+  <li>Ödeme altyapısı: iyzico (ödeme işleminin yürütülmesi)</li>
+  <li>Kargo firması: MNG Kargo (sipariş teslimatı için)</li>
+  <li>Yetkili kamu kurumları: yasal yükümlülükler kapsamında</li>
+</ul>
+<p>Not: Kart bilgileri Parılté tarafından kaydedilmez; ödeme sağlayıcısı altyapısında işlenir.</p>
+<h3>5) Saklama Süresi</h3>
+<p>Verileriniz; ilgili mevzuatta öngörülen süreler boyunca saklanır ve süre sonunda silinir/anonimleştirilir.</p>
+<h3>6) Haklarınız ve Başvuru</h3>
+<p>KVKK’nın 11. maddesi kapsamındaki haklarınıza ilişkin taleplerinizi <a href="'.$mail_href.'">'.$mail_label.'</a> üzerinden bize iletebilirsiniz.</p>';
+
+    $shipping = '<h2>Teslimat &amp; Kargo</h2>
+<p>Parılté Butik’ten verdiğiniz tüm siparişler özenle hazırlanır ve güvenle kargoya teslim edilir.</p>
+<h3>1) Hazırlık Süresi</h3>
+<p>Siparişleriniz 1–3 iş günü içerisinde hazırlanarak kargoya verilir. (Kampanya ve yoğun dönemlerde bu süre uzayabilir.)</p>
+<h3>2) Kargo ve Gönderim</h3>
+<ul>
+  <li>Türkiye’nin her yerine gönderim yapılır.</li>
+  <li>Kargo firması: MNG Kargo</li>
+  <li>Siparişiniz kargoya verildiğinde tarafınıza kargo takip bilgisi iletilir.</li>
+</ul>
+<h3>3) Kargo Ücreti</h3>
+<ul>
+  <li>100 TL sabit kargo ücreti uygulanır.</li>
+  <li>1500 TL ve üzeri siparişlerde kargo ücretsizdir.</li>
+</ul>
+<h3>4) Teslimat Süresi</h3>
+<p>Kargonuz bulunduğunuz şehre göre genellikle 1–3 iş günü içinde adresinize ulaşır.</p>
+<h3>5) Teslimat Kontrolü</h3>
+<p>Teslimat sırasında paketinizi kontrol etmenizi öneririz. Hasarlı paketleri teslim almadan kargo görevlisine tutanak tutturarak bizimle iletişime geçiniz.</p>
+<h3>6) Adres Sorumluluğu</h3>
+<p>Teslimat adresinin eksik/hatalı olması halinde oluşabilecek gecikmelerden alıcı sorumludur.</p>
+<p>İletişim: <a href="'.$mail_href.'">'.$mail_label.'</a> | WhatsApp: <a href="'.$whatsapp_url.'" target="_blank" rel="noopener">0539 435 39 13</a></p>';
+
+    $returns = '<h2>İade &amp; Değişim</h2>
+<p>Parılté Butik’te müşteri memnuniyeti önceliğimizdir.</p>
+<h3>1) Cayma Hakkı (İade)</h3>
+<p>Siparişinizi teslim aldığınız tarihten itibaren 14 gün içinde cayma hakkınızı kullanarak iade talebinde bulunabilirsiniz.</p>
+<h3>2) İade/Değişim Şartları</h3>
+<p>İade/Değişim için ürün:</p>
+<ul>
+  <li>Kullanılmamış olmalı,</li>
+  <li>Etiketleri koparılmamış olmalı,</li>
+  <li>Hasar görmemiş olmalı,</li>
+  <li>Orijinal ambalajında olmalı,</li>
+  <li>Tekrar satılabilir durumda olmalıdır.</li>
+</ul>
+<h3>3) İade Edilemeyen Ürünler</h3>
+<p>Hijyen nedeniyle; iç giyim, mayo/bikini, küpe gibi kişisel kullanım ürünlerinde iade/değişim kabul edilmez. (Not: Ürün kategorilerine göre bu liste güncellenebilir.)</p>
+<h3>4) Süreç Nasıl İşler?</h3>
+<ol>
+  <li>Talebinizi bize iletirsiniz (<a href="'.$mail_href.'">'.$mail_label.'</a> / WhatsApp).</li>
+  <li>Ürünü tarafımıza gönderirsiniz.</li>
+  <li>Ürün kontrol edilir.</li>
+  <li>Şartlara uygunsa iade/değişim işlemi başlatılır.</li>
+</ol>
+<h3>5) İade Kargo Ücreti</h3>
+<p>İade kargo bedeli alıcıya aittir.</p>
+<h3>6) Geri Ödeme</h3>
+<p>İade onaylandıktan sonra ücretiniz, ödemenin yapıldığı yönteme uygun şekilde iade edilir. Banka süreçlerine bağlı olarak iadenin hesaba yansıma süresi değişebilir.</p>
+<h3>7) İade Adresi</h3>
+<p>Rüstempaşa Mah. Çeşme Sk. No: 17/D, Yalova / Merkez</p>
+<p>İletişim: <a href="'.$mail_href.'">'.$mail_label.'</a> | WhatsApp: <a href="'.$whatsapp_url.'" target="_blank" rel="noopener">0539 435 39 13</a></p>';
+
+    $distance = '<h2>Mesafeli Satış Sözleşmesi</h2>
+<p>İşbu Mesafeli Satış Sözleşmesi (“Sözleşme”), aşağıda bilgileri yer alan Satıcı ile, parilte.com üzerinden sipariş oluşturan Alıcı arasında elektronik ortamda kurulmuştur.</p>
+<h3>1) Taraflar</h3>
+<p><strong>Satıcı</strong><br>Unvan: Parılté Butik (Şahıs İşletmesi)<br>Vergi Dairesi: Yalova Vergi Dairesi<br>Vergi No: 1020667844<br>Adres: Rüstempaşa Mah. Çeşme Sk. No: 17/D, Yalova / Merkez<br>Telefon/WhatsApp: 0539 435 39 13<br>E-posta: <a href="'.$mail_href.'">'.$mail_label.'</a></p>
+<p><strong>Alıcı</strong><br>Alıcı; parilte.com üzerinden sipariş oluşturan, ürün/hizmet satın alan kişidir. Sipariş sırasında beyan ettiği ad-soyad, adres ve iletişim bilgileri esas alınır.</p>
+<h3>2) Konu</h3>
+<p>Sözleşmenin konusu, Alıcı’nın parilte.com üzerinden elektronik ortamda sipariş verdiği ürün/ürünlerin satışı ve teslimine ilişkin tarafların hak ve yükümlülüklerinin belirlenmesidir.</p>
+<h3>3) Ürün / Fiyat / Ödeme</h3>
+<ul>
+  <li>Ürün(ler)in cinsi, adedi, beden/renk seçimi, birim fiyatı, toplam bedeli, kargo bedeli ve ödeme yöntemi; siparişin oluşturulduğu anda sepette ve sipariş özetinde gösterildiği şekildedir.</li>
+  <li>Ödeme; kredi/banka kartı ile yapılabilir.</li>
+  <li>Ödeme altyapısı: iyzico (iyzipay) aracılığıyla tahsilat yapılır. Kart bilgileri Satıcı tarafından saklanmaz, ödeme sağlayıcısı altyapısında işlenir.</li>
+</ul>
+<h3>4) Teslimat</h3>
+<ul>
+  <li>Siparişler 1–3 iş günü içerisinde hazırlanarak kargoya verilir. (Yoğun dönemlerde uzayabilir.)</li>
+  <li>Teslimat Türkiye içidir.</li>
+  <li>Kargo firması: MNG Kargo</li>
+  <li>Kargo ücreti: 100 TL’dir. 1500 TL ve üzeri siparişlerde kargo ücretsizdir.</li>
+  <li>Alıcı’nın adres bilgisini eksik/hatalı girmesi halinde doğabilecek gecikmelerden Alıcı sorumludur.</li>
+</ul>
+<h3>5) Cayma Hakkı (İade)</h3>
+<ul>
+  <li>Alıcı, ürünü teslim aldığı tarihten itibaren 14 gün içinde cayma hakkını kullanabilir.</li>
+  <li>Cayma hakkının kullanılabilmesi için ürünün kullanılmamış, etiketi koparılmamış, hasar görmemiş ve tekrar satılabilir durumda olması gerekir.</li>
+  <li>Hijyen nedeniyle; iç giyim, mayo/bikini, küpe gibi kişisel kullanım ürünlerinde iade/değişim kabul edilmez.</li>
+</ul>
+<h3>6) İade Prosedürü, İade Kargo ve Geri Ödeme</h3>
+<ul>
+  <li>Alıcı, cayma talebini <a href="'.$mail_href.'">'.$mail_label.'</a> üzerinden iletir.</li>
+  <li>Alıcı ürünü Satıcı’nın belirttiği adrese gönderir. İade kargo bedeli Alıcı’ya aittir.</li>
+  <li>Ürün Satıcı’ya ulaştıktan sonra kontrol edilir.</li>
+  <li>Şartlara uygunsa iade işlemi başlatılır ve bedel, ödemenin yapıldığı yönteme uygun şekilde iade edilir.</li>
+  <li>Banka süreçlerine bağlı olarak iadenin hesaba yansıma süresi değişebilir.</li>
+</ul>
+<h3>7) Uyuşmazlık Çözümü</h3>
+<p>İşbu sözleşmeden doğabilecek uyuşmazlıklarda; tüketici hakem heyetleri ve tüketici mahkemeleri yetkilidir.</p>
+<h3>8) Yürürlük</h3>
+<p>Alıcı, sipariş onayıyla birlikte işbu sözleşme hükümlerini okuduğunu ve kabul ettiğini beyan eder. Sözleşme, siparişin onaylandığı anda yürürlüğe girer.</p>';
+
+    parilte_cs_upsert_page_content('hakkimizda', 'Hakkımızda', $about);
+    $kvkk_id = parilte_cs_upsert_page_content('kvkk-gizlilik', 'KVKK & Gizlilik', $kvkk);
+    parilte_cs_upsert_page_content('teslimat-kargo', 'Teslimat & Kargo', $shipping);
+    parilte_cs_upsert_page_content('iade-degisim', 'İade & Değişim', $returns);
+    $terms_id = parilte_cs_upsert_page_content('mesafeli-satis-sozlesmesi', 'Mesafeli Satış Sözleşmesi', $distance);
+
+    if ($terms_id) {
+        update_option('woocommerce_terms_page_id', (int) $terms_id);
     }
-    update_option('parilte_legal_pages_v6', 1);
+    if ($kvkk_id) {
+        update_option('wp_page_for_privacy_policy', (int) $kvkk_id);
+    }
+
+    update_option('parilte_legal_pages_v8', 1);
+    if (function_exists('flush_rewrite_rules')) {
+        flush_rewrite_rules(false);
+    }
 }
 add_action('admin_init', 'parilte_cs_update_legal_pages_once', 36);
+add_action('init', 'parilte_cs_update_legal_pages_once', 9);
 
 function parilte_cs_ensure_promo_pages_once() {
     if (!current_user_can('manage_options')) return;
@@ -2444,9 +2643,15 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-front h1,
     .parilte-front h2,
     .parilte-front h3{font-family:"Bodoni MT","Didot","Playfair Display","Times New Roman",serif;letter-spacing:.04em}
-    body.home .ct-content{padding-top:0 !important}
+    body.home{--content-vertical-spacing:0px}
+    body.home .ct-header{margin-bottom:0 !important}
+    body.home .ct-header .ct-container{padding-bottom:0 !important}
+    body.home .ct-content{padding-top:0 !important;margin-top:0 !important}
+    body.home .ct-content .ct-container,
+    body.home .ct-content .ct-container-fluid{padding-top:0 !important;margin-top:0 !important}
     body.home .site-main.parilte-front{margin-top:0 !important;padding-top:0 !important}
-    body.home .ct-header + .ct-content{margin-top:0 !important}
+    body.home .ct-header + .ct-content{margin-top:-1px !important}
+    body.home .parilte-home-hero{margin-top:0 !important}
     .parilte-bleed{width:100vw;max-width:100vw;margin-left:calc(50% - 50vw)}
     .parilte-container{max-width:1140px;margin:0 auto;padding:0 16px}
     @keyframes parilte-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
@@ -2492,6 +2697,21 @@ add_action('wp_enqueue_scripts', function () {
       white-space:nowrap;
       width:fit-content;
       max-width:100%;
+      border:0;
+      cursor:pointer;
+      appearance:none;
+      font:inherit;
+    }
+    button.parilte-home-cta-btn{
+      background:#c51d24 !important;
+      color:#fff !important;
+      border:0 !important;
+      display:inline-flex !important;
+    }
+    .parilte-home-hero-cta .parilte-home-cta-btn{
+      padding:12px 22px;
+      font-size:.78rem;
+      letter-spacing:.18em;
     }
     .parilte-home-cta-btn--sm{
       padding:8px 14px;
@@ -2579,6 +2799,7 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-home-cta-btn--hot{
       background:#0f6c4a !important;
       color:#fff !important;
+      box-shadow:0 10px 22px rgba(15,108,74,.25) !important;
     }
     .parilte-home-contact{
       padding:clamp(20px,4vw,36px) 0;
@@ -2590,8 +2811,12 @@ add_action('wp_enqueue_scripts', function () {
       padding:0 clamp(16px,6vw,64px);
       display:flex;
       flex-direction:column;
+      align-items:flex-start;
       gap:8px;
     }
+    .parilte-home-contact-inner .parilte-home-cta-btn{display:inline-flex !important}
+    .parilte-contact-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    .parilte-home-cta-btn--mail{background:#1c1c1c !important;color:#fff !important;box-shadow:0 10px 22px rgba(0,0,0,.18) !important}
     .parilte-home-contact-inner small{
       font-size:.72rem;
       letter-spacing:.16em;
@@ -2621,6 +2846,8 @@ add_action('wp_enqueue_scripts', function () {
       letter-spacing:.08em;
       text-transform:uppercase;
       color:var(--parilte-muted);
+      text-decoration:none;
+      display:inline-flex;
     }
     .parilte-contact-note.success{background:#ecfdf3;color:#0f5132}
     .parilte-contact-note.error{background:#fef2f2;color:#7f1d1d}
@@ -2895,6 +3122,10 @@ add_action('wp_enqueue_scripts', function () {
       text-decoration:none;
       box-shadow:0 10px 22px rgba(0,0,0,.18);
       white-space:nowrap;
+      border:0;
+      cursor:pointer;
+      appearance:none;
+      font:inherit;
     }
     @media (max-width: 900px){
       .parilte-home-cats .parilte-home-cats-grid{grid-template-columns:1fr}
@@ -2979,6 +3210,8 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-legal-links{display:flex;flex-wrap:wrap;gap:14px;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase}
     .parilte-legal-links a{text-decoration:none;color:var(--parilte-ink);opacity:.8}
     .parilte-legal-links a:hover{opacity:1}
+    .parilte-legal-whatsapp{display:flex;align-items:center;gap:10px;font-size:.76rem;letter-spacing:.12em;text-transform:uppercase}
+    .parilte-home-cta-btn--wa{background:#1fa855 !important;box-shadow:0 10px 22px rgba(31,168,85,.22) !important}
     .parilte-legal-contact{display:flex;flex-direction:column;gap:6px;font-size:.78rem;opacity:.85;max-width:420px}
     .parilte-legal-contact a{text-decoration:none;color:var(--parilte-ink)}
     .parilte-legal-copy{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;opacity:.6}
@@ -4292,7 +4525,7 @@ if (PARILTE_CS_ON && PARILTE_CS_CHECKOUT_FIELDS) {
     }, 10, 1);
 
     add_filter('woocommerce_get_terms_and_conditions_checkbox_text', function ($text) {
-        return 'Siparişimi veriyorum ve <a href="'.esc_url(get_privacy_policy_url()).'" target="_blank" rel="nofollow">KVKK</a> ile <a href="'.esc_url(wc_get_page_permalink('terms')).'" target="_blank" rel="nofollow">Şartlar</a>’ı kabul ediyorum.';
+        return 'Siparişimi veriyorum ve <a href="'.esc_url(wc_get_page_permalink('terms')).'" target="_blank" rel="nofollow">Mesafeli Satış Sözleşmesi</a> ile <a href="'.esc_url(get_privacy_policy_url()).'" target="_blank" rel="nofollow">KVKK</a>’yı kabul ediyorum.';
     });
 }
 
