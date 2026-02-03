@@ -2047,6 +2047,67 @@ function parilte_cs_ensure_ust_giyim_terms_once() {
 add_action('admin_init', 'parilte_cs_ensure_ust_giyim_terms_once', 30);
 add_action('init', 'parilte_cs_ensure_ust_giyim_terms_once', 30);
 
+function parilte_cs_ensure_attributes_once() {
+    if (!current_user_can('manage_options')) return;
+    if (get_option('parilte_attr_seed_v2')) return;
+    if (!function_exists('wc_create_attribute')) return;
+
+    $attributes = [
+        [
+            'name' => 'Beden',
+            'slug' => 'beden',
+            'terms' => ['XS','S','M','L','XL','34','36','38','40','42','44','46','48','50','52','54','56','58','60','37','39','Standart'],
+        ],
+        [
+            'name' => 'Renk',
+            'slug' => 'renk',
+            'terms' => ['Siyah','Beyaz','Gri','Antrasit','Lacivert','Mavi','Buz Mavi','Bordo','Kırmızı','Pembe','Pudra','Mor','Lila','Turuncu','Hardal','Sarı','Yeşil','Zümrüt','Haki','Bej','Camel','Vizon','Taba','Kahverengi','Acı Kahve','Krem','Ekru','Taş'],
+        ],
+        [
+            'name' => 'Boy',
+            'slug' => 'boy',
+            'terms' => ['Mini','Kısa','Midi','Maxi'],
+        ],
+        [
+            'name' => 'Kalıp',
+            'slug' => 'kalip',
+            'terms' => ['Havuç','Palazzo','Bol','Dar','Geniş','İspanyol','Şalvar','Klasik','Mom','Oversize','Pileli','Regular','Slim','Slimfit','Yırtmaçlı','Boyfriend','Kargo','Beli Lastikli'],
+        ],
+        [
+            'name' => 'Kumaş',
+            'slug' => 'kumas',
+            'terms' => ['Saten','Krep','Scuba','Dantel','Denim','Jarse','Keten','Modal','Muslin','Örme','Dokuma','Belirtilmemiş','Polyester','Triko','Deri'],
+        ],
+    ];
+
+    foreach ($attributes as $attr) {
+        $slug = $attr['slug'];
+        $id = wc_attribute_taxonomy_id_by_name($slug);
+        if (!$id) {
+            $id = wc_create_attribute([
+                'name' => $attr['name'],
+                'slug' => $slug,
+                'type' => 'select',
+                'order_by' => 'menu_order',
+                'has_archives' => true,
+            ]);
+        }
+        $tax = 'pa_' . $slug;
+        if (function_exists('register_taxonomy') && !taxonomy_exists($tax)) {
+            register_taxonomy($tax, 'product', ['hierarchical'=>false,'show_ui'=>false]);
+        }
+        foreach ((array) $attr['terms'] as $term_name) {
+            if (!term_exists($term_name, $tax)) {
+                wp_insert_term($term_name, $tax, ['slug' => sanitize_title($term_name)]);
+            }
+        }
+    }
+
+    update_option('parilte_attr_seed_v2', 1);
+}
+add_action('admin_init', 'parilte_cs_ensure_attributes_once', 34);
+add_action('init', 'parilte_cs_ensure_attributes_once', 34);
+
 function parilte_cs_ensure_season_terms_once() {
     if (!current_user_can('manage_options')) return;
     if (get_option('parilte_season_terms_v1')) return;
@@ -2079,6 +2140,57 @@ function parilte_cs_ensure_season_terms_once() {
 }
 add_action('admin_init', 'parilte_cs_ensure_season_terms_once', 32);
 add_action('init', 'parilte_cs_ensure_season_terms_once', 32);
+
+function parilte_cs_cleanup_season_terms_strict_once() {
+    if (!current_user_can('manage_options')) return;
+    if (get_option('parilte_season_cleanup_strict_v1')) return;
+
+    $fallback_parent = get_term_by('slug', 'genel', 'product_cat');
+    $fallback_alt = get_term_by('slug', 'yeni-sezon', 'product_cat');
+    $fallback_id = 0;
+    if ($fallback_alt && !is_wp_error($fallback_alt)) $fallback_id = (int) $fallback_alt->term_id;
+    if (!$fallback_id && $fallback_parent && !is_wp_error($fallback_parent)) $fallback_id = (int) $fallback_parent->term_id;
+
+    $keep = ['ilkbahar-yaz','sonbahar-kis'];
+    $terms = get_terms([
+        'taxonomy' => 'product_cat',
+        'hide_empty' => false,
+    ]);
+    foreach ((array) $terms as $term) {
+        if (!$term || is_wp_error($term)) continue;
+        $slug = strtolower($term->slug);
+        $name = function_exists('mb_strtolower') ? mb_strtolower($term->name, 'UTF-8') : strtolower($term->name);
+        $is_season = (strpos($slug, 'ilkbahar') !== false) || (strpos($slug, 'sonbahar') !== false)
+            || (strpos($name, 'ilkbahar') !== false) || (strpos($name, 'sonbahar') !== false);
+        if (!$is_season) continue;
+        if (in_array($slug, $keep, true)) continue;
+
+        $posts = get_posts([
+            'post_type' => 'product',
+            'posts_per_page' => -1,
+            'fields' => 'ids',
+            'tax_query' => [[ 'taxonomy'=>'product_cat', 'field'=>'term_id', 'terms'=>$term->term_id ]]
+        ]);
+        foreach ((array) $posts as $pid) {
+            $current = wp_get_object_terms($pid, 'product_cat', ['fields' => 'ids']);
+            $remaining = array_values(array_diff((array) $current, [(int) $term->term_id]));
+            if (!$remaining) {
+                $product = function_exists('wc_get_product') ? wc_get_product($pid) : null;
+                $guess = $product ? parilte_cs_guess_primary_category_id($product) : 0;
+                if ($guess) $remaining = [$guess];
+                elseif ($fallback_id) $remaining = [$fallback_id];
+            }
+            if ($remaining) {
+                wp_set_object_terms($pid, array_values(array_unique($remaining)), 'product_cat', false);
+            }
+        }
+        wp_delete_term($term->term_id, 'product_cat');
+    }
+
+    update_option('parilte_season_cleanup_strict_v1', 1);
+}
+add_action('admin_init', 'parilte_cs_cleanup_season_terms_strict_once', 33);
+add_action('init', 'parilte_cs_cleanup_season_terms_strict_once', 33);
 
 function parilte_cs_guess_primary_category_id($product) {
     if (!$product instanceof WC_Product) return 0;
