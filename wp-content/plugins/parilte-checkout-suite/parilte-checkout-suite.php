@@ -149,9 +149,53 @@ function parilte_cs_eta_range(){
     return [$fmt1, $fmt2];
 }
 
-function parilte_cs_cart_subtotal(){
+function parilte_cs_cart_displayed_subtotal($ignore_discounts = 'no'){
     if (!WC()->cart) return 0;
-    return (float) WC()->cart->get_subtotal();
+    $total = (float) WC()->cart->get_displayed_subtotal();
+    if ($ignore_discounts === 'no') {
+        $total -= WC()->cart->get_discount_total();
+        if (WC()->cart->display_prices_including_tax()) {
+            $total -= WC()->cart->get_discount_tax();
+        }
+    }
+    return max(0, $total);
+}
+
+function parilte_cs_free_shipping_settings(){
+    $min_amount = (float) parilte_cs_opt('parilte_free_threshold', PARILTE_CS_FREE_THRESHOLD);
+    $ignore_discounts = 'no';
+    if (class_exists('WC_Shipping_Zones')) {
+        $zone_id = 0;
+        $zones = WC_Shipping_Zones::get_zones();
+        foreach ($zones as $z) {
+            if (empty($z['zone_locations'])) continue;
+            foreach ($z['zone_locations'] as $loc) {
+                if ($loc->type === 'country' && $loc->code === 'TR') {
+                    $zone_id = (int) $z['zone_id'];
+                    break 2;
+                }
+            }
+        }
+        if ($zone_id) {
+            $zone = new WC_Shipping_Zone($zone_id);
+            foreach ($zone->get_shipping_methods() as $m) {
+                if ($m->id !== 'free_shipping') continue;
+                $instance_id = $m->get_instance_id();
+                $settings = (array) get_option('woocommerce_free_shipping_'.$instance_id.'_settings', []);
+                if (isset($settings['min_amount'])) {
+                    $min_amount = (float) $settings['min_amount'];
+                }
+                if (isset($settings['ignore_discounts'])) {
+                    $ignore_discounts = $settings['ignore_discounts'];
+                }
+                break;
+            }
+        }
+    }
+    return [
+        'min_amount' => $min_amount,
+        'ignore_discounts' => $ignore_discounts,
+    ];
 }
 
 function parilte_cs_set_page_content_if_empty($page_id, $content){
@@ -333,6 +377,7 @@ function parilte_cs_setup_shipping(){
             $settings = (array) get_option('woocommerce_free_shipping_'.$instance_id.'_settings', []);
             $settings['min_amount'] = (string) $free_min;
             $settings['requires'] = 'min_amount';
+            if (empty($settings['ignore_discounts'])) $settings['ignore_discounts'] = 'no';
             if (empty($settings['title'])) $settings['title'] = 'Ücretsiz Kargo';
             $settings['enabled'] = 'yes';
             update_option('woocommerce_free_shipping_'.$instance_id.'_settings', $settings);
@@ -355,6 +400,7 @@ function parilte_cs_setup_shipping(){
             'title' => 'Ücretsiz Kargo',
             'requires' => 'min_amount',
             'min_amount' => (string) $free_min,
+            'ignore_discounts' => 'no',
             'enabled' => 'yes',
         ]);
     }
@@ -4681,9 +4727,10 @@ if (PARILTE_CS_ON && PARILTE_CS_FREEBAR) {
     }, 21);
 
     function parilte_cs_freebar_markup(){
-        $threshold = (float) parilte_cs_opt('parilte_free_threshold', PARILTE_CS_FREE_THRESHOLD);
+        $settings = parilte_cs_free_shipping_settings();
+        $threshold = (float) $settings['min_amount'];
         if ($threshold <= 0) return '';
-        $subtotal = parilte_cs_cart_subtotal();
+        $subtotal = parilte_cs_cart_displayed_subtotal($settings['ignore_discounts']);
         $left = max(0, $threshold - $subtotal);
         $pct  = min(100, max(0, ($subtotal / $threshold) * 100));
         $msg  = $left <= 0
