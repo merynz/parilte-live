@@ -1876,6 +1876,23 @@ function parilte_cs_fix_category_hierarchy_once() {
 }
 add_action('admin_init', 'parilte_cs_fix_category_hierarchy_once', 30);
 
+function parilte_cs_ensure_ust_giyim_terms_once() {
+    if (!current_user_can('manage_options')) return;
+    if (get_option('parilte_ust_terms_v1')) return;
+    $parent = get_term_by('slug', 'ust-giyim', 'product_cat');
+    if ($parent && !is_wp_error($parent)) {
+        $term = get_term_by('slug', 'hirka', 'product_cat');
+        if (!$term || is_wp_error($term)) {
+            wp_insert_term('Hırka', 'product_cat', ['slug' => 'hirka', 'parent' => (int) $parent->term_id]);
+        } elseif ((int) $term->parent !== (int) $parent->term_id) {
+            wp_update_term($term->term_id, 'product_cat', ['parent' => (int) $parent->term_id]);
+        }
+    }
+    update_option('parilte_ust_terms_v1', 1);
+}
+add_action('admin_init', 'parilte_cs_ensure_ust_giyim_terms_once', 30);
+add_action('init', 'parilte_cs_ensure_ust_giyim_terms_once', 30);
+
 function parilte_cs_ensure_season_terms_once() {
     if (!current_user_can('manage_options')) return;
     if (get_option('parilte_season_terms_v1')) return;
@@ -1937,7 +1954,7 @@ function parilte_cs_guess_primary_category_id($product) {
 
 function parilte_cs_cleanup_categories_once() {
     if (!current_user_can('manage_options')) return;
-    if (get_option('parilte_cat_cleanup_done_v3')) return;
+    if (get_option('parilte_cat_cleanup_done_v4')) return;
 
     $fallback_parent = get_term_by('slug', 'genel', 'product_cat');
     $fallback_alt = get_term_by('slug', 'yeni-sezon', 'product_cat');
@@ -1950,13 +1967,14 @@ function parilte_cs_cleanup_categories_once() {
         'hide_empty' => false,
     ]);
     $season_terms = [];
+    $season_keep = ['ilkbahar-yaz', 'sonbahar-kis'];
     foreach ((array) $terms as $term) {
         if (!$term || is_wp_error($term)) continue;
         $slug = strtolower($term->slug);
         $name = function_exists('mb_strtolower') ? mb_strtolower($term->name, 'UTF-8') : strtolower($term->name);
         $is_season = (strpos($slug, 'ilkbahar') !== false) || (strpos($slug, 'sonbahar') !== false)
             || (strpos($name, 'ilkbahar') !== false) || (strpos($name, 'sonbahar') !== false);
-        if (in_array($slug, ['ilkbahar-yaz','sonbahar-kis'], true)) continue;
+        if (in_array($slug, $season_keep, true)) continue;
         if (!$is_season) continue;
         if ($fallback_parent && !is_wp_error($fallback_parent)) {
             if ((int) $term->parent !== (int) $fallback_parent->term_id && strpos($name, 'sezon') === false) {
@@ -2047,7 +2065,7 @@ function parilte_cs_cleanup_categories_once() {
         }
     }
 
-    update_option('parilte_cat_cleanup_done_v3', 1);
+    update_option('parilte_cat_cleanup_done_v4', 1);
 }
 add_action('admin_init', 'parilte_cs_cleanup_categories_once', 31);
 
@@ -2293,10 +2311,15 @@ function parilte_cs_footer_links() {
     if (!$links) return;
     $whatsapp_url = 'https://wa.me/905394353913';
     $instagram_url = 'https://www.instagram.com/butik_parilte_/';
+    $logo_html = function_exists('get_custom_logo') ? get_custom_logo() : '';
+    if (!$logo_html) {
+        $logo_html = '<span class="parilte-footer-logo-text">'.esc_html(get_bloginfo('name')).'</span>';
+    }
     ?>
     <div class="parilte-legal-footer">
       <div class="parilte-container">
         <div class="parilte-legal-left">
+          <div class="parilte-footer-logo"><?php echo $logo_html; ?></div>
           <nav class="parilte-legal-links" aria-label="Yasal">
             <?php foreach ($links as $l) { ?>
               <a href="<?php echo esc_url($l['url']); ?>"><?php echo esc_html($l['label']); ?></a>
@@ -3351,6 +3374,9 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-legal-footer .parilte-container{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
     .parilte-legal-left{display:flex;flex-direction:column;gap:8px;min-width:0}
     .parilte-legal-right{display:flex;align-items:center;justify-content:flex-end;gap:12px;min-width:0;margin-left:auto}
+    .parilte-footer-logo{display:flex;align-items:center;gap:10px}
+    .parilte-footer-logo img{max-height:34px;height:auto;width:auto;display:block}
+    .parilte-footer-logo-text{font-size:.95rem;letter-spacing:.18em;text-transform:uppercase;color:var(--parilte-ink)}
     .parilte-legal-links{display:flex;flex-wrap:wrap;gap:14px;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase}
     .parilte-legal-links a{text-decoration:none;color:var(--parilte-ink);opacity:.8}
     .parilte-legal-links a:hover{opacity:1}
