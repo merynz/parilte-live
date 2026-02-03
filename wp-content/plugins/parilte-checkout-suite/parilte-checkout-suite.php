@@ -899,7 +899,7 @@ function parilte_cs_bootstrap(){
     foreach ([['Pantolon','pantolon'],['Şort','sort'],['Etek','etek'],['Jean','jean'],['Tayt','tayt'],['Eşofman','esofman'],['Tulum','tulum']] as $t)
         $ensure_term($t[0],$t[1],'product_cat',$cat['alt']);
 
-    foreach ([['Gömlek','gomlek'],['Bluz','bluz'],['Tişört','tisort'],['Atlet','atlet'],['Crop Top','crop-top'],['Sweatshirt','sweatshirt'],['Triko','triko'],['Kazak','kazak'],['Bodysuit','bodysuit']] as $t)
+    foreach ([['Gömlek','gomlek'],['Bluz','bluz'],['Tişört','tisort'],['Atlet','atlet'],['Crop Top','crop-top'],['Sweatshirt','sweatshirt'],['Triko','triko'],['Kazak','kazak'],['Hırka','hirka'],['Bodysuit','bodysuit']] as $t)
         $ensure_term($t[0],$t[1],'product_cat',$cat['ust']);
 
     // 7) Attributes
@@ -1857,7 +1857,7 @@ function parilte_cs_fix_category_hierarchy_once() {
         'Dış Giyim' => ['Kaban','Mont','Trençkot'],
         'Elbise' => ['Düğün','Günlük Elbise','Mezuniyet','Şık Elbise'],
         'Takı' => ['Bel Zinciri','Bileklik','Bilezik','Kolye','Küpe'],
-        'Üst Giyim' => ['Atlet','Badi','Bluz','Bodysuit','Crop','Gömlek','Kazak','Sweatshirt','Tişört','Triko'],
+        'Üst Giyim' => ['Atlet','Badi','Bluz','Bodysuit','Crop','Gömlek','Kazak','Hırka','Sweatshirt','Tişört','Triko'],
         'Yeni Sezon' => ['Yeni Ürünler'],
     ];
 
@@ -1920,7 +1920,7 @@ function parilte_cs_guess_primary_category_id($product) {
         'dis-giyim' => ['kaban','mont','trenç','trench','ceket','palt','parka','kürk','kurk'],
         'elbise' => ['elbise','abiye','dress'],
         'alt-giyim' => ['pantolon','jean','etek','şort','sort','tayt','eşofman','esofman','tulum'],
-        'ust-giyim' => ['bluz','gömlek','gomlek','tişört','tisort','t-shirt','tshirt','sweatshirt','kazak','triko','bodysuit','crop','atlet','badi','yelek'],
+        'ust-giyim' => ['bluz','gömlek','gomlek','tişört','tisort','t-shirt','tshirt','sweatshirt','kazak','hirka','triko','bodysuit','crop','atlet','badi','yelek'],
         'aksesuar' => ['aksesuar','kemer','şal','sal','atkı','atki','bere','eldiven','fular','şapka','sapka','şemsiye','semsiye','anahtarlik','anahtarlık'],
     ];
     foreach ($map as $slug => $keywords) {
