@@ -433,6 +433,114 @@ function parilte_cs_setup_tax_rate_once() {
     update_option('parilte_tax_10_set', 1);
 }
 
+function parilte_cs_add_tax_class($label) {
+    $classes = get_option('woocommerce_tax_classes', '');
+    $list = array_filter(array_map('trim', preg_split('/\r?\n/', (string) $classes)));
+    if (in_array($label, $list, true)) return;
+    $list[] = $label;
+    update_option('woocommerce_tax_classes', implode("\n", $list));
+}
+
+function parilte_cs_setup_tax_rate_accessory_once() {
+    if (!current_user_can('manage_options')) return;
+    if (get_option('parilte_tax_20_set')) return;
+    if (!function_exists('WC_Tax')) return;
+    global $wpdb;
+    $table = $wpdb->prefix . 'woocommerce_tax_rates';
+    if ($wpdb->get_var("SHOW TABLES LIKE '$table'") != $table) return;
+
+    $class_label = 'Aksesuar20';
+    $class_slug = sanitize_title($class_label);
+    parilte_cs_add_tax_class($class_label);
+
+    $exists = $wpdb->get_var($wpdb->prepare(
+        "SELECT tax_rate_id FROM $table WHERE tax_rate_country=%s AND tax_rate_state='' AND tax_rate_class=%s LIMIT 1",
+        'TR',
+        $class_slug
+    ));
+    if (!$exists) {
+        $wpdb->insert($table, [
+            'tax_rate_country' => 'TR',
+            'tax_rate_state' => '',
+            'tax_rate' => '20.0000',
+            'tax_rate_name' => 'KDV %20',
+            'tax_rate_priority' => 1,
+            'tax_rate_compound' => 0,
+            'tax_rate_shipping' => 1,
+            'tax_rate_order' => 0,
+            'tax_rate_class' => $class_slug,
+        ]);
+    }
+    update_option('parilte_tax_20_set', 1);
+}
+
+function parilte_cs_accessory_parent_ids() {
+    $parents = [];
+    foreach (['aksesuar','taki'] as $slug) {
+        $term = get_term_by('slug', $slug, 'product_cat');
+        if ($term && !is_wp_error($term)) $parents[] = (int) $term->term_id;
+    }
+    return array_values(array_unique($parents));
+}
+
+function parilte_cs_is_accessory_product($product_id) {
+    $parents = parilte_cs_accessory_parent_ids();
+    if (!$parents) return false;
+    $terms = wp_get_object_terms($product_id, 'product_cat', ['fields' => 'ids']);
+    foreach ((array) $terms as $tid) {
+        foreach ($parents as $pid) {
+            if ((int) $tid === (int) $pid) return true;
+            if (term_is_ancestor_of($pid, (int) $tid, 'product_cat')) return true;
+        }
+    }
+    return false;
+}
+
+function parilte_cs_apply_accessory_tax_class($product_id) {
+    if (!$product_id) return;
+    $product = wc_get_product($product_id);
+    if (!$product) return;
+    $class_slug = sanitize_title('Aksesuar20');
+    $tax_class = parilte_cs_is_accessory_product($product_id) ? $class_slug : '';
+    if ($product->get_tax_class() !== $tax_class) {
+        $product->set_tax_class($tax_class);
+        $product->save();
+    }
+}
+
+function parilte_cs_set_accessory_tax_class_once() {
+    if (!current_user_can('manage_options')) return;
+    if (get_option('parilte_accessory_tax_set_v1')) return;
+    $parents = parilte_cs_accessory_parent_ids();
+    if ($parents) {
+        $q = new WP_Query([
+            'post_type' => 'product',
+            'posts_per_page' => -1,
+            'post_status' => 'any',
+            'fields' => 'ids',
+            'tax_query' => [[
+                'taxonomy' => 'product_cat',
+                'field' => 'term_id',
+                'terms' => $parents,
+                'include_children' => true,
+            ]]
+        ]);
+        foreach ((array) $q->posts as $pid) {
+            parilte_cs_apply_accessory_tax_class((int) $pid);
+        }
+    }
+    update_option('parilte_accessory_tax_set_v1', 1);
+}
+
+add_action('admin_init', 'parilte_cs_setup_tax_rate_accessory_once', 37);
+add_action('admin_init', 'parilte_cs_set_accessory_tax_class_once', 38);
+add_action('woocommerce_admin_process_product_object', function ($product) {
+    if (!$product instanceof WC_Product) return;
+    $class_slug = sanitize_title('Aksesuar20');
+    $tax_class = parilte_cs_is_accessory_product($product->get_id()) ? $class_slug : '';
+    $product->set_tax_class($tax_class);
+}, 20, 1);
+
 function parilte_cs_setup_payments(){
     if (!PARILTE_PAYMENTS_ON) return;
     if (!function_exists('WC') || !WC()->payment_gateways) return;
@@ -2000,7 +2108,7 @@ function parilte_cs_guess_primary_category_id($product) {
 
 function parilte_cs_cleanup_categories_once() {
     if (!current_user_can('manage_options')) return;
-    if (get_option('parilte_cat_cleanup_done_v4')) return;
+    if (get_option('parilte_cat_cleanup_done_v5')) return;
 
     $fallback_parent = get_term_by('slug', 'genel', 'product_cat');
     $fallback_alt = get_term_by('slug', 'yeni-sezon', 'product_cat');
@@ -2111,7 +2219,7 @@ function parilte_cs_cleanup_categories_once() {
         }
     }
 
-    update_option('parilte_cat_cleanup_done_v4', 1);
+    update_option('parilte_cat_cleanup_done_v5', 1);
 }
 add_action('admin_init', 'parilte_cs_cleanup_categories_once', 31);
 
