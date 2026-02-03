@@ -2108,7 +2108,7 @@ function parilte_cs_guess_primary_category_id($product) {
 
 function parilte_cs_cleanup_categories_once() {
     if (!current_user_can('manage_options')) return;
-    if (get_option('parilte_cat_cleanup_done_v5')) return;
+    if (get_option('parilte_cat_cleanup_done_v6')) return;
 
     $fallback_parent = get_term_by('slug', 'genel', 'product_cat');
     $fallback_alt = get_term_by('slug', 'yeni-sezon', 'product_cat');
@@ -2219,7 +2219,7 @@ function parilte_cs_cleanup_categories_once() {
         }
     }
 
-    update_option('parilte_cat_cleanup_done_v5', 1);
+    update_option('parilte_cat_cleanup_done_v6', 1);
 }
 add_action('admin_init', 'parilte_cs_cleanup_categories_once', 31);
 
