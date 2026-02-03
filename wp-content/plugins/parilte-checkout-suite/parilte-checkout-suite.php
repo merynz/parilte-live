@@ -2282,7 +2282,9 @@ function parilte_cs_footer_links() {
         'KVKK & Gizlilik' => 'kvkk-gizlilik',
         'İade & Değişim' => 'iade-degisim',
         'Teslimat & Kargo' => 'teslimat-kargo',
+        'Ön Bilgilendirme' => 'on-bilgilendirme',
         'Mesafeli Satış Sözleşmesi' => 'mesafeli-satis-sozlesmesi',
+        'Çerez Politikası' => 'cerez-politikasi',
     ];
     foreach ($pages as $label => $slug) {
         $p = get_page_by_path($slug);
@@ -2317,6 +2319,40 @@ function parilte_cs_footer_links() {
 }
 add_action('wp_footer', 'parilte_cs_footer_links', 30);
 
+function parilte_cs_cookie_banner() {
+    if (is_admin()) return;
+    $page = get_page_by_path('cerez-politikasi');
+    $policy_url = ($page && !is_wp_error($page)) ? get_permalink($page) : home_url('/cerez-politikasi/');
+    ?>
+    <div class="parilte-cookie-banner" role="dialog" aria-live="polite" aria-label="Çerez bilgilendirme">
+      <span>Deneyiminizi iyileştirmek için çerezler kullanıyoruz. <a href="<?php echo esc_url($policy_url); ?>" target="_blank" rel="noopener">Çerez Politikası</a></span>
+      <button type="button" class="parilte-cookie-accept">Kabul Et</button>
+    </div>
+    <script>
+      (function(){
+        var key = 'parilte_cookie_ok';
+        var banner = document.querySelector('.parilte-cookie-banner');
+        if (!banner) return;
+        function getOk(){
+          try { return localStorage.getItem(key) === '1'; } catch(e) { return false; }
+        }
+        function setOk(){
+          try { localStorage.setItem(key,'1'); } catch(e) {}
+        }
+        if (getOk()) { banner.style.display = 'none'; return; }
+        var btn = banner.querySelector('.parilte-cookie-accept');
+        if (btn) {
+          btn.addEventListener('click', function(){
+            setOk();
+            banner.style.display = 'none';
+          });
+        }
+      })();
+    </script>
+    <?php
+}
+add_action('wp_footer', 'parilte_cs_cookie_banner', 40);
+
 function parilte_cs_upsert_page_content($slug, $title, $content) {
     $page = get_page_by_path($slug);
     if ($page && !is_wp_error($page)) {
@@ -2340,7 +2376,7 @@ function parilte_cs_upsert_page_content($slug, $title, $content) {
 
 function parilte_cs_update_legal_pages_once() {
     if (!current_user_can('manage_options')) return;
-    if (get_option('parilte_legal_pages_v8')) return;
+    if (get_option('parilte_legal_pages_v9')) return;
 
     $mail_href = 'mailto:destek@parilte.com';
     $mail_label = 'destek@parilte.com';
@@ -2454,6 +2490,45 @@ function parilte_cs_update_legal_pages_once() {
 <p>Rüstempaşa Mah. Çeşme Sk. No: 17/D, Yalova / Merkez</p>
 <p>İletişim: <a href="'.$mail_href.'">'.$mail_label.'</a> | WhatsApp: <a href="'.$whatsapp_url.'" target="_blank" rel="noopener">0539 435 39 13</a></p>';
 
+    $preinfo = '<h2>Ön Bilgilendirme Formu</h2>
+<p>Bu Ön Bilgilendirme Formu; 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği kapsamında, Parılté Butik ile alıcı arasında kurulacak mesafeli satış sözleşmesi öncesinde alıcıyı bilgilendirmek amacıyla hazırlanmıştır.</p>
+<h3>1) Satıcı Bilgileri</h3>
+<p>Unvan: Parılté Butik (Şahıs İşletmesi)<br>Vergi Dairesi: Yalova Vergi Dairesi<br>Vergi No: 1020667844<br>Adres: Rüstempaşa Mah. Çeşme Sk. No: 17/D, Yalova / Merkez<br>Telefon/WhatsApp: 0539 435 39 13<br>E-posta: <a href="'.$mail_href.'">'.$mail_label.'</a></p>
+<h3>2) Ürün / Hizmet Bilgileri</h3>
+<p>Ürünün adı, temel nitelikleri, adedi, beden/renk seçimi, birim fiyatı, toplam bedeli, kargo bedeli ve ödeme yöntemi; siparişin oluşturulduğu anda sepette ve sipariş özetinde gösterildiği şekildedir.</p>
+<h3>3) Ödeme ve Teslimat</h3>
+<ul>
+  <li>Ödeme; kredi/banka kartı ile yapılır.</li>
+  <li>Ödeme altyapısı: iyzico (iyzipay).</li>
+  <li>Teslimat süresi: 1–3 iş günü (yoğun dönemlerde uzayabilir).</li>
+  <li>Kargo firması: MNG Kargo.</li>
+</ul>
+<h3>4) Kargo Ücreti ve Ücretsiz Kargo</h3>
+<ul>
+  <li>Kargo ücreti: 100 TL.</li>
+  <li>1500 TL ve üzeri siparişlerde kargo ücretsizdir.</li>
+</ul>
+<h3>5) Cayma Hakkı (İade)</h3>
+<p>Alıcı, ürünü teslim aldığı tarihten itibaren 14 gün içinde cayma hakkını kullanabilir. Cayma hakkının kullanılabilmesi için ürünün kullanılmamış, etiketi koparılmamış ve tekrar satılabilir durumda olması gerekir.</p>
+<p>Hijyen nedeniyle; iç giyim, mayo/bikini, küpe gibi kişisel kullanım ürünlerinde iade/değişim kabul edilmez.</p>
+<h3>6) İletişim ve Şikayet</h3>
+<p>Her türlü talep ve şikayetinizi <a href="'.$mail_href.'">'.$mail_label.'</a> veya WhatsApp hattımız üzerinden iletebilirsiniz.</p>';
+
+    $cookie = '<h2>Çerez Politikası</h2>
+<p>Parılté Butik olarak, web sitemizi ziyaret ettiğinizde kullanıcı deneyimini geliştirmek ve hizmetlerimizi iyileştirmek amacıyla çerezler kullanıyoruz.</p>
+<h3>1) Çerez Nedir?</h3>
+<p>Çerezler (cookies), ziyaret ettiğiniz web siteleri tarafından tarayıcınızda saklanan küçük metin dosyalarıdır.</p>
+<h3>2) Hangi Tür Çerezleri Kullanıyoruz?</h3>
+<ul>
+  <li>Zorunlu çerezler: Sitenin çalışması için gereklidir.</li>
+  <li>Fonksiyonel çerezler: Tercihlerinizi hatırlamak için kullanılır.</li>
+  <li>Analitik çerezler: Site kullanımını anlamamıza yardımcı olur.</li>
+</ul>
+<h3>3) Çerezleri Nasıl Yönetebilirsiniz?</h3>
+<p>Tarayıcı ayarlarınızdan çerez tercihlerinizi yönetebilir veya çerezleri silebilirsiniz. Çerezleri devre dışı bırakmanız halinde sitenin bazı bölümleri beklediğiniz gibi çalışmayabilir.</p>
+<h3>4) İletişim</h3>
+<p>Çerez politikamızla ilgili sorularınız için <a href="'.$mail_href.'">'.$mail_label.'</a> üzerinden bize ulaşabilirsiniz.</p>';
+
     $distance = '<h2>Mesafeli Satış Sözleşmesi</h2>
 <p>İşbu Mesafeli Satış Sözleşmesi (“Sözleşme”), aşağıda bilgileri yer alan Satıcı ile, parilte.com üzerinden sipariş oluşturan Alıcı arasında elektronik ortamda kurulmuştur.</p>
 <h3>1) Taraflar</h3>
@@ -2498,6 +2573,8 @@ function parilte_cs_update_legal_pages_once() {
     $kvkk_id = parilte_cs_upsert_page_content('kvkk-gizlilik', 'KVKK & Gizlilik', $kvkk);
     parilte_cs_upsert_page_content('teslimat-kargo', 'Teslimat & Kargo', $shipping);
     parilte_cs_upsert_page_content('iade-degisim', 'İade & Değişim', $returns);
+    parilte_cs_upsert_page_content('on-bilgilendirme', 'Ön Bilgilendirme', $preinfo);
+    parilte_cs_upsert_page_content('cerez-politikasi', 'Çerez Politikası', $cookie);
     $terms_id = parilte_cs_upsert_page_content('mesafeli-satis-sozlesmesi', 'Mesafeli Satış Sözleşmesi', $distance);
 
     if ($terms_id) {
@@ -2507,7 +2584,7 @@ function parilte_cs_update_legal_pages_once() {
         update_option('wp_page_for_privacy_policy', (int) $kvkk_id);
     }
 
-    update_option('parilte_legal_pages_v8', 1);
+    update_option('parilte_legal_pages_v9', 1);
     if (function_exists('flush_rewrite_rules')) {
         flush_rewrite_rules(false);
     }
@@ -3287,6 +3364,41 @@ add_action('wp_enqueue_scripts', function () {
     @media (max-width: 900px){
       .parilte-legal-footer .parilte-container{flex-direction:column;align-items:flex-start}
       .parilte-legal-right{width:100%;justify-content:flex-start;margin-left:0}
+    }
+    .parilte-cookie-banner{
+      position:fixed;
+      left:16px;
+      right:16px;
+      bottom:16px;
+      z-index:10050;
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px 14px;
+      background:#111;
+      color:#fff;
+      border-radius:12px;
+      box-shadow:0 16px 40px rgba(0,0,0,.25);
+      font-size:.85rem;
+    }
+    .parilte-cookie-banner a{color:#fff;text-decoration:underline}
+    .parilte-cookie-accept{
+      border:0;
+      background:#fff;
+      color:#111;
+      border-radius:999px;
+      padding:8px 14px;
+      font-size:.7rem;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      cursor:pointer;
+      font:inherit;
+    }
+    @media (max-width: 600px){
+      .parilte-cookie-banner{left:10px;right:10px;bottom:10px;font-size:.8rem}
+      .parilte-cookie-accept{width:100%;text-align:center}
     }
     .ct-footer-socials{display:none !important}
     .parilte-home-cta-btn--wa{background:#1fa855 !important;box-shadow:0 10px 22px rgba(31,168,85,.22) !important}
@@ -4618,7 +4730,7 @@ if (PARILTE_CS_ON && PARILTE_CS_CHECKOUT_FIELDS) {
     }, 10, 1);
 
     add_filter('woocommerce_get_terms_and_conditions_checkbox_text', function ($text) {
-        return 'Siparişimi veriyorum ve <a href="'.esc_url(wc_get_page_permalink('terms')).'" target="_blank" rel="nofollow">Mesafeli Satış Sözleşmesi</a> ile <a href="'.esc_url(get_privacy_policy_url()).'" target="_blank" rel="nofollow">KVKK</a>’yı kabul ediyorum.';
+        return 'Siparişimi veriyorum, ödeme yükümlülüğü doğduğunu kabul ediyorum ve <a href="'.esc_url(wc_get_page_permalink('terms')).'" target="_blank" rel="nofollow">Mesafeli Satış Sözleşmesi</a> ile <a href="'.esc_url(get_privacy_policy_url()).'" target="_blank" rel="nofollow">KVKK</a>’yı kabul ediyorum.';
     });
 }
 
