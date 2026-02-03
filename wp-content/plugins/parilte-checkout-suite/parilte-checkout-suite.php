@@ -2361,6 +2361,12 @@ function parilte_cs_footer_links() {
     if (!$logo_html) {
         $logo_html = '<span class="parilte-footer-logo-text">'.esc_html(get_bloginfo('name')).'</span>';
     }
+    $pay_html = '';
+    if (function_exists('parilte_cs_svg')) {
+        foreach (['iyzico_pay','visa','mc','troy'] as $k) {
+            $pay_html .= parilte_cs_svg($k);
+        }
+    }
     ?>
     <div class="parilte-legal-footer">
       <div class="parilte-container">
@@ -2371,6 +2377,11 @@ function parilte_cs_footer_links() {
               <a href="<?php echo esc_url($l['url']); ?>"><?php echo esc_html($l['label']); ?></a>
             <?php } ?>
           </nav>
+          <?php if ($pay_html) { ?>
+            <div class="parilte-footer-paybadges" aria-label="Güvenli ödeme">
+              <?php echo $pay_html; ?>
+            </div>
+          <?php } ?>
           <span class="parilte-legal-copy">© <?php echo date('Y'); ?> Parilté</span>
         </div>
         <div class="parilte-legal-right">
@@ -3423,6 +3434,9 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-footer-logo{display:flex;align-items:center;gap:10px}
     .parilte-footer-logo img{max-height:34px;height:auto;width:auto;display:block}
     .parilte-footer-logo-text{font-size:.95rem;letter-spacing:.18em;text-transform:uppercase;color:var(--parilte-ink)}
+    .parilte-footer-paybadges{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:4px}
+    .parilte-footer-paybadges svg{filter:drop-shadow(0 1px 0 rgba(0,0,0,.04))}
+    .parilte-footer-paybadges .parilte-paybadge-iyzico{width:96px;height:16px}
     .parilte-legal-links{display:flex;flex-wrap:wrap;gap:14px;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase}
     .parilte-legal-links a{text-decoration:none;color:var(--parilte-ink);opacity:.8}
     .parilte-legal-links a:hover{opacity:1}
