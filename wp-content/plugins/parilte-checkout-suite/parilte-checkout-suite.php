@@ -5150,6 +5150,11 @@ if (PARILTE_CS_ON && PARILTE_CS_ETA) {
 if (PARILTE_CS_ON && PARILTE_CS_CHECKOUT_FIELDS) {
     add_filter('woocommerce_enable_order_notes_field','__return_false');
 
+    add_filter('woocommerce_ship_to_different_address_checked', '__return_true');
+    add_filter('woocommerce_ship_to_different_address_checkbox_text', function () {
+        return 'Teslimat adresi faturadan farklıysa işaretle';
+    });
+
     add_filter('woocommerce_checkout_fields', function ($fields) {
         $lbl = [
             'first_name'=>'Ad','last_name'=>'Soyad','company'=>'Firma','address_1'=>'Adres',
@@ -5182,10 +5187,26 @@ if (PARILTE_CS_ON && PARILTE_CS_CHECKOUT_FIELDS) {
         return $fields;
     }, 10, 1);
 
+    add_action('woocommerce_before_checkout_shipping_form', function () {
+        echo '<p class="parilte-hint">Teslimat adresin faturadan farklıysa aşağıdan düzenleyebilirsin.</p>';
+    }, 5);
+
     add_filter('woocommerce_get_terms_and_conditions_checkbox_text', function ($text) {
         return 'Siparişimi veriyorum, ödeme yükümlülüğü doğduğunu kabul ediyorum ve <a href="'.esc_url(wc_get_page_permalink('terms')).'" target="_blank" rel="nofollow">Mesafeli Satış Sözleşmesi</a> ile <a href="'.esc_url(get_privacy_policy_url()).'" target="_blank" rel="nofollow">KVKK</a>’yı kabul ediyorum.';
     });
 }
+
+add_filter('woocommerce_email_recipient_new_order', function ($recipient, $order) {
+    $extra = array_filter([
+        'destek@parilte.com',
+        get_option('admin_email'),
+    ]);
+    $list = array_filter(array_map('trim', explode(',', (string) $recipient)));
+    foreach ($extra as $addr) {
+        if (!in_array($addr, $list, true)) $list[] = $addr;
+    }
+    return implode(', ', $list);
+}, 10, 2);
 
 /* ==========================================================
  * 4) ÖDEME ROZETLERİ
