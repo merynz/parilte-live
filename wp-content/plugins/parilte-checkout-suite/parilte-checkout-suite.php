@@ -80,6 +80,34 @@ add_action('admin_menu', function () {
             </table>
             <?php submit_button(); ?>
           </form>
+          <hr>
+          <h2>Mail Testi</h2>
+          <p>Şifre sıfırlama ve bildirim mailleri <code>wp_mail</code> üzerinden gider. Buradan hızlıca test edebiliriz.</p>
+          <?php
+            $notice = get_transient('parilte_mail_test_notice');
+            if ($notice) {
+                delete_transient('parilte_mail_test_notice');
+                echo '<div class="notice notice-'.esc_attr($notice['type']).'"><p>'.esc_html($notice['message']).'</p></div>';
+            }
+            $last_mail = get_option('parilte_last_mail_event');
+            if (is_array($last_mail) && !empty($last_mail['time'])) {
+                $status = $last_mail['ok'] ? 'Başarılı' : 'Başarısız';
+                $when = date_i18n('d.m.Y H:i', (int)$last_mail['time']);
+                $detail = $last_mail['detail'] ? ' — '.$last_mail['detail'] : '';
+                echo '<p><strong>Son mail:</strong> '.esc_html($status).' ('.$when.')'.esc_html($detail).'</p>';
+            }
+          ?>
+          <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+            <?php wp_nonce_field('parilte_mail_test'); ?>
+            <input type="hidden" name="action" value="parilte_mail_test">
+            <table class="form-table" role="presentation">
+              <tr>
+                <th scope="row">Test e-posta adresi</th>
+                <td><input type="email" name="parilte_mail_to" value="<?php echo esc_attr(get_option('admin_email')); ?>" style="width:320px"></td>
+              </tr>
+            </table>
+            <?php submit_button('Test maili gönder','secondary'); ?>
+          </form>
         </div>
         <?php
     });
@@ -91,6 +119,55 @@ add_action('admin_init', function () {
     register_setting('parilte_checkout','parilte_cutoff_hour');
     register_setting('parilte_checkout','parilte_weekend');
     register_setting('parilte_checkout','parilte_free_text');
+});
+
+add_action('admin_post_parilte_mail_test', function () {
+    if (!current_user_can('manage_options')) {
+        wp_die('Unauthorized', 403);
+    }
+    check_admin_referer('parilte_mail_test');
+    $to = isset($_POST['parilte_mail_to']) ? sanitize_email(wp_unslash($_POST['parilte_mail_to'])) : '';
+    if (!$to) {
+        set_transient('parilte_mail_test_notice', [
+            'type' => 'error',
+            'message' => 'Geçerli bir e-posta adresi girin.',
+        ], 60);
+        wp_safe_redirect(admin_url('options-general.php?page=parilte-checkout'));
+        exit;
+    }
+    $subject = 'Parilte Mail Testi';
+    $body = "Bu bir test e-postasıdır.\n\nSaat: ".date_i18n('d.m.Y H:i');
+    $sent = wp_mail($to, $subject, $body);
+    set_transient('parilte_mail_test_notice', [
+        'type' => $sent ? 'success' : 'error',
+        'message' => $sent ? 'Test maili gönderildi. Lütfen gelen kutusunu kontrol edin.' : 'Test maili gönderilemedi.',
+    ], 60);
+    wp_safe_redirect(admin_url('options-general.php?page=parilte-checkout'));
+    exit;
+});
+
+add_action('wp_mail_failed', function ($wp_error) {
+    $detail = '';
+    if (is_wp_error($wp_error)) {
+        $detail = $wp_error->get_error_message();
+    }
+    update_option('parilte_last_mail_event', [
+        'ok' => false,
+        'time' => time(),
+        'detail' => $detail,
+    ], false);
+    if ($detail) {
+        error_log('[Parilte Mail] failed: '.$detail);
+    }
+});
+
+add_action('wp_mail_succeeded', function ($mail_data) {
+    $subject = isset($mail_data['subject']) ? $mail_data['subject'] : '';
+    update_option('parilte_last_mail_event', [
+        'ok' => true,
+        'time' => time(),
+        'detail' => $subject ? 'Konu: '.$subject : '',
+    ], false);
 });
 
 /* ==========================================================
@@ -1188,13 +1265,43 @@ add_filter('woocommerce_coming_soon_exclude', '__return_true');
 /* ==========================================================
  * HEADER / FRONT SHORTCODE
  * ========================================================== */
+function parilte_cs_account_block($account_url){
+    $account_label = is_user_logged_in() ? 'Hesabım' : 'Giriş';
+    $logout_url = function_exists('wp_logout_url') ? wp_logout_url(home_url('/')) : home_url('/');
+    $orders_url = function_exists('wc_get_endpoint_url') ? wc_get_endpoint_url('orders', '', $account_url) : $account_url;
+    $greeting = '';
+    if (is_user_logged_in()) {
+        $user = wp_get_current_user();
+        $name = $user && !empty($user->display_name) ? $user->display_name : '';
+        $greeting = $name ? 'Merhaba, '.$name : 'Merhaba';
+    }
+    ob_start(); ?>
+      <div class="parilte-account-wrap <?php echo is_user_logged_in() ? 'is-logged' : 'is-guest'; ?>">
+        <a class="parilte-account" href="<?php echo esc_url($account_url); ?>" aria-label="Hesabım">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+          <span class="parilte-label"><?php echo esc_html($account_label); ?></span>
+        </a>
+        <?php if ($greeting) : ?>
+          <span class="parilte-greeting"><?php echo esc_html($greeting); ?></span>
+        <?php endif; ?>
+        <?php if (is_user_logged_in()) : ?>
+          <a class="parilte-logout-link" href="<?php echo esc_url($logout_url); ?>">Çıkış</a>
+          <div class="parilte-account-menu" role="menu" aria-label="Hesap menüsü">
+            <a href="<?php echo esc_url($account_url); ?>" role="menuitem">Hesabım</a>
+            <a href="<?php echo esc_url($orders_url); ?>" role="menuitem">Siparişlerim</a>
+            <a href="<?php echo esc_url($logout_url); ?>" role="menuitem">Çıkış</a>
+          </div>
+        <?php endif; ?>
+      </div>
+    <?php return ob_get_clean();
+}
+
 function parilte_cs_header_markup(){
     if (defined('PARILTE_CUSTOM_HEADER') && PARILTE_CUSTOM_HEADER) return '';
     if (!function_exists('wc_get_page_permalink')) return '';
     $account_url = esc_url( wc_get_page_permalink('myaccount') );
     $cart_url = function_exists('wc_get_cart_url') ? wc_get_cart_url() : home_url('/sepet/');
     $cart_count = (function_exists('WC') && WC()->cart) ? (int) WC()->cart->get_cart_contents_count() : 0;
-    $account_label = is_user_logged_in() ? 'Hesabım' : 'Giriş';
     ob_start(); ?>
     <div class="parilte-header-icons">
       <span class="parilte-header-spacer" aria-hidden="true"></span>
@@ -1213,10 +1320,7 @@ function parilte_cs_header_markup(){
           <span class="parilte-mobile-menu-icon" aria-hidden="true"><span></span></span>
           <span class="parilte-mobile-menu-text">Menü</span>
         </button>
-        <a class="parilte-account" href="<?php echo $account_url; ?>" aria-label="Hesabım">
-            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
-            <span class="parilte-label"><?php echo esc_html($account_label); ?></span>
-        </a>
+        <?php echo parilte_cs_account_block($account_url); ?>
         <a class="parilte-cart" href="<?php echo esc_url($cart_url); ?>" aria-label="Sepet">
             <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 6h13l-2 9H9L7 6z"/><circle cx="10" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/></svg>
             <span class="parilte-label">Sepet</span>
@@ -1235,7 +1339,6 @@ function parilte_cs_custom_header_markup() {
     $account_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('myaccount') : home_url('/hesabim/');
     $cart_url = function_exists('wc_get_cart_url') ? wc_get_cart_url() : home_url('/sepet/');
     $cart_count = (function_exists('WC') && WC()->cart) ? (int) WC()->cart->get_cart_contents_count() : 0;
-    $account_label = is_user_logged_in() ? 'Hesabım' : 'Giriş';
     ob_start(); ?>
     <header class="parilte-custom-header" role="banner">
       <div class="parilte-custom-inner">
@@ -1244,10 +1347,7 @@ function parilte_cs_custom_header_markup() {
         </div>
         <div class="parilte-custom-brand"></div>
         <div class="parilte-custom-right">
-          <a class="parilte-account" href="<?php echo esc_url($account_url); ?>" aria-label="Hesabım">
-            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
-            <span class="parilte-label"><?php echo esc_html($account_label); ?></span>
-          </a>
+          <?php echo parilte_cs_account_block($account_url); ?>
           <a class="parilte-cart" href="<?php echo esc_url($cart_url); ?>" aria-label="Sepet">
             <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M7 6h13l-2 9H9L7 6z"/><circle cx="10" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/></svg>
             <span class="parilte-label">Sepet</span>
@@ -4261,6 +4361,50 @@ add_action('wp_enqueue_scripts', function () {
     .parilte-custom-header svg{fill:currentColor;opacity:.75;width:16px;height:16px}
     .parilte-custom-right svg{width:18px;height:18px;opacity:.85}
     .parilte-custom-right .parilte-label{display:inline}
+    .parilte-account-wrap{position:relative;display:inline-flex;align-items:center;gap:8px}
+    .parilte-greeting{
+      font-size:.68rem;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      opacity:.75;
+      max-width:180px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .parilte-logout-link{
+      font-size:.66rem;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      text-decoration:none;
+      opacity:.65;
+    }
+    .parilte-account-menu{
+      position:absolute;
+      right:0;
+      top:calc(100% + 10px);
+      background:#fff;
+      border:1px solid rgba(0,0,0,.12);
+      border-radius:12px;
+      padding:8px;
+      box-shadow:0 14px 30px rgba(0,0,0,.12);
+      min-width:180px;
+      display:none;
+      z-index:10050;
+    }
+    .parilte-account-menu a{
+      display:block;
+      padding:8px 10px;
+      border-radius:8px;
+      text-decoration:none;
+      color:inherit;
+      font-size:.7rem;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+    }
+    .parilte-account-menu a:hover{background:rgba(0,0,0,.06)}
+    .parilte-account-wrap:hover .parilte-account-menu,
+    .parilte-account-wrap:focus-within .parilte-account-menu{display:block}
     .parilte-custom-header .parilte-search-form{
       width:min(240px, 100%);
       padding:.35rem .6rem;
@@ -4308,6 +4452,8 @@ add_action('wp_enqueue_scripts', function () {
       .parilte-custom-right{justify-content:flex-end;gap:12px}
       .parilte-custom-header .parilte-search-form{max-width:100%}
       .parilte-label{display:none}
+      .parilte-greeting{max-width:120px;font-size:.62rem}
+      .parilte-logout-link{font-size:.6rem}
     }
     @media (max-width: 600px){
       .parilte-brand{font-size:clamp(2.2rem,7.4vw,2.8rem)}
